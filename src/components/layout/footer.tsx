@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Scale } from 'lucide-react'
+import { ScaleIcon } from '@heroicons/react/24/outline'
 import { Separator } from '@/components/ui/separator'
 
 const quickLinks = [
@@ -26,7 +26,7 @@ export function Footer() {
                     {/* Brand */}
                     <div className="space-y-3">
                         <div className="flex items-center gap-2 font-bold">
-                            <Scale className="h-5 w-5" style={{ color: 'hsl(var(--primary))' }} />
+                            <ScaleIcon className="h-6 w-6" style={{ color: 'hsl(var(--primary))' }} />
                             Court of Public Record
                         </div>
                         <p className="text-sm text-muted-foreground italic">

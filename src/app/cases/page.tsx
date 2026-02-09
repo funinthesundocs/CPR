@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Search, Filter } from 'lucide-react'
+import { MagnifyingGlassIcon, FunnelIcon } from '@heroicons/react/24/outline'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 
@@ -32,18 +32,18 @@ export default function CasesPage() {
             {/* Search and Filters */}
             <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                         placeholder="Search by name, alias, or keyword..."
                         className="pl-9"
                     />
                 </div>
                 <Button variant="outline" className="gap-2">
-                    <Filter className="h-4 w-4" />
+                    <FunnelIcon className="h-4 w-4" />
                     Status
                 </Button>
                 <Button variant="outline" className="gap-2">
-                    <Filter className="h-4 w-4" />
+                    <FunnelIcon className="h-4 w-4" />
                     Region
                 </Button>
             </div>

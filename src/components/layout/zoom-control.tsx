@@ -1,7 +1,7 @@
 'use client'
 
 import { useTheme } from '@/lib/theme/use-theme'
-import { Minus, Plus, Maximize2 } from 'lucide-react'
+import { MinusIcon, PlusIcon, ArrowsPointingOutIcon } from '@heroicons/react/24/outline'
 import { Button } from '@/components/ui/button'
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -52,7 +52,7 @@ export function ZoomControl() {
                 onClick={() => setZoom(zoom - 10)}
                 disabled={zoom <= 50}
             >
-                <Minus className="h-3 w-3" />
+                <MinusIcon className="h-4 w-4" />
             </Button>
             <button
                 onClick={() => setZoom(100)}
@@ -67,7 +67,7 @@ export function ZoomControl() {
                 onClick={() => setZoom(zoom + 10)}
                 disabled={zoom >= 200}
             >
-                <Plus className="h-3 w-3" />
+                <PlusIcon className="h-4 w-4" />
             </Button>
         </div>
     )

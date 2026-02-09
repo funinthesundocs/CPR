@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -12,7 +13,11 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { LogIn, LogOut, User } from 'lucide-react'
+import {
+    ArrowRightOnRectangleIcon,
+    ArrowLeftOnRectangleIcon,
+    UserIcon
+} from '@heroicons/react/24/outline'
 import type { User as SupaUser } from '@supabase/supabase-js'
 
 export function UserMenu() {
@@ -48,7 +53,7 @@ export function UserMenu() {
                 className="w-full justify-start gap-2"
                 onClick={() => router.push('/login')}
             >
-                <LogIn className="h-4 w-4" />
+                <ArrowRightOnRectangleIcon className="h-4 w-4" />
                 <span className="text-sm">Sign In</span>
             </Button>
         )
@@ -72,12 +77,12 @@ export function UserMenu() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
                 <DropdownMenuItem className="gap-2">
-                    <User className="h-4 w-4" />
+                    <UserIcon className="h-4 w-4" />
                     Profile
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="gap-2 text-destructive">
-                    <LogOut className="h-4 w-4" />
+                    <ArrowLeftOnRectangleIcon className="h-4 w-4" />
                     Sign Out
                 </DropdownMenuItem>
             </DropdownMenuContent>

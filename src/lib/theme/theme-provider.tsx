@@ -47,7 +47,17 @@ function applyTheme(mode: 'light' | 'dark', color: ThemeColor) {
     const root = document.documentElement
     root.classList.remove('light', 'dark')
     root.classList.add(mode)
-    root.style.setProperty('--primary', THEME_COLORS[color].hsl)
+
+    // Set primary color as HSL
+    const hslValue = THEME_COLORS[color].hsl
+    root.style.setProperty('--primary', `hsl(${hslValue})`)
+
+    // Set primary-foreground based on mode for button text
+    if (mode === 'dark') {
+        root.style.setProperty('--primary-foreground', 'oklch(1 0 0)') // white
+    } else {
+        root.style.setProperty('--primary-foreground', 'oklch(0.985 0 0)') // near white
+    }
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {

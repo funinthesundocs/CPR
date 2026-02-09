@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Send, Shield, Mail, MessageSquare } from 'lucide-react'
+import { PaperAirplaneIcon, ShieldCheckIcon, EnvelopeIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 
@@ -30,9 +30,9 @@ export default function ContactPage() {
 
             <div className="grid sm:grid-cols-3 gap-4">
                 {[
-                    { icon: Shield, label: 'Secure', desc: 'All communications are encrypted' },
-                    { icon: Mail, label: 'Responsive', desc: 'We respond within 48 hours' },
-                    { icon: MessageSquare, label: 'Confidential', desc: 'Your identity is protected' },
+                    { icon: ShieldCheckIcon, label: 'Secure', desc: 'All communications are encrypted' },
+                    { icon: EnvelopeIcon, label: 'Responsive', desc: 'We respond within 48 hours' },
+                    { icon: ChatBubbleLeftRightIcon, label: 'Confidential', desc: 'Your identity is protected' },
                 ].map((item) => (
                     <div key={item.label} className="rounded-xl border bg-card p-4 text-center">
                         <item.icon className="h-6 w-6 mx-auto mb-2" style={{ color: 'hsl(var(--primary))' }} />
@@ -104,7 +104,7 @@ export default function ContactPage() {
                 </div>
 
                 <Button type="submit" className="w-full gap-2">
-                    <Send className="h-4 w-4" />
+                    <PaperAirplaneIcon className="h-4 w-4" />
                     Send Message
                 </Button>
             </form>

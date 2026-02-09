@@ -1,7 +1,7 @@
 'use client'
 
 import { useTheme } from '@/lib/theme/use-theme'
-import { Moon, Sun, Monitor } from 'lucide-react'
+import { MoonIcon, SunIcon, ComputerDesktopIcon } from '@heroicons/react/24/outline'
 import { Button } from '@/components/ui/button'
 import {
     DropdownMenu,
@@ -15,16 +15,16 @@ export function ThemeToggle() {
     const { mode, setMode, resolvedMode } = useTheme()
 
     const icons: Record<string, React.ReactNode> = {
-        light: <Sun className="h-4 w-4" />,
-        dark: <Moon className="h-4 w-4" />,
-        system: <Monitor className="h-4 w-4" />,
+        light: <SunIcon className="h-5 w-5" />,
+        dark: <MoonIcon className="h-5 w-5" />,
+        system: <ComputerDesktopIcon className="h-5 w-5" />,
     }
 
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="w-full justify-start gap-2">
-                    {resolvedMode === 'dark' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+                    {resolvedMode === 'dark' ? <MoonIcon className="h-4 w-4" /> : <SunIcon className="h-4 w-4" />}
                     <span className="text-sm">
                         {mode === 'system' ? 'System' : mode === 'dark' ? 'Dark' : 'Light'}
                     </span>

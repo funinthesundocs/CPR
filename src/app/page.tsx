@@ -1,12 +1,12 @@
 import Link from 'next/link'
-import { ArrowRight, Globe, Users, Calendar, ShieldCheck } from 'lucide-react'
+import { ArrowRightIcon, GlobeAltIcon, UsersIcon, CalendarIcon, ShieldCheckIcon } from '@heroicons/react/24/outline'
 import { Button } from '@/components/ui/button'
 
 const stats = [
-  { icon: Globe, label: 'Nations Involved', value: '5', detail: 'Australia, Thailand, UAE & more' },
-  { icon: Users, label: 'Confirmed Victims', value: '4', detail: 'Verified & documented' },
-  { icon: Calendar, label: 'Active Period', value: '2019–2025', detail: 'Ongoing investigation' },
-  { icon: ShieldCheck, label: 'Status', value: 'Verified', detail: 'Verified & Documented' },
+  { icon: GlobeAltIcon, label: 'Nations Involved', value: '5', detail: 'Australia, Thailand, UAE & more' },
+  { icon: UsersIcon, label: 'Confirmed Victims', value: '4', detail: 'Verified & documented' },
+  { icon: CalendarIcon, label: 'Active Period', value: '2019–2025', detail: 'Ongoing investigation' },
+  { icon: ShieldCheckIcon, label: 'Status', value: 'Verified', detail: 'Verified & Documented' },
 ]
 
 export default function HomePage() {
@@ -29,7 +29,7 @@ export default function HomePage() {
         <div className="flex flex-wrap justify-center gap-4 pt-4">
           <Button asChild size="lg" className="gap-2 text-base">
             <Link href="/cases">
-              Enter the Court <ArrowRight className="h-4 w-4" />
+              Enter the Court <ArrowRightIcon className="h-4 w-4" />
             </Link>
           </Button>
           <Button asChild variant="outline" size="lg" className="text-base">

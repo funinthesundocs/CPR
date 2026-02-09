@@ -4,7 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/lib/theme/theme-provider";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
-import { Footer } from "@/components/layout/footer";
+import { ConditionalFooter } from "@/components/layout/conditional-footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -55,7 +55,7 @@ export default function RootLayout({
               <main className="flex-1 p-6">
                 {children}
               </main>
-              <Footer />
+              <ConditionalFooter />
             </SidebarInset>
           </SidebarProvider>
         </ThemeProvider>

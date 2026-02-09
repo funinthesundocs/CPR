@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Scale } from 'lucide-react'
+import { ScaleIcon } from '@heroicons/react/24/outline'
 
 export default function LoginPage() {
     const [email, setEmail] = useState('')
@@ -60,7 +60,7 @@ export default function LoginPage() {
         <div className="flex min-h-[60vh] items-center justify-center">
             <div className="w-full max-w-sm space-y-6">
                 <div className="text-center space-y-2">
-                    <Scale className="h-10 w-10 mx-auto" style={{ color: 'hsl(var(--primary))' }} />
+                    <ScaleIcon className="h-10 w-10 mx-auto" style={{ color: 'hsl(var(--primary))' }} />
                     <h1 className="text-2xl font-bold">Court of Public Record</h1>
                     <p className="text-sm text-muted-foreground">Sign in to your account</p>
                 </div>
@@ -92,7 +92,11 @@ export default function LoginPage() {
                     )}
 
                     <div className="space-y-2">
-                        <Button type="submit" className="w-full" disabled={loading}>
+                        <Button
+                            type="submit"
+                            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-base py-5"
+                            disabled={loading}
+                        >
                             {loading ? 'Signing in...' : 'Sign In'}
                         </Button>
                         <Button

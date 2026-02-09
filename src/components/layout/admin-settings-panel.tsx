@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import { X, Building2, Users, Palette, Activity, Moon, ChevronDown } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
+import { XMarkIcon, BuildingOfficeIcon, UsersIcon, PaintBrushIcon, ChartBarIcon, MoonIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -17,9 +18,8 @@ interface AdminSettingsPanelProps {
 }
 
 const adminNavItems = [
-    { title: 'Organization Profile', icon: Building2, href: '/admin/organization' },
-    { title: 'Style Manager', icon: Palette, href: '/admin/styles' },
-    { title: 'Activity Log', icon: Activity, href: '/admin/activity' },
+    { title: 'Organization Profile', icon: BuildingOfficeIcon, href: '/admin/organization' },
+    { title: 'Activity Log', icon: ChartBarIcon, href: '/admin/activity' },
 ]
 
 const userSubItems = [
@@ -29,7 +29,15 @@ const userSubItems = [
 ]
 
 export function AdminSettingsPanel({ open, onClose }: AdminSettingsPanelProps) {
+    const pathname = usePathname()
     const [usersExpanded, setUsersExpanded] = useState(false)
+
+    // Auto-expand Users section if on any users page
+    useEffect(() => {
+        if (pathname?.startsWith('/admin/users')) {
+            setUsersExpanded(true)
+        }
+    }, [pathname])
 
     return (
         <Sheet open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
@@ -56,9 +64,6 @@ export function AdminSettingsPanel({ open, onClose }: AdminSettingsPanelProps) {
                             <a href={item.href}>
                                 <item.icon className="h-4 w-4 text-muted-foreground" />
                                 {item.title}
-                                {item.title === 'Style Manager' && (
-                                    <Moon className="h-4 w-4 ml-auto text-muted-foreground" />
-                                )}
                             </a>
                         </Button>
                     ))}
@@ -70,9 +75,9 @@ export function AdminSettingsPanel({ open, onClose }: AdminSettingsPanelProps) {
                                 variant="ghost"
                                 className="w-full justify-start gap-3 h-11 text-sm"
                             >
-                                <Users className="h-4 w-4 text-muted-foreground" />
+                                <UsersIcon className="h-4 w-4 text-muted-foreground" />
                                 Users
-                                <ChevronDown
+                                <ChevronDownIcon
                                     className={`h-4 w-4 ml-auto text-muted-foreground transition-transform ${usersExpanded ? 'rotate-180' : ''
                                         }`}
                                 />
@@ -83,7 +88,10 @@ export function AdminSettingsPanel({ open, onClose }: AdminSettingsPanelProps) {
                                 <Button
                                     key={sub.title}
                                     variant="ghost"
-                                    className="w-full justify-start h-9 text-sm text-muted-foreground"
+                                    className={`w-full justify-start h-9 text-sm ${pathname === sub.href
+                                        ? 'bg-accent text-accent-foreground'
+                                        : 'text-muted-foreground'
+                                        }`}
                                     asChild
                                 >
                                     <a href={sub.href}>{sub.title}</a>

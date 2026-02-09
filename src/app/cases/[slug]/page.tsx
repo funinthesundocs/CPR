@@ -1,4 +1,4 @@
-import { Globe, Users, Calendar, Building2, MapPin, ShieldAlert, FileText, Vote, MessageSquare } from 'lucide-react'
+import { GlobeAltIcon, UsersIcon, CalendarIcon, BuildingOfficeIcon, MapPinIcon, ShieldExclamationIcon, DocumentTextIcon, CheckBadgeIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline'
 import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
 
@@ -51,10 +51,10 @@ export default function CaseDetailPage() {
             {/* Quick Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
-                    { icon: Building2, label: 'Businesses', value: String(caseData.businesses.length) },
-                    { icon: Calendar, label: 'Years Active', value: caseData.yearsActive },
-                    { icon: Users, label: 'Confirmed Victims', value: String(caseData.confirmedVictims) },
-                    { icon: Globe, label: 'Nations', value: String(caseData.nations.length) },
+                    { icon: BuildingOfficeIcon, label: 'Businesses', value: String(caseData.businesses.length) },
+                    { icon: CalendarIcon, label: 'Years Active', value: caseData.yearsActive },
+                    { icon: UsersIcon, label: 'Confirmed Victims', value: String(caseData.confirmedVictims) },
+                    { icon: GlobeAltIcon, label: 'Nations', value: String(caseData.nations.length) },
                 ].map((stat) => (
                     <div key={stat.label} className="rounded-xl border bg-card p-4 text-center">
                         <stat.icon className="h-5 w-5 mx-auto mb-2" style={{ color: 'hsl(var(--primary))' }} />
@@ -67,7 +67,7 @@ export default function CaseDetailPage() {
             {/* Linked Businesses */}
             <div className="space-y-3">
                 <h2 className="text-lg font-semibold flex items-center gap-2">
-                    <Building2 className="h-5 w-5" /> Linked Business Entities
+                    <BuildingOfficeIcon className="h-5 w-5" /> Linked Business Entities
                 </h2>
                 <div className="flex flex-wrap gap-2">
                     {caseData.businesses.map((b) => (
@@ -81,7 +81,7 @@ export default function CaseDetailPage() {
             {/* Nations */}
             <div className="space-y-3">
                 <h2 className="text-lg font-semibold flex items-center gap-2">
-                    <MapPin className="h-5 w-5" /> Jurisdictions
+                    <MapPinIcon className="h-5 w-5" /> Jurisdictions
                 </h2>
                 <div className="flex flex-wrap gap-2">
                     {caseData.nations.map((n) => (
@@ -97,7 +97,7 @@ export default function CaseDetailPage() {
             {/* Case Summary */}
             <div className="space-y-4">
                 <h2 className="text-xl font-semibold flex items-center gap-2">
-                    <ShieldAlert className="h-5 w-5" style={{ color: 'hsl(var(--primary))' }} />
+                    <ShieldExclamationIcon className="h-5 w-5" style={{ color: 'hsl(var(--primary))' }} />
                     Case Summary
                 </h2>
                 <div className="rounded-xl border bg-card p-6 space-y-4">
@@ -114,7 +114,7 @@ export default function CaseDetailPage() {
             {/* Timeline */}
             <div className="space-y-6">
                 <h2 className="text-xl font-semibold flex items-center gap-2">
-                    <FileText className="h-5 w-5" style={{ color: 'hsl(var(--primary))' }} />
+                    <DocumentTextIcon className="h-5 w-5" style={{ color: 'hsl(var(--primary))' }} />
                     Chronological Timeline
                 </h2>
                 <div className="relative">
@@ -146,7 +146,7 @@ export default function CaseDetailPage() {
             {/* Evidence Vault & Community */}
             <div className="grid md:grid-cols-2 gap-4">
                 <div className="rounded-xl border bg-card p-6 text-center space-y-3">
-                    <FileText className="h-8 w-8 mx-auto text-muted-foreground/40" />
+                    <DocumentTextIcon className="h-8 w-8 mx-auto text-muted-foreground/40" />
                     <h3 className="font-semibold">Evidence Vault</h3>
                     <p className="text-sm text-muted-foreground">
                         Screenshots, recordings, and document backups supporting this case.
@@ -154,7 +154,7 @@ export default function CaseDetailPage() {
                     <Button variant="outline" size="sm">View Evidence</Button>
                 </div>
                 <div className="rounded-xl border bg-card p-6 text-center space-y-3">
-                    <Vote className="h-8 w-8 mx-auto text-muted-foreground/40" />
+                    <CheckBadgeIcon className="h-8 w-8 mx-auto text-muted-foreground/40" />
                     <h3 className="font-semibold">Community Voting</h3>
                     <p className="text-sm text-muted-foreground">
                         Review the evidence and vote on the validity of specific claims.
@@ -166,7 +166,7 @@ export default function CaseDetailPage() {
             {/* Right of Reply */}
             <div className="rounded-xl border bg-card p-6 space-y-3">
                 <h3 className="font-semibold flex items-center gap-2">
-                    <MessageSquare className="h-5 w-5" />
+                    <ChatBubbleLeftRightIcon className="h-5 w-5" />
                     Right of Reply
                 </h3>
                 <p className="text-sm text-muted-foreground">

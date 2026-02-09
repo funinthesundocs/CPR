@@ -30,28 +30,31 @@ import { ColorPicker } from './color-picker'
 import { ZoomControl } from './zoom-control'
 import { AdminSettingsPanel } from './admin-settings-panel'
 import {
-    Home,
-    HelpCircle,
-    FolderOpen,
-    ChevronDown,
-    UserCircle,
-    PlusCircle,
-    Settings,
-    LogIn,
-    LogOut,
-    Scale,
-} from 'lucide-react'
+    HomeIcon,
+    QuestionMarkCircleIcon,
+    FolderOpenIcon,
+    ChevronDownIcon,
+    UserCircleIcon,
+    PlusCircleIcon,
+    Cog6ToothIcon,
+    ArrowRightOnRectangleIcon,
+    ArrowLeftOnRectangleIcon,
+    ScaleIcon,
+    BuildingOfficeIcon,
+    PaintBrushIcon,
+    ChartBarIcon,
+} from '@heroicons/react/24/outline'
 import type { User } from '@supabase/supabase-js'
 
 const mainNavItems = [
-    { title: 'Home', href: '/', icon: Home },
-    { title: 'How It Works', href: '/how-it-works', icon: HelpCircle },
-    { title: 'View Cases', href: '/cases', icon: FolderOpen },
+    { title: 'Home', href: '/', icon: HomeIcon },
+    { title: 'How It Works', href: '/how-it-works', icon: QuestionMarkCircleIcon },
+    { title: 'Browse Cases', href: '/cases', icon: FolderOpenIcon },
 ]
 
-const actionSubItems = [
-    { title: 'My Profile', href: '/profile', icon: UserCircle },
-    { title: 'Start New Case', href: '/cases/new', icon: PlusCircle },
+const userNavItems = [
+    { title: 'Profile', href: '/profile', icon: UserCircleIcon },
+    { title: 'Submit a Case', href: '/submit', icon: PlusCircleIcon },
 ]
 
 export function AppSidebar() {
@@ -108,7 +111,7 @@ export function AppSidebar() {
             <Sidebar>
                 <SidebarHeader className="p-4">
                     <Link href="/" className="flex items-center gap-2 font-bold text-lg">
-                        <Scale className="h-6 w-6" style={{ color: 'hsl(var(--primary))' }} />
+                        <ScaleIcon className="h-6 w-6" style={{ color: 'hsl(var(--primary))' }} />
                         <span className="leading-tight">Court of<br />Public Record</span>
                     </Link>
                 </SidebarHeader>
@@ -117,53 +120,131 @@ export function AppSidebar() {
                     <SidebarGroup>
                         <SidebarGroupContent>
                             <SidebarMenu>
-                                {/* Main nav items */}
-                                {mainNavItems.map((item) => (
-                                    <SidebarMenuItem key={item.href}>
-                                        <SidebarMenuButton asChild isActive={pathname === item.href}>
-                                            <Link href={item.href}>
-                                                <item.icon className="h-4 w-4" />
-                                                <span>{item.title}</span>
-                                            </Link>
-                                        </SidebarMenuButton>
-                                    </SidebarMenuItem>
-                                ))}
-
-                                {/* Actions accordion */}
-                                <Collapsible
-                                    open={actionsOpen}
-                                    onOpenChange={setActionsOpen}
-                                    className="group/collapsible"
-                                >
-                                    <SidebarMenuItem>
-                                        <CollapsibleTrigger asChild>
-                                            <SidebarMenuButton>
-                                                <ChevronDown
-                                                    className={`h-4 w-4 transition-transform duration-200 ${actionsOpen ? 'rotate-180' : ''
-                                                        }`}
-                                                />
-                                                <span>Actions</span>
+                                {/* Conditionally render admin or public nav based on current path */}
+                                {pathname?.startsWith('/admin') ? (
+                                    <>
+                                        {/* Admin nav items */}
+                                        <SidebarMenuItem>
+                                            <SidebarMenuButton asChild isActive={pathname === '/admin/organization'}>
+                                                <Link href="/admin/organization">
+                                                    <BuildingOfficeIcon className="h-4 w-4" />
+                                                    <span>Organization Profile</span>
+                                                </Link>
                                             </SidebarMenuButton>
-                                        </CollapsibleTrigger>
-                                        <CollapsibleContent>
-                                            <SidebarMenuSub>
-                                                {actionSubItems.map((sub) => (
-                                                    <SidebarMenuSubItem key={sub.href}>
-                                                        <SidebarMenuSubButton
-                                                            asChild
-                                                            isActive={pathname === sub.href}
-                                                        >
-                                                            <Link href={sub.href}>
-                                                                <sub.icon className="h-3.5 w-3.5" />
-                                                                <span>{sub.title}</span>
-                                                            </Link>
-                                                        </SidebarMenuSubButton>
-                                                    </SidebarMenuSubItem>
-                                                ))}
-                                            </SidebarMenuSub>
-                                        </CollapsibleContent>
-                                    </SidebarMenuItem>
-                                </Collapsible>
+                                        </SidebarMenuItem>
+                                        <SidebarMenuItem>
+                                            <SidebarMenuButton asChild isActive={pathname === '/admin/activity'}>
+                                                <Link href="/admin/activity">
+                                                    <ChartBarIcon className="h-4 w-4" />
+                                                    <span>Activity Log</span>
+                                                </Link>
+                                            </SidebarMenuButton>
+                                        </SidebarMenuItem>
+
+                                        {/* Users accordion */}
+                                        <Collapsible
+                                            open={pathname?.startsWith('/admin/users')}
+                                            className="group/collapsible"
+                                        >
+                                            <SidebarMenuItem>
+                                                <CollapsibleTrigger asChild>
+                                                    <SidebarMenuButton>
+                                                        <UserCircleIcon className="h-4 w-4" />
+                                                        <span>Users</span>
+                                                        <ChevronDownIcon
+                                                            className={`h-4 w-4 ml-auto transition-transform duration-200 ${pathname?.startsWith('/admin/users') ? 'rotate-180' : ''
+                                                                }`}
+                                                        />
+                                                    </SidebarMenuButton>
+                                                </CollapsibleTrigger>
+                                                <CollapsibleContent>
+                                                    <SidebarMenuSub>
+                                                        <SidebarMenuSubItem>
+                                                            <SidebarMenuSubButton
+                                                                asChild
+                                                                isActive={pathname === '/admin/users'}
+                                                            >
+                                                                <Link href="/admin/users">
+                                                                    <span>All Users</span>
+                                                                </Link>
+                                                            </SidebarMenuSubButton>
+                                                        </SidebarMenuSubItem>
+                                                        <SidebarMenuSubItem>
+                                                            <SidebarMenuSubButton
+                                                                asChild
+                                                                isActive={pathname === '/admin/users/roles'}
+                                                            >
+                                                                <Link href="/admin/users/roles">
+                                                                    <span>Permissions & Roles</span>
+                                                                </Link>
+                                                            </SidebarMenuSubButton>
+                                                        </SidebarMenuSubItem>
+                                                        <SidebarMenuSubItem>
+                                                            <SidebarMenuSubButton
+                                                                asChild
+                                                                isActive={pathname === '/admin/users/invitations'}
+                                                            >
+                                                                <Link href="/admin/users/invitations">
+                                                                    <span>Invitations</span>
+                                                                </Link>
+                                                            </SidebarMenuSubButton>
+                                                        </SidebarMenuSubItem>
+                                                    </SidebarMenuSub>
+                                                </CollapsibleContent>
+                                            </SidebarMenuItem>
+                                        </Collapsible>
+                                    </>
+                                ) : (
+                                    <>
+                                        {/* Public nav items */}
+                                        {mainNavItems.map((item) => (
+                                            <SidebarMenuItem key={item.href}>
+                                                <SidebarMenuButton asChild isActive={pathname === item.href}>
+                                                    <Link href={item.href}>
+                                                        <item.icon className="h-4 w-4" />
+                                                        <span>{item.title}</span>
+                                                    </Link>
+                                                </SidebarMenuButton>
+                                            </SidebarMenuItem>
+                                        ))}
+
+                                        {/* Actions accordion */}
+                                        <Collapsible
+                                            open={actionsOpen}
+                                            onOpenChange={setActionsOpen}
+                                            className="group/collapsible"
+                                        >
+                                            <SidebarMenuItem>
+                                                <CollapsibleTrigger asChild>
+                                                    <SidebarMenuButton>
+                                                        <ChevronDownIcon
+                                                            className={`h-4 w-4 transition-transform duration-200 ${actionsOpen ? 'rotate-180' : ''
+                                                                }`}
+                                                        />
+                                                        <span>Actions</span>
+                                                    </SidebarMenuButton>
+                                                </CollapsibleTrigger>
+                                                <CollapsibleContent>
+                                                    <SidebarMenuSub>
+                                                        {userNavItems.map((sub) => (
+                                                            <SidebarMenuSubItem key={sub.href}>
+                                                                <SidebarMenuSubButton
+                                                                    asChild
+                                                                    isActive={pathname === sub.href}
+                                                                >
+                                                                    <Link href={sub.href}>
+                                                                        <sub.icon className="h-3.5 w-3.5" />
+                                                                        <span>{sub.title}</span>
+                                                                    </Link>
+                                                                </SidebarMenuSubButton>
+                                                            </SidebarMenuSubItem>
+                                                        ))}
+                                                    </SidebarMenuSub>
+                                                </CollapsibleContent>
+                                            </SidebarMenuItem>
+                                        </Collapsible>
+                                    </>
+                                )}
                             </SidebarMenu>
                         </SidebarGroupContent>
                     </SidebarGroup>
@@ -186,18 +267,32 @@ export function AppSidebar() {
 
                     <SidebarSeparator />
 
-                    {/* Admin sprocket — only visible if admin */}
+                    {/* Admin button — changes based on context */}
                     {isAdmin && (
                         <>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="w-full justify-start gap-2"
-                                onClick={() => setSettingsOpen(true)}
-                            >
-                                <Settings className="h-4 w-4" />
-                                <span className="text-sm">Admin Settings</span>
-                            </Button>
+                            {pathname.startsWith('/admin') ? (
+                                <Link href="/">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="w-full justify-start gap-2"
+                                    >
+                                        <HomeIcon className="h-4 w-4" />
+                                        <span className="text-sm">Visit Site</span>
+                                    </Button>
+                                </Link>
+                            ) : (
+                                <Link href="/admin">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="w-full justify-start gap-2"
+                                    >
+                                        <Cog6ToothIcon className="h-4 w-4" />
+                                        <span className="text-sm">Admin Settings</span>
+                                    </Button>
+                                </Link>
+                            )}
                             <SidebarSeparator />
                         </>
                     )}
@@ -211,12 +306,12 @@ export function AppSidebar() {
                     >
                         {user ? (
                             <>
-                                <LogOut className="h-4 w-4" />
+                                <ArrowLeftOnRectangleIcon className="h-4 w-4" />
                                 <span className="text-sm">Log Out</span>
                             </>
                         ) : (
                             <>
-                                <LogIn className="h-4 w-4" />
+                                <ArrowRightOnRectangleIcon className="h-4 w-4" />
                                 <span className="text-sm">Sign In</span>
                             </>
                         )}

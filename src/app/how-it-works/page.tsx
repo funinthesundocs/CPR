@@ -1,4 +1,4 @@
-import { Scale, Search, Clock, Vote, FileCheck, Archive } from 'lucide-react'
+import { ScaleIcon, MagnifyingGlassIcon, ClockIcon, CheckBadgeIcon, DocumentCheckIcon, ArchiveBoxIcon } from '@heroicons/react/24/outline'
 
 const steps = [
     {
@@ -7,7 +7,7 @@ const steps = [
         subtitle: 'Every Case Starts with More than One Claim',
         description:
             'The Court of Public Record requires at least two independent claims before opening a case. This protects against personal vendettas and ensures patterns of behavior are documented, not isolated grievances. Every accusation is reviewed for basic credibility before proceeding.',
-        icon: Scale,
+        icon: ScaleIcon,
     },
     {
         number: 2,
@@ -15,7 +15,7 @@ const steps = [
         subtitle: 'A Case Becomes Live',
         description:
             'Once verified, a case is assigned a unique Case ID and given a permanent URL on the platform. The case becomes publicly accessible, allowing additional victims to come forward and add their testimony. All submissions are timestamped and attributed.',
-        icon: Search,
+        icon: MagnifyingGlassIcon,
     },
     {
         number: 3,
@@ -23,7 +23,7 @@ const steps = [
         subtitle: 'Building the Chronological Record',
         description:
             'Victims, witnesses, and investigators collaboratively build a chronological timeline of events, interactions, and financial flows. Each entry is tagged with a date, location, and supporting evidence. The timeline reveals patterns that isolated victims could never see alone.',
-        icon: Clock,
+        icon: ClockIcon,
     },
     {
         number: 4,
@@ -31,7 +31,7 @@ const steps = [
         subtitle: 'Evidence Presented for Public Review',
         description:
             'The compiled evidence is presented for public review. Community members can examine the timeline, read testimonies, and view supporting documents. The community can vote on the validity of specific claims, creating a transparent consensus.',
-        icon: Vote,
+        icon: CheckBadgeIcon,
     },
     {
         number: 5,
@@ -39,7 +39,7 @@ const steps = [
         subtitle: 'Patterns Documented into a Formal Case File',
         description:
             'Confirmed patterns of behavior are documented into a formal Case File. This includes the defendant profile, verified timeline, victim testimonies, and supporting evidence. The record becomes a comprehensive reference for anyone researching the individual.',
-        icon: FileCheck,
+        icon: DocumentCheckIcon,
     },
     {
         number: 6,
@@ -47,7 +47,7 @@ const steps = [
         subtitle: 'Permanently Preserved',
         description:
             'The completed record is permanently preserved, ensuring the truth is accessible to future partners, employers, investors, or authorities. The Court of Public Record exists so that no one has to discover the truth the hard way — alone.',
-        icon: Archive,
+        icon: ArchiveBoxIcon,
     },
 ]
 

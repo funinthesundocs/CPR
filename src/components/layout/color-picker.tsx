@@ -2,8 +2,8 @@
 
 import { useTheme } from '@/lib/theme/use-theme'
 import { THEME_COLORS, type ThemeColor } from '@/lib/theme/colors'
-import { Palette } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { PaintBrushIcon } from '@heroicons/react/24/outline'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -18,7 +18,7 @@ export function ColorPicker() {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="w-full justify-start gap-2">
-                    <Palette className="h-4 w-4" />
+                    <PaintBrushIcon className="h-4 w-4" />
                     <span className="text-sm">{THEME_COLORS[color].label}</span>
                     <span
                         className="ml-auto h-3 w-3 rounded-full"
