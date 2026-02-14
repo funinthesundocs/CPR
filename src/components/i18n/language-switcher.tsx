@@ -1,7 +1,7 @@
 'use client'
 
 import { useI18n, SUPPORTED_LOCALES, LOCALE_NAMES, type Locale } from '@/i18n'
-import { GlobeAltIcon } from '@heroicons/react/24/outline'
+import { GlobeAmericasIcon } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 
 export function LanguageSwitcher() {
@@ -18,11 +18,11 @@ export function LanguageSwitcher() {
         <div className="relative">
             <button
                 onClick={() => setOpen(!open)}
-                className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm hover:bg-muted transition-colors"
+                className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-muted transition-colors"
                 title="Change language"
             >
-                <GlobeAltIcon className="h-4 w-4" />
-                <span className="text-xs">{displayName}</span>
+                <GlobeAmericasIcon className="h-4 w-4" />
+                <span className="text-sm font-medium">{displayName}</span>
             </button>
 
             {open && (
