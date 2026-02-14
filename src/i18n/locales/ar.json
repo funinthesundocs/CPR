@@ -1,0 +1,33 @@
+{
+    "common": {
+        "appName": "محكمة السجل العام",
+        "home": "الرئيسية",
+        "cases": "القضايا",
+        "defendants": "المتهمون",
+        "vote": "تصويت",
+        "profile": "الملف الشخصي",
+        "login": "تسجيل الدخول",
+        "signup": "إنشاء حساب",
+        "logout": "تسجيل الخروج",
+        "loading": "جاري التحميل...",
+        "save": "حفظ",
+        "cancel": "إلغاء",
+        "submit": "إرسال",
+        "back": "رجوع",
+        "next": "التالي",
+        "search": "بحث",
+        "filter": "تصفية",
+        "noResults": "لم يتم العثور على نتائج",
+        "error": "حدث خطأ ما",
+        "success": "!نجاح"
+    },
+    "voting": {
+        "title": "أدلِ بصوتك",
+        "guiltAssessment": "تقييم الذنب",
+        "innocent": "بريء",
+        "uncertain": "غير مؤكد",
+        "guilty": "مذنب",
+        "submitVote": "إرسال التصويت",
+        "voteRecorded": "تم تسجيل التصويت"
+    }
+}

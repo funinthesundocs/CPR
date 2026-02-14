@@ -1,0 +1,62 @@
+{
+    "common": {
+        "appName": "Tribunal Público",
+        "home": "Inicio",
+        "cases": "Casos",
+        "defendants": "Acusados",
+        "vote": "Votar",
+        "profile": "Perfil",
+        "login": "Iniciar sesión",
+        "signup": "Crear cuenta",
+        "logout": "Cerrar sesión",
+        "loading": "Cargando...",
+        "save": "Guardar",
+        "cancel": "Cancelar",
+        "submit": "Enviar",
+        "back": "Atrás",
+        "next": "Siguiente",
+        "search": "Buscar",
+        "filter": "Filtrar",
+        "noResults": "No se encontraron resultados",
+        "error": "Algo salió mal",
+        "success": "¡Éxito!"
+    },
+    "auth": {
+        "signInTitle": "Inicia sesión en tu cuenta",
+        "signUpTitle": "Crea una nueva cuenta",
+        "email": "Correo electrónico",
+        "password": "Contraseña",
+        "confirmPassword": "Confirmar contraseña",
+        "forgotPassword": "¿Olvidaste tu contraseña?",
+        "checkEmail": "¡Revisa tu correo para un enlace de confirmación!",
+        "passwordMismatch": "Las contraseñas no coinciden",
+        "passwordTooShort": "La contraseña debe tener al menos 6 caracteres"
+    },
+    "cases": {
+        "browseTitle": "Explorar Casos",
+        "browseDescription": "Casos públicos presentados contra individuos y entidades",
+        "fileCase": "Presentar un Caso",
+        "caseNumber": "Número de Caso",
+        "defendant": "Acusado",
+        "status": "Estado",
+        "filedOn": "Presentado el",
+        "damages": "Daños",
+        "story": "Historia",
+        "timeline": "Cronología",
+        "evidence": "Evidencia",
+        "team": "Equipo",
+        "responses": "Respuestas",
+        "voteNow": "Votar Ahora",
+        "castYourVote": "Emite Tu Voto",
+        "exportPDF": "Exportar PDF"
+    },
+    "voting": {
+        "title": "Emite Tu Voto",
+        "guiltAssessment": "Evaluación de Culpabilidad",
+        "innocent": "Inocente",
+        "uncertain": "Incierto",
+        "guilty": "Culpable",
+        "submitVote": "Enviar Voto",
+        "voteRecorded": "Voto Registrado"
+    }
+}

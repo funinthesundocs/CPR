@@ -1,0 +1,35 @@
+PHASE 2: Build Core Next.js Pages using Phase 1 database.
+
+TASK:
+1. Create /defendants/[slug] page:
+   - Fetch from defendant_page_cache.page_data (jsonb)
+   - Display: Photo, name, aliases, timeline, linked cases list
+   - ISR: Revalidate every 30 seconds
+   - Mobile-first Tailwind, shadcn/ui components
+   
+2. Create /cases/new form (12-step wizard):
+   - Step 1: Search defendants (trigram fuzzy on full_name)
+   - Steps 2-12: Save to case_drafts.form_data (jsonb) on each step
+   - Auto-save every 30 seconds
+   - Progress indicator
+   - Submit button on Step 12
+   
+3. Create / (home):
+   - Hero section
+   - Trending defendants (top 10 by case count)
+   - How it works (6-step explanation)
+   - Live stats counter
+
+4. Stub API routes:
+   - /api/cases/draft (POST to case_drafts)
+   - /api/defendants/search (GET with fuzzy match)
+   - /api/cases/submit (POST to cases, trigger convergence check)
+
+OUTPUT:
+- Full Next.js app/ directory structure
+- React Server Components where possible
+- Tailwind + shadcn/ui styled
+- Deploy preview link (Vercel/Netlify)
+
+STACK: Next.js 16 App Router, React Server Components, Tailwind CSS
+GOAL: Working defendant page + case submission form

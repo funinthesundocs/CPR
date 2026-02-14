@@ -1,0 +1,37 @@
+PHASE 3: Add voting system + Supabase Realtime.
+
+TASK:
+1. Create /cases/[case-number]/vote page:
+   - 1-10 slider for guilt_score
+   - Yes/No toggle for nominal_approved
+   - Optional punitive_amount input (max 2x nominal)
+   - Text field for justification
+   - Submit → INSERT into votes table
+   - Check UNIQUE(case_id, voter_id)
+   
+2. Verdict computation (Edge Function):
+   - Trigger when: 400 votes OR voting_deadline reached
+   - Calculate: AVG(guilt_score)
+   - Verdict: ≥6 = "guilty", ≤5 = "innocent"
+   - INSERT into verdict_results
+   - Update cases.status to 'verdict_guilty' or 'verdict_innocent'
+   
+3. Supabase Realtime setup:
+   - Subscribe to notifications table for current user
+   - Subscribe to messages table for conversations
+   - Display toast notification on new items
+   - Badge count on header icon
+   
+4. Anti-gaming stubs:
+   - CAPTCHA on vote submit (Turnstile)
+   - Scroll tracking (engagement proof)
+   - IP fingerprint storage
+
+OUTPUT:
+- Working voting page
+- Real-time notifications
+- Verdict auto-computation demo
+- Updated deploy link
+
+STACK: Supabase Edge Functions, Realtime subscriptions, Cloudflare Turnstile
+GOAL: End-to-end vote → verdict flow

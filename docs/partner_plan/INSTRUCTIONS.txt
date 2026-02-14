@@ -1,0 +1,244 @@
+# CPR BUILD KIT — INSTRUCTIONS
+**Total Time**: 90 minutes | **Output**: Working prototype with demo case
+
+---
+
+## 📂 FILES YOU HAVE
+1. **CPR-AI-Ready-Spec.md** — Full reference spec (upload to Antigravity)
+2. **Phase1-Database-Schema.txt** — Copy-paste prompt #1
+3. **Phase2-Core-Pages.txt** — Copy-paste prompt #2
+4. **Phase3-Voting-Realtime.txt** — Copy-paste prompt #3
+5. **Phase4-Safety-i18n.txt** — Copy-paste prompt #4
+6. **This file** — Your step-by-step guide
+
+---
+
+## 🚀 STEP-BY-STEP INSTRUCTIONS
+
+### SETUP (5 minutes)
+1. Go to **Antigravity.ai** → Click "New Project"
+2. Name it: **"CPR Court"**
+3. Click **"Upload files"** → Upload **CPR-AI-Ready-Spec.md**
+4. Connect your **Supabase project**:
+   - Go to Supabase dashboard → Settings → API
+   - Copy "Project URL"
+   - Paste into Antigravity connection settings
+5. ✅ Ready to start Phase 1
+
+---
+
+### PHASE 1: DATABASE (15 minutes)
+**What you're building**: 42-table PostgreSQL schema with indexes and RLS policies
+
+**Action**:
+1. Open **Phase1-Database-Schema.txt**
+2. **Copy entire contents** (Ctrl+A, Ctrl+C)
+3. **Paste into Antigravity chat** → Press Enter
+4. **Wait 2-3 minutes** for Antigravity to generate
+5. Review output:
+   - [ ] schema.sql file shown?
+   - [ ] Migration files created?
+   - [ ] ERD diagram displayed?
+   - [ ] Deploy preview link provided?
+
+**Test**:
+- Click deploy link
+- Run: `SELECT * FROM defendants LIMIT 1;`
+- Should return empty result (no errors)
+
+**If broken**: Reply in chat:
+```
+Fix schema: Match CPR spec Layer A exactly. Check all 42 tables are present.
+```
+
+**When working**: Copy schema.sql + deploy link → Email to project owner
+
+---
+
+### PHASE 2: PAGES & FORMS (20 minutes)
+**What you're building**: Defendant page, case submission wizard, homepage
+
+**Action**:
+1. In **same Antigravity chat**, type:
+```
+Phase 1 complete. Ready for Phase 2.
+```
+2. Open **Phase2-Core-Pages.txt**
+3. **Copy entire contents** → Paste into chat → Enter
+4. **Wait 3-5 minutes** for code generation
+5. Review output:
+   - [ ] Next.js app/ folder structure shown?
+   - [ ] /defendants/[slug] page created?
+   - [ ] /cases/new wizard created?
+   - [ ] Deploy preview link provided?
+
+**Test**:
+- Click deploy link
+- Navigate to homepage → Should load
+- Try case form → Should save draft (check browser console)
+
+**If broken**: Reply:
+```
+Fix: Use Phase 1 schema. Defendant page should fetch from defendant_page_cache table.
+```
+
+**When working**: Share deploy URL
+
+---
+
+### PHASE 3: VOTING & REALTIME (20 minutes)
+**What you're building**: Voting system, verdict computation, live notifications
+
+**Action**:
+1. Type in chat:
+```
+Phase 2 looks good. Proceed to Phase 3.
+```
+2. Open **Phase3-Voting-Realtime.txt**
+3. **Copy entire contents** → Paste → Enter
+4. **Wait 3-5 minutes**
+5. Review output:
+   - [ ] /cases/[case-number]/vote page created?
+   - [ ] Edge Function for verdict computation?
+   - [ ] Realtime subscriptions configured?
+   - [ ] CAPTCHA integrated?
+
+**Test**:
+- Submit test vote → Check votes table
+- Add 400 votes (or wait for deadline) → Verdict should compute
+- Send notification → Should appear in realtime
+
+**If broken**: Reply:
+```
+Fix: Verdict should compute when guilt_score average ≥6 = guilty, ≤5 = innocent
+```
+
+**When working**: Share updated deploy URL
+
+---
+
+### PHASE 4: SAFETY & LANGUAGES (15 minutes)
+**What you're building**: Dead Man's Switch, PDF export, 7 languages, PWA
+
+**Action**:
+1. Type in chat:
+```
+Phase 3 working. Final phase: Phase 4.
+```
+2. Open **Phase4-Safety-i18n.txt**
+3. **Copy entire contents** → Paste → Enter
+4. **Wait 3-5 minutes**
+5. Review output:
+   - [ ] /profile/safety page created?
+   - [ ] SHA-256 hash on file upload?
+   - [ ] Language switcher in header?
+   - [ ] PWA manifest configured?
+   - [ ] PDF export working?
+
+**Test**:
+- Activate Dead Man's Switch → Check safety_switches table
+- Upload evidence → Verify hash stored
+- Switch language → UI should translate
+- Install PWA on mobile → Should prompt
+- Export PDF → Should download with QR code
+
+**If broken**: Reply:
+```
+Fix: Safety switch should check next_checkin_due and alert emergency contacts after max misses.
+```
+
+**When working**: Share **FINAL deploy URL**
+
+---
+
+## ✅ COMPLETION CHECKLIST
+
+After Phase 4, you should have:
+- ✅ 42 tables in Supabase
+- ✅ Working defendant page (/defendants/colin-james-bradley)
+- ✅ Case submission wizard (/cases/new)
+- ✅ Voting system with verdict computation
+- ✅ Realtime notifications
+- ✅ Dead Man's Switch safety system
+- ✅ 7-language support
+- ✅ PWA installable
+- ✅ PDF case export
+
+**Total build time**: ~90 minutes
+**Final action**: Email project owner with deploy link + "CPR prototype complete"
+
+---
+
+## 🆘 TROUBLESHOOTING
+
+### "Antigravity says 'Too many tables'"
+**Reply**:
+```
+Focus on Layers A-C first (20 core tables). We'll add remaining layers after.
+```
+
+### "RLS errors blocking queries"
+**Reply**:
+```
+Temporarily disable RLS on all tables. We'll add policies after pages work.
+```
+
+### "Pages not loading"
+**Reply**:
+```
+Check Phase 1 schema deployed correctly. Verify Supabase connection URL is correct.
+```
+
+### "Code not matching spec"
+**Reply**:
+```
+Re-read CPR-AI-Ready-Spec.md section [X]. Match that exactly.
+```
+
+### "Stuck for 5+ minutes"
+**Reply**:
+```
+Show me what you have so far. Generate remaining code in next response.
+```
+
+---
+
+## 📧 FINAL EMAIL TO PROJECT OWNER
+
+Subject: **CPR Prototype Complete — Ready for Review**
+
+Body:
+```
+CPR: Court of Public Record prototype is complete.
+
+✅ Phase 1: Database (42 tables) — [Schema link]
+✅ Phase 2: Core pages (defendant + case form)
+✅ Phase 3: Voting + realtime
+✅ Phase 4: Safety + i18n
+
+🔗 Live Demo: [Final deploy URL]
+
+Test Defendant: /defendants/colin-james-bradley
+Test Flow: Register → Create case → Vote → View verdict
+
+Total build time: 90 minutes
+Tech stack: Next.js 16 + Supabase
+
+Ready for your review and feedback.
+```
+
+---
+
+## 🎯 NEXT STEPS AFTER PROTOTYPE
+
+Once project owner reviews:
+1. **Open decisions**: Convergence fuzzy matching? Case numbering format?
+2. **Seed data**: Add demo defendants + cases for testing
+3. **Admin panel**: Build full /admin dashboard
+4. **Polish**: Error handling, loading states, empty states
+5. **Testing**: User testing with 10-20 people
+6. **Legal**: Terms of service, privacy policy
+7. **Launch**: Private beta → public release
+
+---
+

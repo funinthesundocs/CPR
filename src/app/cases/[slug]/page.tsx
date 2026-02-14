@@ -1,180 +1,412 @@
-import { GlobeAltIcon, UsersIcon, CalendarIcon, BuildingOfficeIcon, MapPinIcon, ShieldExclamationIcon, DocumentTextIcon, CheckBadgeIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline'
+import { createClient } from '@/lib/supabase/server'
+import { notFound } from 'next/navigation'
+import Link from 'next/link'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
+import { CaseComments } from './case-comments'
+import type { Metadata } from 'next'
 
-// This will eventually come from Supabase by slug
-const caseData = {
-    name: 'Colin James Bradley',
-    alias: 'Cole',
-    businesses: ['Austyle Building Pty Ltd', 'Blue Invest Premium Consultants Pty Ltd'],
-    yearsActive: '2019–2025',
-    confirmedVictims: 4,
-    nations: ['Australia', 'Vietnam', 'Thailand', 'UAE', 'Indonesia'],
-    summary: `Colin James Bradley, operating under the alias "Cole," executed a global fraud scheme spanning multiple countries and years. Beginning in Australia, Bradley established a pattern of financial manipulation through fabricated business ventures, including a fraudulent zero-fuel propulsion technology company called Marine Warrior Superyachts.
+export const revalidate = 30
 
-His modus operandi involved presenting himself as a connected businessman with access to multi-million dollar yacht contracts and revolutionary marine technology. Victims were drawn in through elaborate presentations, fake contracts, and promises of substantial returns on investment.
+type PageProps = { params: Promise<{ slug: string }> }
 
-Bradley's operations spanned from Vietnam to Australia, Thailand, and the UAE, with each jurisdiction change occurring after mounting debts and growing suspicion from victims. The collected evidence reveals a consistent pattern: establish credibility, secure financial commitments, create elaborate excuses for delays, then relocate internationally when confronted.`,
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    const { slug } = await params
+    const supabase = await createClient()
+    const { data: caseData } = await supabase
+        .from('cases')
+        .select('case_number, defendants(full_name)')
+        .eq('case_number', slug)
+        .single()
 
-    timeline: [
-        { date: 'Feb 2014', location: 'Australia', event: 'Vehicle Refinancing — first documented financial manipulation' },
-        { date: 'Mar 2014', location: 'Australia', event: 'Lent Colin $10,000 based on promises of repayment from pending contracts' },
-        { date: 'Jan 2015', location: 'Australia', event: 'Started Big Rig Tyres — a business venture that would later collapse' },
-        { date: 'Jun 2015', location: 'Australia', event: '$60,000 loan against house — escalating financial commitments from victims' },
-        { date: '2019', location: 'Vietnam', event: 'Entered victim\'s life in Da Nang, presenting Marine Warrior Superyachts concept' },
-        { date: '2020', location: 'Vietnam/Australia', event: 'Pitched zero-fuel propulsion technology with fabricated technical specifications' },
-        { date: '2021', location: 'Thailand', event: 'Relocated to Thailand after mounting pressure from Vietnamese and Australian contacts' },
-        { date: '2023', location: 'UAE', event: 'Moved operations to Dubai, continuing the same pattern with new targets' },
-        { date: '2025', location: 'Multi-jurisdictional', event: 'Case documented and verified by multiple independent victims' },
-    ],
+    if (!caseData) return { title: 'Case Not Found' }
+    return {
+        title: `Case ${caseData.case_number} — Court of Public Record`,
+        description: `Case ${caseData.case_number} vs. ${(caseData.defendants as any)?.full_name}`,
+    }
 }
 
-export default function CaseDetailPage() {
+export default async function CaseDetailPage({ params }: PageProps) {
+    const { slug } = await params
+    const supabase = await createClient()
+
+    // Fetch case with defendant
+    const { data: caseData, error } = await supabase
+        .from('cases')
+        .select(`
+      *,
+      defendants (*)
+    `)
+        .eq('case_number', slug)
+        .single()
+
+    if (error || !caseData) notFound()
+
+    // Parallel queries
+    const [
+        { data: timeline },
+        { data: evidence },
+        { data: witnesses },
+        { data: verdict },
+        { data: comments },
+        { data: roles },
+        { data: responses },
+    ] = await Promise.all([
+        supabase.from('timeline_events').select('*').eq('case_id', caseData.id).order('sort_order'),
+        supabase.from('evidence').select('*').eq('case_id', caseData.id).order('created_at'),
+        supabase.from('witnesses').select('*').eq('case_id', caseData.id),
+        supabase.from('verdict_results').select('*').eq('case_id', caseData.id).maybeSingle(),
+        supabase.from('comments').select('*, user_profiles(display_name, avatar_url)').eq('commentable_type', 'case').eq('commentable_id', caseData.id).eq('is_hidden', false).order('created_at', { ascending: false }).limit(20),
+        supabase.from('case_roles').select('*, user_profiles(display_name, avatar_url)').eq('case_id', caseData.id).eq('status', 'approved'),
+        supabase.from('defendant_responses').select('*').in('case_id', [caseData.id]).order('created_at', { ascending: false }),
+    ])
+
+    const defendant = caseData.defendants as any
+    const narrativeStory = caseData.story_narrative as any
+
+    const statusColors: Record<string, string> = {
+        pending_convergence: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400',
+        admin_review: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+        investigation: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
+        judgment: 'bg-orange-500/10 text-orange-600 dark:text-orange-400',
+        verdict_guilty: 'bg-red-500/10 text-red-700 dark:text-red-400',
+        verdict_innocent: 'bg-green-500/10 text-green-600 dark:text-green-400',
+        restitution: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400',
+        resolved: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+        outstanding: 'bg-red-500/10 text-red-700 dark:text-red-400',
+        draft: 'bg-muted text-muted-foreground',
+    }
+
     return (
-        <div className="space-y-8 max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto space-y-8">
             {/* Case Header */}
-            <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                    <span className="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
-                        Active
-                    </span>
-                    <span className="text-sm text-muted-foreground">Multi-jurisdictional Investigation</span>
+            <div className="rounded-2xl border bg-gradient-to-br from-card via-card to-muted/30 p-8">
+                <div className="flex flex-col md:flex-row gap-6 items-start">
+                    {/* Defendant avatar */}
+                    <Link href={`/defendants/${defendant?.slug || ''}`}>
+                        {defendant?.photo_url ? (
+                            <img src={defendant.photo_url} alt={defendant.full_name}
+                                className="h-20 w-20 rounded-2xl object-cover ring-4 ring-border shadow-lg hover:ring-primary/50 transition-all" />
+                        ) : (
+                            <div className="h-20 w-20 rounded-2xl bg-muted flex items-center justify-center text-2xl font-bold text-muted-foreground ring-4 ring-border shadow-lg hover:ring-primary/50 transition-all">
+                                {defendant?.full_name?.charAt(0)?.toUpperCase() || '?'}
+                            </div>
+                        )}
+                    </Link>
+
+                    <div className="flex-1 space-y-2">
+                        <div className="flex items-start justify-between gap-4">
+                            <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="font-mono text-lg font-bold">{caseData.case_number}</span>
+                                    <Badge variant="outline" className={`capitalize ${statusColors[caseData.status] || ''}`}>
+                                        {caseData.status.replace(/_/g, ' ')}
+                                    </Badge>
+                                </div>
+                                <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
+                                    vs. <Link href={`/defendants/${defendant?.slug || ''}`} className="hover:text-primary transition-colors">
+                                        {defendant?.full_name || 'Unknown'}
+                                    </Link>
+                                </h1>
+                            </div>
+                        </div>
+
+                        {/* Case types */}
+                        {caseData.case_types && caseData.case_types.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5">
+                                {caseData.case_types.map((type: string, i: number) => (
+                                    <Badge key={i} variant="secondary" className="text-xs capitalize">{type.replace(/_/g, ' ')}</Badge>
+                                ))}
+                            </div>
+                        )}
+
+                        <p className="text-sm text-muted-foreground">
+                            Filed {new Date(caseData.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                            {defendant?.location && <span> · 📍 {defendant.location}</span>}
+                        </p>
+                    </div>
                 </div>
-                <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-                    {caseData.name}
-                </h1>
-                <p className="text-muted-foreground">
-                    Alias: &ldquo;{caseData.alias}&rdquo;
-                </p>
+
+                {/* Stats */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
+                    <StatBox label="Damages Claimed" value={caseData.nominal_damages_claimed ? `$${caseData.nominal_damages_claimed.toLocaleString()}` : '$0'} />
+                    <StatBox label="Evidence" value={(evidence || []).length.toString()} />
+                    <StatBox label="Witnesses" value={(witnesses || []).length.toString()} />
+                    <StatBox label="Team Members" value={(roles || []).length.toString()} />
+                </div>
             </div>
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {[
-                    { icon: BuildingOfficeIcon, label: 'Businesses', value: String(caseData.businesses.length) },
-                    { icon: CalendarIcon, label: 'Years Active', value: caseData.yearsActive },
-                    { icon: UsersIcon, label: 'Confirmed Victims', value: String(caseData.confirmedVictims) },
-                    { icon: GlobeAltIcon, label: 'Nations', value: String(caseData.nations.length) },
-                ].map((stat) => (
-                    <div key={stat.label} className="rounded-xl border bg-card p-4 text-center">
-                        <stat.icon className="h-5 w-5 mx-auto mb-2" style={{ color: 'hsl(var(--primary))' }} />
-                        <p className="text-xl font-bold">{stat.value}</p>
-                        <p className="text-xs text-muted-foreground">{stat.label}</p>
+            {/* Verdict Banner (if exists) */}
+            {verdict && (
+                <div className={`rounded-xl p-6 text-center space-y-2 border-2 ${verdict.verdict === 'guilty'
+                    ? 'bg-red-500/5 border-red-500/30'
+                    : 'bg-green-500/5 border-green-500/30'
+                    }`}>
+                    <p className="text-3xl font-extrabold uppercase tracking-wider">
+                        {verdict.verdict === 'guilty' ? '⚠️ GUILTY' : '✅ INNOCENT'}
+                    </p>
+                    <p className="text-lg font-bold">
+                        Average Score: {verdict.average_guilt_score?.toFixed(1)}/10
+                        <span className="text-muted-foreground font-normal ml-2">({verdict.total_votes} votes)</span>
+                    </p>
+                    {verdict.total_restitution_awarded > 0 && (
+                        <p className="text-base font-medium text-muted-foreground">
+                            Restitution Awarded: ${verdict.total_restitution_awarded.toLocaleString()}
+                        </p>
+                    )}
+                </div>
+            )}
+
+            {/* Tabbed Content */}
+            <Tabs defaultValue="story" className="space-y-6">
+                <TabsList className="grid w-full grid-cols-5">
+                    <TabsTrigger value="story">Story</TabsTrigger>
+                    <TabsTrigger value="timeline">Timeline</TabsTrigger>
+                    <TabsTrigger value="evidence">Evidence</TabsTrigger>
+                    <TabsTrigger value="team">Team</TabsTrigger>
+                    <TabsTrigger value="responses">Responses</TabsTrigger>
+                </TabsList>
+
+                {/* Story Tab */}
+                <TabsContent value="story" className="space-y-6">
+                    {narrativeStory?.title && (
+                        <h2 className="text-xl font-bold">&ldquo;{narrativeStory.title}&rdquo;</h2>
+                    )}
+
+                    {/* Relationship */}
+                    {caseData.relationship_narrative && (
+                        <NarrativeBlock title="🔗 The Connection" data={caseData.relationship_narrative as any} fields={[
+                            ['type', 'Relationship'], ['duration', 'Duration'], ['how_met', 'How They Met']
+                        ]} />
+                    )}
+
+                    {/* Promise */}
+                    {caseData.promise_narrative && (
+                        <NarrativeBlock title="🤝 The Promise" data={caseData.promise_narrative as any} fields={[
+                            ['what', 'What Was Promised'], ['when', 'When'], ['evidence', 'Evidence of Promise']
+                        ]} />
+                    )}
+
+                    {/* Betrayal */}
+                    {caseData.betrayal_narrative && (
+                        <NarrativeBlock title="💔 The Betrayal" data={caseData.betrayal_narrative as any} fields={[
+                            ['what_happened', 'What Happened'], ['when_discovered', 'When Discovered'], ['how_discovered', 'How Discovered']
+                        ]} />
+                    )}
+
+                    {/* Full Story */}
+                    {narrativeStory?.body && (
+                        <Card>
+                            <CardHeader><CardTitle>📖 Full Narrative</CardTitle></CardHeader>
+                            <CardContent>
+                                <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">
+                                    {narrativeStory.body}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* Impact */}
+                    {caseData.personal_impact && (
+                        <NarrativeBlock title="💥 Impact" data={caseData.personal_impact as any} fields={[
+                            ['financial_amount', 'Financial Loss'], ['financial_description', 'Financial Details'],
+                            ['emotional', 'Emotional Impact'], ['physical', 'Physical Impact']
+                        ]} />
+                    )}
+
+                    {/* Legal Actions */}
+                    {caseData.legal_actions && (
+                        <NarrativeBlock title="⚖️ Legal Actions Taken" data={caseData.legal_actions as any} fields={[
+                            ['police_report', 'Police Report'], ['lawyer', 'Lawyer Consulted'],
+                            ['court_case', 'Court Case Filed'], ['description', 'Details']
+                        ]} />
+                    )}
+                </TabsContent>
+
+                {/* Timeline Tab */}
+                <TabsContent value="timeline" className="space-y-4">
+                    {!timeline || timeline.length === 0 ? (
+                        <EmptyState>No timeline events</EmptyState>
+                    ) : (
+                        <div className="relative pl-6 space-y-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-px before:bg-border">
+                            {timeline.map((event) => (
+                                <div key={event.id} className="relative">
+                                    <div className="absolute -left-6 top-1 h-4 w-4 rounded-full border-2 border-primary bg-background" />
+                                    <Card>
+                                        <CardContent className="p-4 space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <Badge variant="outline" className="text-xs capitalize">{event.event_type.replace(/_/g, ' ')}</Badge>
+                                                <span className="text-xs text-muted-foreground">{event.date_or_year}</span>
+                                            </div>
+                                            <p className="text-sm">{event.description}</p>
+                                            {(event.city || event.country) && (
+                                                <p className="text-xs text-muted-foreground">📍 {[event.city, event.country].filter(Boolean).join(', ')}</p>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </TabsContent>
+
+                {/* Evidence Tab */}
+                <TabsContent value="evidence" className="space-y-4">
+                    {!evidence || evidence.length === 0 ? (
+                        <EmptyState>No evidence submitted yet</EmptyState>
+                    ) : (
+                        <div className="grid gap-4 md:grid-cols-2">
+                            {evidence.map((ev) => (
+                                <Card key={ev.id}>
+                                    <CardContent className="p-4 space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm font-medium">{ev.label}</span>
+                                            <Badge variant="outline" className="text-xs capitalize">{ev.category}</Badge>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground">{ev.description}</p>
+                                        {ev.is_verified && (
+                                            <Badge className="bg-green-500/10 text-green-600 dark:text-green-400 text-xs">
+                                                ✅ Verified
+                                            </Badge>
+                                        )}
+                                        {ev.sha256_hash && (
+                                            <p className="text-xs text-muted-foreground/50 font-mono truncate">
+                                                SHA-256: {ev.sha256_hash}
+                                            </p>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    )}
+                </TabsContent>
+
+                {/* Team Tab */}
+                <TabsContent value="team" className="space-y-4">
+                    {!roles || roles.length === 0 ? (
+                        <EmptyState>No team members assigned</EmptyState>
+                    ) : (
+                        <div className="grid gap-3">
+                            {roles.map((role) => {
+                                const profile = (role as any).user_profiles
+                                return (
+                                    <Card key={role.id}>
+                                        <CardContent className="p-4 flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                {profile?.avatar_url ? (
+                                                    <img src={profile.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" />
+                                                ) : (
+                                                    <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-sm font-bold">
+                                                        {profile?.display_name?.charAt(0) || '?'}
+                                                    </div>
+                                                )}
+                                                <div>
+                                                    <p className="text-sm font-medium">{profile?.display_name || 'Unknown'}</p>
+                                                    <p className="text-xs text-muted-foreground capitalize">{role.role.replace(/_/g, ' ')}</p>
+                                                </div>
+                                            </div>
+                                            <p className="text-xs text-muted-foreground">
+                                                Joined {new Date(role.created_at).toLocaleDateString()}
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+                                )
+                            })}
+                        </div>
+                    )}
+                    <div className="text-center pt-4">
+                        <Button variant="outline">Join This Case</Button>
+                    </div>
+                </TabsContent>
+
+                {/* Responses Tab */}
+                <TabsContent value="responses" className="space-y-4">
+                    <div className="rounded-lg border p-4 bg-muted/20 mb-4">
+                        <p className="text-sm text-muted-foreground">
+                            <strong>Right of Reply:</strong> The defendant may respond to claims. Responses appear here.
+                        </p>
+                    </div>
+                    {!responses || responses.length === 0 ? (
+                        <EmptyState>No defendant responses</EmptyState>
+                    ) : (
+                        responses.map((resp) => (
+                            <Card key={resp.id}>
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="text-base">{resp.subject_heading}</CardTitle>
+                                    <p className="text-xs text-muted-foreground">
+                                        {new Date(resp.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                    </p>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: resp.body_html }} />
+                                </CardContent>
+                            </Card>
+                        ))
+                    )}
+                </TabsContent>
+            </Tabs>
+
+            {/* Vote CTA */}
+            {['judgment', 'investigation', 'pending_convergence'].includes(caseData.status) && (
+                <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
+                    <CardContent className="p-6 flex flex-col sm:flex-row items-center gap-4">
+                        <div className="text-4xl">⚖️</div>
+                        <div className="flex-1 text-center sm:text-left">
+                            <h3 className="text-lg font-bold">Cast Your Vote</h3>
+                            <p className="text-sm text-muted-foreground">
+                                This case is open for public judgment. Review the evidence and submit your verdict.
+                            </p>
+                        </div>
+                        <a href={`/vote?case=${caseData.id}`}>
+                            <Button size="lg" className="font-semibold">
+                                🗳️ Vote Now
+                            </Button>
+                        </a>
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* Comments Section */}
+            <Separator />
+            <CaseComments caseId={caseData.id} />
+        </div>
+    )
+}
+
+function StatBox({ label, value }: { label: string; value: string }) {
+    return (
+        <div className="rounded-xl border bg-card/50 p-3 text-center">
+            <p className="text-xl font-bold">{value}</p>
+            <p className="text-xs text-muted-foreground">{label}</p>
+        </div>
+    )
+}
+
+function NarrativeBlock({ title, data, fields }: { title: string; data: Record<string, any>; fields: [string, string][] }) {
+    const hasContent = fields.some(([key]) => data[key])
+    if (!hasContent) return null
+    return (
+        <Card>
+            <CardHeader className="pb-2"><CardTitle className="text-base">{title}</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+                {fields.map(([key, label]) => data[key] && (
+                    <div key={key}>
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">{label}</p>
+                        <p className="text-sm whitespace-pre-wrap capitalize">{String(data[key])}</p>
                     </div>
                 ))}
-            </div>
+            </CardContent>
+        </Card>
+    )
+}
 
-            {/* Linked Businesses */}
-            <div className="space-y-3">
-                <h2 className="text-lg font-semibold flex items-center gap-2">
-                    <BuildingOfficeIcon className="h-5 w-5" /> Linked Business Entities
-                </h2>
-                <div className="flex flex-wrap gap-2">
-                    {caseData.businesses.map((b) => (
-                        <span key={b} className="px-3 py-1.5 rounded-lg border bg-muted text-sm">
-                            {b}
-                        </span>
-                    ))}
-                </div>
-            </div>
-
-            {/* Nations */}
-            <div className="space-y-3">
-                <h2 className="text-lg font-semibold flex items-center gap-2">
-                    <MapPinIcon className="h-5 w-5" /> Jurisdictions
-                </h2>
-                <div className="flex flex-wrap gap-2">
-                    {caseData.nations.map((n) => (
-                        <span key={n} className="px-3 py-1.5 rounded-lg border bg-muted text-sm">
-                            {n}
-                        </span>
-                    ))}
-                </div>
-            </div>
-
-            <Separator />
-
-            {/* Case Summary */}
-            <div className="space-y-4">
-                <h2 className="text-xl font-semibold flex items-center gap-2">
-                    <ShieldExclamationIcon className="h-5 w-5" style={{ color: 'hsl(var(--primary))' }} />
-                    Case Summary
-                </h2>
-                <div className="rounded-xl border bg-card p-6 space-y-4">
-                    {caseData.summary.split('\n\n').map((paragraph, i) => (
-                        <p key={i} className="text-muted-foreground leading-relaxed">
-                            {paragraph}
-                        </p>
-                    ))}
-                </div>
-            </div>
-
-            <Separator />
-
-            {/* Timeline */}
-            <div className="space-y-6">
-                <h2 className="text-xl font-semibold flex items-center gap-2">
-                    <DocumentTextIcon className="h-5 w-5" style={{ color: 'hsl(var(--primary))' }} />
-                    Chronological Timeline
-                </h2>
-                <div className="relative">
-                    <div className="absolute left-4 top-0 bottom-0 w-px bg-border" />
-                    <div className="space-y-4">
-                        {caseData.timeline.map((entry, i) => (
-                            <div key={i} className="relative flex gap-4 pl-10">
-                                <div
-                                    className="absolute left-2.5 top-1.5 h-3 w-3 rounded-full border-2"
-                                    style={{ borderColor: 'hsl(var(--primary))', background: 'hsl(var(--background))' }}
-                                />
-                                <div className="flex-1 rounded-lg border bg-card p-4">
-                                    <div className="flex flex-wrap gap-2 mb-1">
-                                        <span className="text-sm font-semibold">{entry.date}</span>
-                                        <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                                            {entry.location}
-                                        </span>
-                                    </div>
-                                    <p className="text-sm text-muted-foreground">{entry.event}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-
-            <Separator />
-
-            {/* Evidence Vault & Community */}
-            <div className="grid md:grid-cols-2 gap-4">
-                <div className="rounded-xl border bg-card p-6 text-center space-y-3">
-                    <DocumentTextIcon className="h-8 w-8 mx-auto text-muted-foreground/40" />
-                    <h3 className="font-semibold">Evidence Vault</h3>
-                    <p className="text-sm text-muted-foreground">
-                        Screenshots, recordings, and document backups supporting this case.
-                    </p>
-                    <Button variant="outline" size="sm">View Evidence</Button>
-                </div>
-                <div className="rounded-xl border bg-card p-6 text-center space-y-3">
-                    <CheckBadgeIcon className="h-8 w-8 mx-auto text-muted-foreground/40" />
-                    <h3 className="font-semibold">Community Voting</h3>
-                    <p className="text-sm text-muted-foreground">
-                        Review the evidence and vote on the validity of specific claims.
-                    </p>
-                    <Button variant="outline" size="sm">Cast Your Vote</Button>
-                </div>
-            </div>
-
-            {/* Right of Reply */}
-            <div className="rounded-xl border bg-card p-6 space-y-3">
-                <h3 className="font-semibold flex items-center gap-2">
-                    <ChatBubbleLeftRightIcon className="h-5 w-5" />
-                    Right of Reply
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                    The defendant has the right to respond to any claims made in this case file.
-                    A verified right of reply ensures fairness and transparency in the public record.
-                </p>
-                <Button variant="outline" size="sm">Submit a Response</Button>
-            </div>
+function EmptyState({ children }: { children: React.ReactNode }) {
+    return (
+        <div className="rounded-xl border border-dashed p-8 text-center">
+            <p className="text-sm text-muted-foreground">{children}</p>
         </div>
     )
 }

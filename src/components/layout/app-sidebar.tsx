@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { NotificationBell } from '@/components/notifications/notification-bell'
+import { LanguageSwitcher } from '@/components/i18n/language-switcher'
 import {
     Sidebar,
     SidebarContent,
@@ -43,6 +45,7 @@ import {
     BuildingOfficeIcon,
     PaintBrushIcon,
     ChartBarIcon,
+    UserGroupIcon,
 } from '@heroicons/react/24/outline'
 import type { User } from '@supabase/supabase-js'
 
@@ -50,11 +53,12 @@ const mainNavItems = [
     { title: 'Home', href: '/', icon: HomeIcon },
     { title: 'How It Works', href: '/how-it-works', icon: QuestionMarkCircleIcon },
     { title: 'Browse Cases', href: '/cases', icon: FolderOpenIcon },
+    { title: 'Defendants', href: '/defendants', icon: UserGroupIcon },
 ]
 
 const userNavItems = [
     { title: 'Profile', href: '/profile', icon: UserCircleIcon },
-    { title: 'Submit a Case', href: '/submit', icon: PlusCircleIcon },
+    { title: 'File a Case', href: '/cases/new', icon: PlusCircleIcon },
 ]
 
 export function AppSidebar() {
@@ -73,12 +77,15 @@ export function AppSidebar() {
             setUser(user)
 
             if (user) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('role')
-                    .eq('id', user.id)
-                    .single()
-                setIsAdmin(profile?.role === 'admin')
+                // Check admin status via user_roles table
+                const { data: userRoles } = await supabase
+                    .from('user_roles')
+                    .select('role_id, roles(name)')
+                    .eq('user_id', user.id)
+                const hasAdminRole = (userRoles || []).some(
+                    (ur: any) => ur.roles?.name === 'admin' || ur.roles?.name === 'super_admin'
+                )
+                setIsAdmin(hasAdminRole)
             } else {
                 setIsAdmin(false)
             }
@@ -110,10 +117,13 @@ export function AppSidebar() {
         <>
             <Sidebar>
                 <SidebarHeader className="p-4">
-                    <Link href="/" className="flex items-center gap-2 font-bold text-lg">
-                        <ScaleIcon className="h-6 w-6" style={{ color: 'hsl(var(--primary))' }} />
-                        <span className="leading-tight">Court of<br />Public Record</span>
-                    </Link>
+                    <div className="flex items-center justify-between">
+                        <Link href="/" className="flex items-center gap-2 font-bold text-lg">
+                            <ScaleIcon className="h-6 w-6" style={{ color: 'hsl(var(--primary))' }} />
+                            <span className="leading-tight">Court of<br />Public Record</span>
+                        </Link>
+                        <NotificationBell />
+                    </div>
                 </SidebarHeader>
 
                 <SidebarContent>
@@ -296,6 +306,10 @@ export function AppSidebar() {
                             <SidebarSeparator />
                         </>
                     )}
+
+                    {/* Language Switcher */}
+                    <LanguageSwitcher />
+                    <SidebarSeparator />
 
                     {/* Sign In / Log Out */}
                     <Button

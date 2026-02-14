@@ -1,0 +1,33 @@
+{
+    "common": {
+        "appName": "Tribunal de l'Opinion Publique",
+        "home": "Accueil",
+        "cases": "Affaires",
+        "defendants": "Accusés",
+        "vote": "Voter",
+        "profile": "Profil",
+        "login": "Se connecter",
+        "signup": "Créer un compte",
+        "logout": "Se déconnecter",
+        "loading": "Chargement...",
+        "save": "Enregistrer",
+        "cancel": "Annuler",
+        "submit": "Soumettre",
+        "back": "Retour",
+        "next": "Suivant",
+        "search": "Rechercher",
+        "filter": "Filtrer",
+        "noResults": "Aucun résultat trouvé",
+        "error": "Quelque chose a mal tourné",
+        "success": "Succès!"
+    },
+    "voting": {
+        "title": "Votez",
+        "guiltAssessment": "Évaluation de culpabilité",
+        "innocent": "Innocent",
+        "uncertain": "Incertain",
+        "guilty": "Coupable",
+        "submitVote": "Soumettre le vote",
+        "voteRecorded": "Vote enregistré"
+    }
+}

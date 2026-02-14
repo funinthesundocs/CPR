@@ -1,0 +1,33 @@
+{
+    "common": {
+        "appName": "Gericht der öffentlichen Meinung",
+        "home": "Startseite",
+        "cases": "Fälle",
+        "defendants": "Angeklagte",
+        "vote": "Abstimmen",
+        "profile": "Profil",
+        "login": "Anmelden",
+        "signup": "Konto erstellen",
+        "logout": "Abmelden",
+        "loading": "Laden...",
+        "save": "Speichern",
+        "cancel": "Abbrechen",
+        "submit": "Einreichen",
+        "back": "Zurück",
+        "next": "Weiter",
+        "search": "Suchen",
+        "filter": "Filtern",
+        "noResults": "Keine Ergebnisse gefunden",
+        "error": "Etwas ist schiefgelaufen",
+        "success": "Erfolg!"
+    },
+    "voting": {
+        "title": "Stimme abgeben",
+        "guiltAssessment": "Schuldbewertung",
+        "innocent": "Unschuldig",
+        "uncertain": "Unsicher",
+        "guilty": "Schuldig",
+        "submitVote": "Abstimmung einreichen",
+        "voteRecorded": "Abstimmung registriert"
+    }
+}

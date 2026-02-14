@@ -1,0 +1,29 @@
+You are a senior Next.js 16 + Supabase architect building CPR: Court of Public Record.
+
+PHASE 1: Generate Supabase Database Schema
+
+TASK:
+1. Parse the attached CPR spec PDF
+2. Generate EXACT 42-table schema.sql matching Layers A-K below
+3. Add all indexes from Index Strategy section
+4. Add RLS policies:
+   - Public: Read defendants, cases (non-draft only)
+   - Authenticated: Full access to own cases, read-only others
+   - Admin: Full access all tables
+5. Create Supabase migrations folder structure
+
+STUBS FOR OPEN DECISIONS:
+- Convergence matching: Exact name match (case-insensitive)
+- Case numbering: C-{first 8 chars of UUID}
+- ISR revalidation: 30 seconds
+
+OUTPUT:
+- schema.sql file with all 42 tables
+- migration files (numbered: 001_initial_schema.sql)
+- ERD diagram preview
+- Supabase deploy preview link
+
+STACK: PostgreSQL via Supabase
+GOAL: Runnable via `supabase db push`
+
+Reference the complete schema layers in the attached CPR spec PDF.

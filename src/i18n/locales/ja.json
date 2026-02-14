@@ -1,0 +1,33 @@
+{
+    "common": {
+        "appName": "法廷公記録",
+        "home": "ホーム",
+        "cases": "ケース",
+        "defendants": "被告",
+        "vote": "投票",
+        "profile": "プロフィール",
+        "login": "ログイン",
+        "signup": "アカウント作成",
+        "logout": "ログアウト",
+        "loading": "読み込み中...",
+        "save": "保存",
+        "cancel": "キャンセル",
+        "submit": "送信",
+        "back": "戻る",
+        "next": "次へ",
+        "search": "検索",
+        "filter": "フィルター",
+        "noResults": "結果が見つかりません",
+        "error": "問題が発生しました",
+        "success": "成功!"
+    },
+    "voting": {
+        "title": "投票する",
+        "guiltAssessment": "有罪評価",
+        "innocent": "無罪",
+        "uncertain": "不確定",
+        "guilty": "有罪",
+        "submitVote": "投票を送信",
+        "voteRecorded": "投票が記録されました"
+    }
+}

@@ -1,0 +1,45 @@
+PHASE 4: Add safety systems + multi-language support.
+
+TASK:
+1. Dead Man's Switch (/profile/safety):
+   - Form: Check-in frequency (24h/72h/7d), max misses, emergency contacts
+   - Save to safety_switches + emergency_contacts
+   - Background job: Check next_checkin_due every hour
+   - If missed_count >= max → Email emergency contacts + admin alert
+   - Push notification: "Check in now" button (one-tap)
+   
+2. Evidence tamper-proofing:
+   - File upload → Compute SHA-256 hash
+   - Store in evidence.file_hash
+   - Display hash on evidence page (QR code)
+   - Verification: Re-hash on download, compare
+   
+3. Internationalization (next-intl):
+   - 7 languages: en, th, ar, vi, zh, es, ja
+   - Static UI: JSON translation files
+   - User content: On write → Edge Function queues translation
+   - Stub: Microsoft Translator API (free tier)
+   - Display "View original" toggle
+   - Language switcher in header (globe icon, stores in user_profiles.language)
+   
+4. PWA setup:
+   - next-pwa configuration
+   - Offline form save (service worker)
+   - Install prompt
+   - Push notification permission
+   
+5. PDF export (/cases/[id]/export):
+   - Full case file with QR verification code
+   - Evidence list with SHA-256 hashes
+   - Timeline, financial impact, verdict details
+   - Watermark: "Court of Public Record"
+
+OUTPUT:
+- Safety switch setup page
+- Multi-language interface (at least English + one other)
+- PWA installable
+- PDF export working
+- Final production-ready deploy link
+
+STACK: next-intl, next-pwa, jsPDF, Microsoft Translator API
+GOAL: Full safety + i18n implementation

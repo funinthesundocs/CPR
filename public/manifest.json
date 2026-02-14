@@ -1,0 +1,54 @@
+{
+    "name": "Court of Public Record",
+    "short_name": "CPR",
+    "description": "A platform for public accountability through community-driven justice.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0a0a0b",
+    "theme_color": "#6366f1",
+    "orientation": "portrait-primary",
+    "scope": "/",
+    "icons": [
+        {
+            "src": "/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": [
+        "social",
+        "news",
+        "legal"
+    ],
+    "lang": "en",
+    "dir": "ltr",
+    "prefer_related_applications": false,
+    "screenshots": [],
+    "shortcuts": [
+        {
+            "name": "Browse Cases",
+            "short_name": "Cases",
+            "url": "/cases",
+            "description": "Browse public cases"
+        },
+        {
+            "name": "File a Case",
+            "short_name": "File",
+            "url": "/cases/new",
+            "description": "File a new case"
+        },
+        {
+            "name": "Browse Defendants",
+            "short_name": "Defendants",
+            "url": "/defendants",
+            "description": "Browse defendants"
+        }
+    ]
+}
