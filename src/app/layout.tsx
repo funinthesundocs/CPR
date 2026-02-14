@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/lib/theme/theme-provider";
+import { I18nProvider } from "@/i18n";
+import { PermissionsProvider } from "@/components/providers/permissions-provider";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { ConditionalFooter } from "@/components/layout/conditional-footer";
@@ -43,6 +45,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var m=localStorage.getItem('theme-mode')||'system';var t=m;if(m==='system'){t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'}document.documentElement.classList.add(t)}catch(e){}})()`,
+          }}
+        />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#6366f1" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -52,18 +59,22 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
-          <SidebarProvider>
-            <AppSidebar />
-            <SidebarInset>
-              <header className="flex h-14 items-center gap-2 border-b px-4">
-                <SidebarTrigger className="-ml-2" />
-              </header>
-              <main className="flex-1 p-6">
-                {children}
-              </main>
-              <ConditionalFooter />
-            </SidebarInset>
-          </SidebarProvider>
+          <I18nProvider>
+            <PermissionsProvider>
+              <SidebarProvider>
+                <AppSidebar />
+                <SidebarInset>
+                  <header className="flex h-14 items-center gap-2 border-b px-4">
+                    <SidebarTrigger className="-ml-2" />
+                  </header>
+                  <main className="flex-1 p-6">
+                    {children}
+                  </main>
+                  <ConditionalFooter />
+                </SidebarInset>
+              </SidebarProvider>
+            </PermissionsProvider>
+          </I18nProvider>
         </ThemeProvider>
         <script
           dangerouslySetInnerHTML={{

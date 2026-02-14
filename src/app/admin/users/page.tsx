@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
     UsersIcon as UsersHeroIcon,
     UserPlusIcon,
@@ -19,7 +19,12 @@ import {
     ShieldExclamationIcon,
     WrenchScrewdriverIcon,
     Cog6ToothIcon,
-    ShieldCheckIcon
+    ShieldCheckIcon,
+    ChevronUpIcon,
+    ChevronDownIcon,
+    ChevronUpDownIcon,
+    FunnelIcon,
+    XMarkIcon
 } from '@heroicons/react/24/outline'
 import { Button } from '@/components/ui/button'
 import {
@@ -57,6 +62,9 @@ type User = {
     roles: Role[]
 }
 
+type SortField = 'email' | 'full_name' | 'created_at' | 'last_sign_in_at'
+type SortDir = 'asc' | 'desc'
+
 export default function AllUsersPage() {
     const [users, setUsers] = useState<User[]>([])
     const [roles, setRoles] = useState<Role[]>([])
@@ -66,6 +74,13 @@ export default function AllUsersPage() {
     const [saving, setSaving] = useState(false)
     const [editingUser, setEditingUser] = useState<User | null>(null)
 
+    // Sort & filter state
+    const [search, setSearch] = useState('')
+    const [sortBy, setSortBy] = useState<SortField>('full_name')
+    const [sortDir, setSortDir] = useState<SortDir>('asc')
+    const [roleFilter, setRoleFilter] = useState('')
+    const [searchDebounce, setSearchDebounce] = useState('')
+
     // Form state
     const [formData, setFormData] = useState({
         email: '',
@@ -74,12 +89,24 @@ export default function AllUsersPage() {
         selectedRoles: [] as string[]
     })
 
-    // Fetch users from database
-    const fetchUsers = async () => {
+    // Debounce search input
+    useEffect(() => {
+        const timer = setTimeout(() => setSearchDebounce(search), 300)
+        return () => clearTimeout(timer)
+    }, [search])
+
+    // Fetch users from database with sort/filter params
+    const fetchUsers = useCallback(async () => {
         setLoading(true)
         setError(null)
         try {
-            const response = await fetch('/api/admin/users')
+            const params = new URLSearchParams()
+            if (searchDebounce) params.set('search', searchDebounce)
+            if (sortBy) params.set('sortBy', sortBy)
+            if (sortDir) params.set('sortDir', sortDir)
+            if (roleFilter) params.set('role', roleFilter)
+
+            const response = await fetch(`/api/admin/users?${params.toString()}`)
             if (!response.ok) throw new Error('Failed to fetch users')
 
             const data = await response.json()
@@ -89,7 +116,16 @@ export default function AllUsersPage() {
         } finally {
             setLoading(false)
         }
-    }
+    }, [searchDebounce, sortBy, sortDir, roleFilter])
+
+    // Sort roles: admin and super_admin always last
+    const ADMIN_ROLE_IDS = ['admin', 'super_admin']
+    const sortedRoles = [...roles].sort((a, b) => {
+        const aIsAdmin = ADMIN_ROLE_IDS.includes(a.id) ? 1 : 0
+        const bIsAdmin = ADMIN_ROLE_IDS.includes(b.id) ? 1 : 0
+        if (aIsAdmin !== bIsAdmin) return aIsAdmin - bIsAdmin
+        return a.name.localeCompare(b.name)
+    })
 
     // Fetch available roles
     const fetchRoles = async () => {
@@ -104,11 +140,32 @@ export default function AllUsersPage() {
         }
     }
 
-    // Load data on mount
+    // Load data on mount and when params change
     useEffect(() => {
         fetchUsers()
+    }, [fetchUsers])
+
+    useEffect(() => {
         fetchRoles()
     }, [])
+
+    // Handle column sort toggle
+    const handleSort = (field: SortField) => {
+        if (sortBy === field) {
+            setSortDir(prev => prev === 'asc' ? 'desc' : 'asc')
+        } else {
+            setSortBy(field)
+            setSortDir('asc')
+        }
+    }
+
+    // Sort icon for column headers
+    const SortIcon = ({ field }: { field: SortField }) => {
+        if (sortBy !== field) return <ChevronUpDownIcon className="h-3.5 w-3.5 text-muted-foreground/50" />
+        return sortDir === 'asc'
+            ? <ChevronUpIcon className="h-3.5 w-3.5 text-primary" />
+            : <ChevronDownIcon className="h-3.5 w-3.5 text-primary" />
+    }
 
     // Toggle role selection
     const toggleRole = (roleId: string) => {
@@ -167,10 +224,22 @@ export default function AllUsersPage() {
         }
     }
 
-    // Format date for display
+    // Format date for display as relative time
     const formatDate = (dateString: string | null) => {
         if (!dateString) return 'Never'
-        return dateString ? new Date(dateString).toLocaleDateString() : '—'
+        const date = new Date(dateString)
+        const now = new Date()
+        const diffMs = now.getTime() - date.getTime()
+        const diffMins = Math.floor(diffMs / 60000)
+        const diffHours = Math.floor(diffMs / 3600000)
+        const diffDays = Math.floor(diffMs / 86400000)
+
+        if (diffMins < 1) return 'Just now'
+        if (diffMins < 60) return `${diffMins}m ago`
+        if (diffHours < 24) return `${diffHours}h ago`
+        if (diffDays < 30) return `${diffDays}d ago`
+        if (diffDays < 365) return `${Math.floor(diffDays / 30)}mo ago`
+        return `${Math.floor(diffDays / 365)}y ago`
     }
 
     // Map role IDs to Heroicon components (same as permissions table)
@@ -188,7 +257,7 @@ export default function AllUsersPage() {
         'super_admin': ShieldCheckIcon
     }
 
-    if (loading) {
+    if (loading && users.length === 0) {
         return (
             <div className="flex items-center justify-center h-96">
                 <div className="text-center">
@@ -228,26 +297,126 @@ export default function AllUsersPage() {
                 </Button>
             </div>
 
+            {/* Search & Active Filters Bar */}
+            <div className="flex items-center gap-3">
+                <div className="relative flex-1 max-w-sm">
+                    <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search by email or name..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="pl-9 h-9"
+                    />
+                    {search && (
+                        <button
+                            onClick={() => setSearch('')}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        >
+                            <XMarkIcon className="h-4 w-4" />
+                        </button>
+                    )}
+                </div>
+
+                {/* Active filter badges */}
+                {roleFilter && (
+                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-medium text-primary">
+                        <FunnelIcon className="h-3 w-3" />
+                        Role: {roleFilter === 'no_roles' ? 'No Roles' : roles.find(r => r.id === roleFilter)?.name || roleFilter}
+                        <button
+                            onClick={() => setRoleFilter('')}
+                            className="ml-0.5 hover:text-primary/70"
+                        >
+                            <XMarkIcon className="h-3 w-3" />
+                        </button>
+                    </div>
+                )}
+
+                {loading && (
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                )}
+            </div>
+
             {/* Table Container */}
             <div className="flex-1 rounded-lg border bg-card overflow-hidden">
-                <div className="overflow-auto max-h-[calc(100vh-240px)] pb-2">
+                <div className="overflow-auto max-h-[calc(100vh-300px)] pb-2">
                     <table className="w-full border-collapse">
                         <thead className="sticky top-0 z-40 bg-muted">
                             <tr>
-                                <th className="text-left p-3 font-semibold border-b min-w-[200px] bg-muted">
-                                    Email
-                                </th>
                                 <th className="text-left p-3 font-semibold border-b min-w-[180px] bg-muted">
-                                    Full Name
+                                    <button
+                                        onClick={() => handleSort('full_name')}
+                                        className="flex items-center gap-1.5 hover:text-primary transition-colors"
+                                    >
+                                        Full Name
+                                        <SortIcon field="full_name" />
+                                    </button>
                                 </th>
                                 <th className="text-left p-3 font-semibold border-b min-w-[200px] bg-muted">
-                                    Roles
+                                    <button
+                                        onClick={() => handleSort('email')}
+                                        className="flex items-center gap-1.5 hover:text-primary transition-colors"
+                                    >
+                                        Email
+                                        <SortIcon field="email" />
+                                    </button>
+                                </th>
+                                <th className="text-left p-3 font-semibold border-b min-w-[200px] bg-muted">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <button className={`flex items-center gap-1.5 hover:text-primary transition-colors ${roleFilter ? 'text-primary' : ''}`}>
+                                                Roles
+                                                <FunnelIcon className={`h-3.5 w-3.5 ${roleFilter ? 'text-primary' : 'text-muted-foreground/50'}`} />
+                                            </button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="start" className="w-48">
+                                            <DropdownMenuItem
+                                                onClick={() => setRoleFilter('')}
+                                                className={!roleFilter ? 'bg-accent' : ''}
+                                            >
+                                                All Roles
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            {sortedRoles.map((role) => {
+                                                const RoleIcon = ROLE_ICONS[role.id] || UserIcon
+                                                return (
+                                                    <DropdownMenuItem
+                                                        key={role.id}
+                                                        onClick={() => setRoleFilter(role.id)}
+                                                        className={roleFilter === role.id ? 'bg-accent' : ''}
+                                                    >
+                                                        <RoleIcon className="h-4 w-4 mr-2" />
+                                                        {role.name}
+                                                    </DropdownMenuItem>
+                                                )
+                                            })}
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem
+                                                onClick={() => setRoleFilter('no_roles')}
+                                                className={roleFilter === 'no_roles' ? 'bg-accent' : ''}
+                                            >
+                                                <XMarkIcon className="h-4 w-4 mr-2" />
+                                                No Roles
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </th>
                                 <th className="text-left p-3 font-semibold border-b min-w-[140px] bg-muted">
-                                    Joined
+                                    <button
+                                        onClick={() => handleSort('created_at')}
+                                        className="flex items-center gap-1.5 hover:text-primary transition-colors"
+                                    >
+                                        Joined
+                                        <SortIcon field="created_at" />
+                                    </button>
                                 </th>
                                 <th className="text-left p-3 font-semibold border-b min-w-[140px] bg-muted">
-                                    Last Login
+                                    <button
+                                        onClick={() => handleSort('last_sign_in_at')}
+                                        className="flex items-center gap-1.5 hover:text-primary transition-colors"
+                                    >
+                                        Last Login
+                                        <SortIcon field="last_sign_in_at" />
+                                    </button>
                                 </th>
                                 <th className="text-center p-3 font-semibold border-b min-w-[120px] bg-muted">
                                     Actions
@@ -258,17 +427,17 @@ export default function AllUsersPage() {
                             {users.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="p-8 text-center text-muted-foreground">
-                                        No users found
+                                        {search || roleFilter ? 'No users match your filters' : 'No users found'}
                                     </td>
                                 </tr>
                             ) : (
                                 users.map((user, idx) => (
                                     <tr key={user.id} className={idx % 2 === 0 ? 'bg-card' : 'bg-secondary'}>
                                         <td className="p-3 border-b">
-                                            <span className="font-medium text-sm">{user.email}</span>
+                                            <span className="font-medium text-sm">{user.full_name || '—'}</span>
                                         </td>
                                         <td className="p-3 border-b">
-                                            <span className="text-sm">{user.full_name || '—'}</span>
+                                            <span className="text-sm">{user.email}</span>
                                         </td>
                                         <td className="p-3 border-b">
                                             <div className="flex flex-wrap gap-1">
@@ -354,7 +523,7 @@ export default function AllUsersPage() {
                 </div>
             </div>
 
-            {/* Add User Modal */}
+            {/* Add/Edit User Modal */}
             <Dialog open={modalOpen} onOpenChange={setModalOpen}>
                 <DialogContent className="sm:max-w-[500px] bg-muted">
                     <DialogHeader>
@@ -407,7 +576,7 @@ export default function AllUsersPage() {
                             <div className="space-y-2">
                                 <Label>Roles</Label>
                                 <div className="grid grid-cols-3 gap-2">
-                                    {roles.map((role) => {
+                                    {sortedRoles.map((role) => {
                                         const RoleIcon = ROLE_ICONS[role.id] || UserIcon
                                         return (
                                             <button

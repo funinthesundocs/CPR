@@ -755,6 +755,16 @@ Content submitted → stored in original language
 
 ### Cost: $0-5/month
 
+### UI Translation Maintenance
+All public-facing pages use static locale-based translations via JSON files (`src/i18n/locales/{lang}.json`). When any public page is modified or a new feature/display is added:
+
+1. **Add keys to `en.json` first** — every user-visible string (titles, labels, buttons, placeholders, empty states, error messages) must use `t('section.key')` instead of hardcoded text
+2. **Add corresponding translations to all supported locale files** — currently: `es.json`, `pt.json`, `fr.json`, `de.json`, `ja.json`, `ar.json`
+3. **Client components only** — pages using `useTranslation()` must be client components (`'use client'`)
+4. **Keep keys organized by page section** — e.g. `cases.*`, `defendants.*`, `voting.*`
+
+> This applies to all non-admin routes. Admin pages are English-only and do not require translation.
+
 ---
 
 ## 12. Safety System

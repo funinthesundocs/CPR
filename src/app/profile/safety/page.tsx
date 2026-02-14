@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline'
 import type { User } from '@supabase/supabase-js'
+import { useTranslation } from '@/i18n'
 
 type DeadManSwitch = {
     id: string
@@ -29,6 +30,7 @@ type DeadManSwitch = {
 export default function SafetyPage() {
     const router = useRouter()
     const supabase = createClient()
+    const { t } = useTranslation()
     const [user, setUser] = useState<User | null>(null)
     const [switchData, setSwitchData] = useState<DeadManSwitch | null>(null)
     const [loading, setLoading] = useState(true)
@@ -113,7 +115,7 @@ export default function SafetyPage() {
                 if (err) throw new Error(err.message)
             }
 
-            setSuccess('Safety settings saved! Your check-in clock has been reset.')
+            setSuccess(t('safety.savedSuccess'))
         } catch (err: any) {
             setError(err.message || 'Failed to save')
         } finally {
@@ -132,7 +134,7 @@ export default function SafetyPage() {
             .update({ last_checkin: now.toISOString(), next_deadline: nextDeadline.toISOString() })
             .eq('id', switchData.id)
 
-        setSuccess(`Check-in recorded. Next deadline: ${nextDeadline.toLocaleDateString()}`)
+        setSuccess(t('safety.checkinSuccess'))
         setSaving(false)
     }
 
@@ -153,10 +155,10 @@ export default function SafetyPage() {
             <div>
                 <div className="flex items-center gap-2">
                     <ShieldExclamationIcon className="h-7 w-7" style={{ color: 'hsl(var(--primary))' }} />
-                    <h1 className="text-2xl font-bold">Safety Settings</h1>
+                    <h1 className="text-2xl font-bold">{t('safety.title')}</h1>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
-                    Configure your Dead Man&apos;s Switch — if you stop checking in, your designated trustee will be notified and can access your case materials.
+                    {t('safety.description')}
                 </p>
             </div>
 
@@ -176,7 +178,7 @@ export default function SafetyPage() {
                             </p>
                         </div>
                         <Button onClick={handleCheckin} disabled={saving}>
-                            {saving ? 'Checking in...' : '✅ Check In Now'}
+                            {saving ? t('common.loading') : `✅ ${t('safety.checkIn')}`}
                         </Button>
                     </CardContent>
                 </Card>
@@ -186,9 +188,9 @@ export default function SafetyPage() {
             <Card>
                 <CardHeader>
                     <CardTitle className="text-lg flex items-center justify-between">
-                        Dead Man&apos;s Switch
+                        {t('safety.deadManSwitch')}
                         <Badge variant={isActive ? 'default' : 'outline'} className={isActive ? 'bg-green-600' : ''}>
-                            {isActive ? 'Active' : 'Inactive'}
+                            {isActive ? t('safety.enable') : t('safety.disable')}
                         </Badge>
                     </CardTitle>
                 </CardHeader>
@@ -199,21 +201,21 @@ export default function SafetyPage() {
                             className={`flex-1 ${isActive ? 'bg-green-600 hover:bg-green-700' : ''}`}
                             onClick={() => setIsActive(true)}
                         >
-                            Enable
+                            {t('safety.enable')}
                         </Button>
                         <Button
                             variant={!isActive ? 'default' : 'outline'}
                             className={`flex-1 ${!isActive ? 'bg-red-600 hover:bg-red-700' : ''}`}
                             onClick={() => setIsActive(false)}
                         >
-                            Disable
+                            {t('safety.disable')}
                         </Button>
                     </div>
 
                     <Separator />
 
                     <div className="space-y-2">
-                        <Label>Check-in Interval (days)</Label>
+                        <Label>{t('safety.interval')} ({t('safety.daysInterval')})</Label>
                         <div className="flex gap-2">
                             {[7, 14, 30, 60, 90].map(d => (
                                 <Button
@@ -232,14 +234,14 @@ export default function SafetyPage() {
 
             {/* Trustee Info */}
             <Card>
-                <CardHeader><CardTitle className="text-lg">Designated Trustee</CardTitle></CardHeader>
+                <CardHeader><CardTitle className="text-lg">{t('safety.trustee')}</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
-                        <Label>Trustee Name *</Label>
+                        <Label>{t('safety.trusteeName')} *</Label>
                         <Input value={trusteeName} onChange={e => setTrusteeName(e.target.value)} placeholder="Full name of your trusted person" />
                     </div>
                     <div className="space-y-2">
-                        <Label>Trustee Email *</Label>
+                        <Label>{t('safety.trusteeEmail')} *</Label>
                         <Input type="email" value={trusteeEmail} onChange={e => setTrusteeEmail(e.target.value)} placeholder="trustee@example.com" />
                     </div>
                 </CardContent>
@@ -247,10 +249,10 @@ export default function SafetyPage() {
 
             {/* Message & Content */}
             <Card>
-                <CardHeader><CardTitle className="text-lg">Failsafe Message</CardTitle></CardHeader>
+                <CardHeader><CardTitle className="text-lg">{t('safety.message')}</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
-                        <Label>Message to Trustee</Label>
+                        <Label>{t('safety.message')}</Label>
                         <Textarea
                             value={message}
                             onChange={e => setMessage(e.target.value)}
@@ -266,11 +268,11 @@ export default function SafetyPage() {
                         <p className="text-sm font-medium">What to share with trustee:</p>
                         <label className="flex items-center gap-3 cursor-pointer">
                             <input type="checkbox" checked={includeCases} onChange={e => setIncludeCases(e.target.checked)} className="rounded" />
-                            <span className="text-sm">My filed cases and their current status</span>
+                            <span className="text-sm">{t('safety.includeCases')}</span>
                         </label>
                         <label className="flex items-center gap-3 cursor-pointer">
                             <input type="checkbox" checked={includeEvidence} onChange={e => setIncludeEvidence(e.target.checked)} className="rounded" />
-                            <span className="text-sm">Evidence files and documents</span>
+                            <span className="text-sm">{t('safety.includeEvidence')}</span>
                         </label>
                     </div>
                 </CardContent>
@@ -288,7 +290,7 @@ export default function SafetyPage() {
             )}
 
             <Button className="w-full" onClick={handleSave} disabled={saving}>
-                {saving ? 'Saving...' : '💾 Save Safety Settings'}
+                {saving ? t('profile.saving') : `💾 ${t('common.save')} ${t('safety.title')}`}
             </Button>
         </div>
     )

@@ -1,78 +1,127 @@
-import { createClient } from '@/lib/supabase/server'
+'use client'
+
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { DefendantSearch } from './defendant-search'
+import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { createClient } from '@/lib/supabase/client'
+import { useTranslation } from '@/i18n'
 
-export const revalidate = 30
+export default function DefendantsPage() {
+    const { t } = useTranslation()
+    const [defendants, setDefendants] = useState<any[] | null>(null)
+    const [error, setError] = useState<string | null>(null)
+    const [loading, setLoading] = useState(true)
+    const [query, setQuery] = useState('')
+    const [statusFilter, setStatusFilter] = useState('')
 
-type SearchParams = Promise<{ q?: string; status?: string }>
+    useEffect(() => {
+        const fetchDefendants = async () => {
+            const supabase = createClient()
+            const { data, error } = await supabase
+                .from('defendants')
+                .select(`
+                    id,
+                    full_name,
+                    aliases,
+                    photo_url,
+                    location,
+                    status,
+                    slug,
+                    business_names,
+                    created_at
+                `)
+                .order('created_at', { ascending: false })
+                .limit(50)
 
-export default async function DefendantsPage({ searchParams }: { searchParams: SearchParams }) {
-    const params = await searchParams
-    const query = params?.q || ''
-    const statusFilter = params?.status || ''
+            if (error) {
+                setError(error.message)
+            } else {
+                setDefendants(data)
+            }
+            setLoading(false)
+        }
+        fetchDefendants()
+    }, [])
 
-    const supabase = await createClient()
-
-    let dbQuery = supabase
-        .from('defendants')
-        .select(`
-      id,
-      full_name,
-      aliases,
-      photo_url,
-      location,
-      status,
-      slug,
-      business_names,
-      created_at
-    `)
-        .order('created_at', { ascending: false })
-
-    if (statusFilter) {
-        dbQuery = dbQuery.eq('status', statusFilter)
-    }
-
-    const { data: defendants, error } = await dbQuery.limit(50)
-
-    // Client-side fuzzy filter (trigram search happens in DB for large datasets, 
-    // but for MVP we filter in JS since we're loading ≤50)
+    // Client-side filtering
+    const allDefendants = defendants || []
+    const statusFiltered = statusFilter
+        ? allDefendants.filter(d => d.status === statusFilter)
+        : allDefendants
     const filtered = query
-        ? (defendants || []).filter(d =>
+        ? statusFiltered.filter(d =>
             d.full_name.toLowerCase().includes(query.toLowerCase()) ||
             (d.aliases || []).some((a: string) => a.toLowerCase().includes(query.toLowerCase())) ||
             (d.business_names || []).some((b: string) => b.toLowerCase().includes(query.toLowerCase()))
         )
-        : (defendants || [])
+        : statusFiltered
+
+    if (loading) {
+        return (
+            <div className="space-y-8">
+                <div className="space-y-2">
+                    <h1 className="text-3xl font-bold tracking-tight">{t('defendants.browseTitle')}</h1>
+                    <p className="text-muted-foreground">{t('defendants.browseDescription')}</p>
+                </div>
+                <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
+            </div>
+        )
+    }
 
     return (
         <div className="space-y-8">
             {/* Page Header */}
             <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight">Defendants</h1>
+                <h1 className="text-3xl font-bold tracking-tight">{t('defendants.browseTitle')}</h1>
                 <p className="text-muted-foreground">
-                    Browse and search all defendants with active or archived cases on the public record.
+                    {t('defendants.browseDescription')}
                 </p>
             </div>
 
             {/* Search & Filters */}
-            <DefendantSearch initialQuery={query} initialStatus={statusFilter} />
+            <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                    <Input
+                        type="search"
+                        placeholder={t('defendants.searchPlaceholder')}
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        className="h-11"
+                    />
+                </div>
+                <Select
+                    value={statusFilter || 'all'}
+                    onValueChange={(value) => setStatusFilter(value === 'all' ? '' : value)}
+                >
+                    <SelectTrigger className="w-full sm:w-[160px] h-11">
+                        <SelectValue placeholder={t('defendants.allStatuses')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">{t('defendants.allStatuses')}</SelectItem>
+                        <SelectItem value="active">{t('defendants.statusActive')}</SelectItem>
+                        <SelectItem value="merged">{t('defendants.statusMerged')}</SelectItem>
+                        <SelectItem value="archived">{t('defendants.statusArchived')}</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
 
             {/* Results Count */}
             <div className="flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">
-                    {filtered.length} defendant{filtered.length !== 1 ? 's' : ''} found
-                    {query && <span> for &ldquo;{query}&rdquo;</span>}
+                    {filtered.length} {t('defendants.defendantsFound')}
+                    {query && <span> {t('defendants.forQuery')} &ldquo;{query}&rdquo;</span>}
                 </p>
             </div>
 
             {/* Defendant Grid */}
             {filtered.length === 0 ? (
                 <div className="rounded-xl border border-dashed p-12 text-center">
-                    <p className="text-lg font-medium text-muted-foreground">No defendants found</p>
+                    <p className="text-lg font-medium text-muted-foreground">{t('defendants.noDefendants')}</p>
                     <p className="text-sm text-muted-foreground/60 mt-1">
-                        {query ? 'Try adjusting your search terms' : 'No cases have been filed yet'}
+                        {query ? t('defendants.adjustSearch') : t('defendants.noCasesFiled')}
                     </p>
                 </div>
             ) : (
@@ -101,7 +150,7 @@ export default async function DefendantsPage({ searchParams }: { searchParams: S
                                                 )}
                                             </div>
                                         </div>
-                                        <StatusBadge status={defendant.status} />
+                                        <StatusBadge status={defendant.status} t={t} />
                                     </div>
                                 </CardHeader>
                                 <CardContent className="pt-0">
@@ -114,7 +163,7 @@ export default async function DefendantsPage({ searchParams }: { searchParams: S
                                             ))}
                                             {defendant.aliases.length > 3 && (
                                                 <Badge variant="outline" className="text-xs">
-                                                    +{defendant.aliases.length - 3} more
+                                                    +{defendant.aliases.length - 3} {t('defendants.more')}
                                                 </Badge>
                                             )}
                                         </div>
@@ -133,25 +182,25 @@ export default async function DefendantsPage({ searchParams }: { searchParams: S
 
             {error && (
                 <div className="rounded-xl border border-destructive/50 bg-destructive/5 p-4 text-sm text-destructive">
-                    Error loading defendants: {error.message}
+                    {t('defendants.errorLoading')}: {error}
                 </div>
             )}
         </div>
     )
 }
 
-function StatusBadge({ status }: { status: string }) {
-    const variants: Record<string, { label: string; className: string }> = {
-        active: { label: 'Active', className: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20' },
-        merged: { label: 'Merged', className: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' },
-        archived: { label: 'Archived', className: 'bg-muted text-muted-foreground border-border' },
+function StatusBadge({ status, t }: { status: string; t: (key: string) => string }) {
+    const variants: Record<string, { labelKey: string; className: string }> = {
+        active: { labelKey: 'defendants.statusActive', className: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20' },
+        merged: { labelKey: 'defendants.statusMerged', className: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' },
+        archived: { labelKey: 'defendants.statusArchived', className: 'bg-muted text-muted-foreground border-border' },
     }
 
     const variant = variants[status] || variants.active
 
     return (
         <Badge variant="outline" className={`text-xs font-medium ${variant.className}`}>
-            {variant.label}
+            {t(variant.labelKey)}
         </Badge>
     )
 }

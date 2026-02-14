@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useTranslation } from '@/i18n'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -11,6 +12,21 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+    UserIcon,
+    LinkIcon,
+    HandRaisedIcon,
+    FaceFrownIcon,
+    CalendarDaysIcon,
+    BoltIcon,
+    PaperClipIcon,
+    EyeIcon,
+    ScaleIcon,
+    BookOpenIcon,
+    ShieldCheckIcon,
+    CheckCircleIcon,
+} from '@heroicons/react/24/outline'
+import type { ComponentType } from 'react'
 
 const CASE_TYPES = [
     'fraud', 'theft', 'scam', 'breach_of_contract', 'extortion',
@@ -18,19 +34,9 @@ const CASE_TYPES = [
     'embezzlement', 'domestic_violence', 'elder_abuse', 'other'
 ]
 
-const STEPS = [
-    { id: 1, title: 'Defendant Info', icon: '👤', desc: 'Who are you filing against?' },
-    { id: 2, title: 'Your Connection', icon: '🔗', desc: 'How do you know this person?' },
-    { id: 3, title: 'The Promise', icon: '🤝', desc: 'What was promised to you?' },
-    { id: 4, title: 'The Betrayal', icon: '💔', desc: 'What actually happened?' },
-    { id: 5, title: 'Timeline', icon: '📅', desc: 'When did events occur?' },
-    { id: 6, title: 'Impact', icon: '💥', desc: 'How were you affected?' },
-    { id: 7, title: 'Evidence', icon: '📎', desc: 'Upload supporting documents' },
-    { id: 8, title: 'Witnesses', icon: '👁️', desc: 'Who else can verify?' },
-    { id: 9, title: 'Legal Actions', icon: '⚖️', desc: 'Any legal steps taken?' },
-    { id: 10, title: 'Your Story', icon: '📖', desc: 'Share your narrative' },
-    { id: 11, title: 'Safety', icon: '🛡️', desc: 'Your safety preferences' },
-    { id: 12, title: 'Review & Submit', icon: '✅', desc: 'Final review' },
+const STEP_ICONS: ComponentType<{ className?: string }>[] = [
+    UserIcon, LinkIcon, HandRaisedIcon, FaceFrownIcon, CalendarDaysIcon, BoltIcon,
+    PaperClipIcon, EyeIcon, ScaleIcon, BookOpenIcon, ShieldCheckIcon, CheckCircleIcon,
 ]
 
 type FormData = {
@@ -107,11 +113,27 @@ const STORAGE_KEY = 'cpr_case_draft'
 
 export default function NewCaseForm() {
     const router = useRouter()
+    const { t } = useTranslation()
     const [step, setStep] = useState(1)
     const [form, setForm] = useState<FormData>(DEFAULT_FORM)
     const [submitting, setSubmitting] = useState(false)
     const [error, setError] = useState('')
     const [savedAt, setSavedAt] = useState<string | null>(null)
+
+    const STEPS = useMemo(() => [
+        { id: 1, title: t('wizard.step1Title'), icon: STEP_ICONS[0], desc: t('wizard.step1Desc') },
+        { id: 2, title: t('wizard.step2Title'), icon: STEP_ICONS[1], desc: t('wizard.step2Desc') },
+        { id: 3, title: t('wizard.step3Title'), icon: STEP_ICONS[2], desc: t('wizard.step3Desc') },
+        { id: 4, title: t('wizard.step4Title'), icon: STEP_ICONS[3], desc: t('wizard.step4Desc') },
+        { id: 5, title: t('wizard.step5Title'), icon: STEP_ICONS[4], desc: t('wizard.step5Desc') },
+        { id: 6, title: t('wizard.step6Title'), icon: STEP_ICONS[5], desc: t('wizard.step6Desc') },
+        { id: 7, title: t('wizard.step7Title'), icon: STEP_ICONS[6], desc: t('wizard.step7Desc') },
+        { id: 8, title: t('wizard.step8Title'), icon: STEP_ICONS[7], desc: t('wizard.step8Desc') },
+        { id: 9, title: t('wizard.step9Title'), icon: STEP_ICONS[8], desc: t('wizard.step9Desc') },
+        { id: 10, title: t('wizard.step10Title'), icon: STEP_ICONS[9], desc: t('wizard.step10Desc') },
+        { id: 11, title: t('wizard.step11Title'), icon: STEP_ICONS[10], desc: t('wizard.step11Desc') },
+        { id: 12, title: t('wizard.step12Title'), icon: STEP_ICONS[11], desc: t('wizard.step12Desc') },
+    ], [t])
 
     // Load from localStorage on mount
     useEffect(() => {
@@ -274,7 +296,7 @@ export default function NewCaseForm() {
             // Redirect to case page
             router.push(`/cases/${newCase.case_number}`)
         } catch (err: any) {
-            setError(err.message || 'Something went wrong')
+            setError(err.message || t('common.error'))
         } finally {
             setSubmitting(false)
         }
@@ -286,14 +308,14 @@ export default function NewCaseForm() {
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold">File a New Case</h1>
+                        <h1 className="text-2xl font-bold">{t('wizard.title')}</h1>
                         <p className="text-sm text-muted-foreground">
-                            Step {step} of {STEPS.length}: {STEPS[step - 1].title}
+                            {t('onboarding.step')} {step} {t('onboarding.of')} {STEPS.length}: {STEPS[step - 1].title}
                         </p>
                     </div>
                     <div className="text-right">
                         {savedAt && (
-                            <p className="text-xs text-muted-foreground">Auto-saved at {savedAt}</p>
+                            <p className="text-xs text-muted-foreground">{t('wizard.autoSaved').replace('{time}', savedAt || '')}</p>
                         )}
                     </div>
                 </div>
@@ -312,7 +334,7 @@ export default function NewCaseForm() {
                                 : 'bg-muted/50 text-muted-foreground hover:bg-muted'
                             }`}
                     >
-                        <span>{s.icon}</span>
+                        <s.icon className="h-4 w-4 shrink-0" />
                         <span className="hidden sm:inline">{s.title}</span>
                     </button>
                 ))}
@@ -322,7 +344,7 @@ export default function NewCaseForm() {
             <Card className="shadow-md">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-xl">
-                        <span className="text-2xl">{STEPS[step - 1].icon}</span>
+                        {(() => { const StepIcon = STEPS[step - 1].icon; return <StepIcon className="h-6 w-6 text-primary" />; })()}
                         {STEPS[step - 1].title}
                     </CardTitle>
                     <p className="text-sm text-muted-foreground">{STEPS[step - 1].desc}</p>
@@ -333,35 +355,35 @@ export default function NewCaseForm() {
                     {step === 1 && (
                         <>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <FieldGroup label="First Name *">
+                                <FieldGroup label={`${t('wizard.firstName')} *`}>
                                     <Input value={form.defendant_first_name} onChange={e => updateForm({ defendant_first_name: e.target.value })} placeholder="John" />
                                 </FieldGroup>
-                                <FieldGroup label="Last Name *">
+                                <FieldGroup label={`${t('wizard.lastName')} *`}>
                                     <Input value={form.defendant_last_name} onChange={e => updateForm({ defendant_last_name: e.target.value })} placeholder="Doe" />
                                 </FieldGroup>
                             </div>
-                            <FieldGroup label="Full Name (if different)">
-                                <Input value={form.defendant_full_name} onChange={e => updateForm({ defendant_full_name: e.target.value })} placeholder="Leave blank to auto-generate from first + last" />
+                            <FieldGroup label={t('wizard.fullName')}>
+                                <Input value={form.defendant_full_name} onChange={e => updateForm({ defendant_full_name: e.target.value })} placeholder={t('wizard.fullNamePlaceholder')} />
                             </FieldGroup>
-                            <FieldGroup label="Known Aliases (comma-separated)">
-                                <Input value={form.defendant_aliases} onChange={e => updateForm({ defendant_aliases: e.target.value })} placeholder="Johnny D, J. Doe" />
+                            <FieldGroup label={t('wizard.aliases')}>
+                                <Input value={form.defendant_aliases} onChange={e => updateForm({ defendant_aliases: e.target.value })} placeholder={t('wizard.aliasesPlaceholder')} />
                             </FieldGroup>
-                            <FieldGroup label="Known Location">
-                                <Input value={form.defendant_location} onChange={e => updateForm({ defendant_location: e.target.value })} placeholder="City, State, Country" />
+                            <FieldGroup label={t('wizard.knownLocation')}>
+                                <Input value={form.defendant_location} onChange={e => updateForm({ defendant_location: e.target.value })} placeholder={t('wizard.locationPlaceholder')} />
                             </FieldGroup>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <FieldGroup label="Phone">
+                                <FieldGroup label={t('wizard.phone')}>
                                     <Input value={form.defendant_phone} onChange={e => updateForm({ defendant_phone: e.target.value })} placeholder="+1..." />
                                 </FieldGroup>
-                                <FieldGroup label="Date of Birth">
+                                <FieldGroup label={t('wizard.dateOfBirth')}>
                                     <Input type="date" value={form.defendant_dob} onChange={e => updateForm({ defendant_dob: e.target.value })} />
                                 </FieldGroup>
                             </div>
-                            <FieldGroup label="Address">
-                                <Textarea value={form.defendant_address} onChange={e => updateForm({ defendant_address: e.target.value })} placeholder="Known address" rows={2} />
+                            <FieldGroup label={t('wizard.address')}>
+                                <Textarea value={form.defendant_address} onChange={e => updateForm({ defendant_address: e.target.value })} placeholder={t('wizard.addressPlaceholder')} rows={2} />
                             </FieldGroup>
-                            <FieldGroup label="Business Names (comma-separated)">
-                                <Input value={form.defendant_business_names} onChange={e => updateForm({ defendant_business_names: e.target.value })} placeholder="ACME Corp, XYZ Ltd" />
+                            <FieldGroup label={t('wizard.businessNames')}>
+                                <Input value={form.defendant_business_names} onChange={e => updateForm({ defendant_business_names: e.target.value })} placeholder={t('wizard.businessPlaceholder')} />
                             </FieldGroup>
                         </>
                     )}
@@ -369,14 +391,14 @@ export default function NewCaseForm() {
                     {/* STEP 2: Connection */}
                     {step === 2 && (
                         <>
-                            <FieldGroup label="Case Types *">
+                            <FieldGroup label={`${t('wizard.caseTypes')} *`}>
                                 <div className="flex flex-wrap gap-2">
                                     {CASE_TYPES.map(type => (
                                         <button
                                             key={type}
                                             onClick={() => {
                                                 const types = form.case_types.includes(type)
-                                                    ? form.case_types.filter(t => t !== type)
+                                                    ? form.case_types.filter(ct => ct !== type)
                                                     : [...form.case_types, type]
                                                 updateForm({ case_types: types })
                                             }}
@@ -386,32 +408,32 @@ export default function NewCaseForm() {
                                                     : 'bg-muted/50 text-muted-foreground border-border hover:border-primary/50'
                                                 }`}
                                         >
-                                            {type.replace(/_/g, ' ')}
+                                            {t('wizard.caseType_' + type)}
                                         </button>
                                     ))}
                                 </div>
                             </FieldGroup>
-                            <FieldGroup label="Relationship Type *">
+                            <FieldGroup label={`${t('wizard.relationshipType')} *`}>
                                 <Select value={form.relationship_type} onValueChange={v => updateForm({ relationship_type: v })}>
-                                    <SelectTrigger><SelectValue placeholder="How do you know the defendant?" /></SelectTrigger>
+                                    <SelectTrigger><SelectValue placeholder={t('wizard.relationshipPlaceholder')} /></SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="romantic_partner">Romantic Partner</SelectItem>
-                                        <SelectItem value="family_member">Family Member</SelectItem>
-                                        <SelectItem value="friend">Friend</SelectItem>
-                                        <SelectItem value="business_partner">Business Partner</SelectItem>
-                                        <SelectItem value="employer_employee">Employer/Employee</SelectItem>
-                                        <SelectItem value="client_service_provider">Client/Service Provider</SelectItem>
-                                        <SelectItem value="stranger">Stranger</SelectItem>
-                                        <SelectItem value="online_contact">Online Contact</SelectItem>
-                                        <SelectItem value="other">Other</SelectItem>
+                                        <SelectItem value="romantic_partner">{t('wizard.relRomantic')}</SelectItem>
+                                        <SelectItem value="family_member">{t('wizard.relFamily')}</SelectItem>
+                                        <SelectItem value="friend">{t('wizard.relFriend')}</SelectItem>
+                                        <SelectItem value="business_partner">{t('wizard.relBusiness')}</SelectItem>
+                                        <SelectItem value="employer_employee">{t('wizard.relEmployer')}</SelectItem>
+                                        <SelectItem value="client_service_provider">{t('wizard.relClient')}</SelectItem>
+                                        <SelectItem value="stranger">{t('wizard.relStranger')}</SelectItem>
+                                        <SelectItem value="online_contact">{t('wizard.relOnline')}</SelectItem>
+                                        <SelectItem value="other">{t('wizard.relOther')}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </FieldGroup>
-                            <FieldGroup label="Duration of Relationship">
-                                <Input value={form.relationship_duration} onChange={e => updateForm({ relationship_duration: e.target.value })} placeholder="e.g. 2 years, 6 months" />
+                            <FieldGroup label={t('wizard.relationshipDuration')}>
+                                <Input value={form.relationship_duration} onChange={e => updateForm({ relationship_duration: e.target.value })} placeholder={t('wizard.durationPlaceholder')} />
                             </FieldGroup>
-                            <FieldGroup label="How Did You Meet?">
-                                <Textarea value={form.how_met} onChange={e => updateForm({ how_met: e.target.value })} placeholder="Describe how you first came in contact..." rows={3} />
+                            <FieldGroup label={t('wizard.howMet')}>
+                                <Textarea value={form.how_met} onChange={e => updateForm({ how_met: e.target.value })} placeholder={t('wizard.howMetPlaceholder')} rows={3} />
                             </FieldGroup>
                         </>
                     )}
@@ -419,14 +441,14 @@ export default function NewCaseForm() {
                     {/* STEP 3: Promise */}
                     {step === 3 && (
                         <>
-                            <FieldGroup label="What Was Promised? *">
-                                <Textarea value={form.promise_what} onChange={e => updateForm({ promise_what: e.target.value })} placeholder="Describe what was promised, offered, or agreed upon..." rows={4} />
+                            <FieldGroup label={`${t('wizard.whatPromised')} *`}>
+                                <Textarea value={form.promise_what} onChange={e => updateForm({ promise_what: e.target.value })} placeholder={t('wizard.promisePlaceholder')} rows={4} />
                             </FieldGroup>
-                            <FieldGroup label="When Was It Promised?">
-                                <Input value={form.promise_when} onChange={e => updateForm({ promise_when: e.target.value })} placeholder="Date or approximate timeframe" />
+                            <FieldGroup label={t('wizard.whenPromised')}>
+                                <Input value={form.promise_when} onChange={e => updateForm({ promise_when: e.target.value })} placeholder={t('wizard.whenPlaceholder')} />
                             </FieldGroup>
-                            <FieldGroup label="Do You Have Evidence of the Promise?">
-                                <Textarea value={form.promise_evidence_of_promise} onChange={e => updateForm({ promise_evidence_of_promise: e.target.value })} placeholder="Describe any texts, emails, contracts, witnesses, or recordings..." rows={3} />
+                            <FieldGroup label={t('wizard.promiseEvidence')}>
+                                <Textarea value={form.promise_evidence_of_promise} onChange={e => updateForm({ promise_evidence_of_promise: e.target.value })} placeholder={t('wizard.promiseEvidencePlaceholder')} rows={3} />
                             </FieldGroup>
                         </>
                     )}
@@ -434,14 +456,14 @@ export default function NewCaseForm() {
                     {/* STEP 4: Betrayal */}
                     {step === 4 && (
                         <>
-                            <FieldGroup label="What Actually Happened? *">
-                                <Textarea value={form.betrayal_what_happened} onChange={e => updateForm({ betrayal_what_happened: e.target.value })} placeholder="Describe the betrayal, breach, or wrongful act in detail..." rows={5} />
+                            <FieldGroup label={`${t('wizard.whatHappened')} *`}>
+                                <Textarea value={form.betrayal_what_happened} onChange={e => updateForm({ betrayal_what_happened: e.target.value })} placeholder={t('wizard.whatHappenedPlaceholder')} rows={5} />
                             </FieldGroup>
-                            <FieldGroup label="When Did You Discover It?">
-                                <Input value={form.betrayal_when_discovered} onChange={e => updateForm({ betrayal_when_discovered: e.target.value })} placeholder="Date or approximate timeframe" />
+                            <FieldGroup label={t('wizard.whenDiscovered')}>
+                                <Input value={form.betrayal_when_discovered} onChange={e => updateForm({ betrayal_when_discovered: e.target.value })} placeholder={t('wizard.whenPlaceholder')} />
                             </FieldGroup>
-                            <FieldGroup label="How Did You Discover It?">
-                                <Textarea value={form.betrayal_how_discovered} onChange={e => updateForm({ betrayal_how_discovered: e.target.value })} placeholder="What led you to realize what happened..." rows={3} />
+                            <FieldGroup label={t('wizard.howDiscovered')}>
+                                <Textarea value={form.betrayal_how_discovered} onChange={e => updateForm({ betrayal_how_discovered: e.target.value })} placeholder={t('wizard.howDiscoveredPlaceholder')} rows={3} />
                             </FieldGroup>
                         </>
                     )}
@@ -449,11 +471,11 @@ export default function NewCaseForm() {
                     {/* STEP 5: Timeline */}
                     {step === 5 && (
                         <>
-                            <p className="text-sm text-muted-foreground">Add key events in chronological order. These form the public timeline on the defendant&apos;s page.</p>
+                            <p className="text-sm text-muted-foreground">{t('wizard.timelineInstructions')}</p>
                             {form.timeline_events.map((event, idx) => (
                                 <div key={idx} className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 rounded-lg border bg-muted/20">
                                     <Input
-                                        placeholder="Date or year"
+                                        placeholder={t('wizard.dateOrYear')}
                                         value={event.date}
                                         onChange={e => {
                                             const events = [...form.timeline_events]
@@ -462,7 +484,7 @@ export default function NewCaseForm() {
                                         }}
                                     />
                                     <Input
-                                        placeholder="What happened?"
+                                        placeholder={t('wizard.whatHappenedShort')}
                                         value={event.event}
                                         onChange={e => {
                                             const events = [...form.timeline_events]
@@ -472,7 +494,7 @@ export default function NewCaseForm() {
                                     />
                                     <div className="flex gap-2">
                                         <Input
-                                            placeholder="Location"
+                                            placeholder={t('wizard.location')}
                                             value={event.location}
                                             onChange={e => {
                                                 const events = [...form.timeline_events]
@@ -491,7 +513,7 @@ export default function NewCaseForm() {
                             <Button variant="outline" size="sm" onClick={() => {
                                 updateForm({ timeline_events: [...form.timeline_events, { date: '', event: '', location: '' }] })
                             }}>
-                                + Add Event
+                                {t('wizard.addEvent')}
                             </Button>
                         </>
                     )}
@@ -500,21 +522,21 @@ export default function NewCaseForm() {
                     {step === 6 && (
                         <>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <FieldGroup label="Financial Loss Amount ($)">
+                                <FieldGroup label={t('wizard.financialLoss')}>
                                     <Input type="number" value={form.financial_amount} onChange={e => updateForm({ financial_amount: e.target.value })} placeholder="0.00" />
                                 </FieldGroup>
-                                <FieldGroup label="Currency">
+                                <FieldGroup label={t('wizard.currency')}>
                                     <Input value="USD" disabled />
                                 </FieldGroup>
                             </div>
-                            <FieldGroup label="Describe Financial Impact">
-                                <Textarea value={form.financial_description} onChange={e => updateForm({ financial_description: e.target.value })} placeholder="How did this affect you financially?" rows={3} />
+                            <FieldGroup label={t('wizard.describeFinancial')}>
+                                <Textarea value={form.financial_description} onChange={e => updateForm({ financial_description: e.target.value })} placeholder={t('wizard.financialPlaceholder')} rows={3} />
                             </FieldGroup>
-                            <FieldGroup label="Emotional Impact">
-                                <Textarea value={form.emotional_impact} onChange={e => updateForm({ emotional_impact: e.target.value })} placeholder="How has this affected you emotionally, mentally, or psychologically?" rows={3} />
+                            <FieldGroup label={t('wizard.emotionalImpact')}>
+                                <Textarea value={form.emotional_impact} onChange={e => updateForm({ emotional_impact: e.target.value })} placeholder={t('wizard.emotionalPlaceholder')} rows={3} />
                             </FieldGroup>
-                            <FieldGroup label="Physical Impact (if any)">
-                                <Textarea value={form.physical_impact} onChange={e => updateForm({ physical_impact: e.target.value })} placeholder="Any physical harm or health effects?" rows={2} />
+                            <FieldGroup label={t('wizard.physicalImpact')}>
+                                <Textarea value={form.physical_impact} onChange={e => updateForm({ physical_impact: e.target.value })} placeholder={t('wizard.physicalPlaceholder')} rows={2} />
                             </FieldGroup>
                         </>
                     )}
@@ -523,16 +545,16 @@ export default function NewCaseForm() {
                     {step === 7 && (
                         <>
                             <div className="rounded-lg border border-dashed p-6 text-center space-y-3 bg-muted/20">
-                                <p className="text-3xl">📎</p>
+                                <PaperClipIcon className="h-10 w-10 mx-auto" style={{ color: 'hsl(var(--primary))' }} />
                                 <p className="text-sm text-muted-foreground">
-                                    Evidence upload will be enabled after submission.<br />
-                                    For now, describe your evidence below. You can upload files from your case dashboard.
+                                    {t('wizard.evidenceUploadNote')}<br />
+                                    {t('wizard.evidenceDescribeNote')}
                                 </p>
                             </div>
                             {form.evidence_descriptions.map((ev, idx) => (
                                 <div key={idx} className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 rounded-lg border bg-muted/20">
                                     <Input
-                                        placeholder="Label (e.g. Contract)"
+                                        placeholder={t('wizard.evidenceLabel')}
                                         value={ev.label}
                                         onChange={e => {
                                             const descs = [...form.evidence_descriptions]
@@ -545,20 +567,20 @@ export default function NewCaseForm() {
                                         descs[idx] = { ...descs[idx], category: v }
                                         updateForm({ evidence_descriptions: descs })
                                     }}>
-                                        <SelectTrigger><SelectValue placeholder="Category" /></SelectTrigger>
+                                        <SelectTrigger><SelectValue placeholder={t('wizard.evidenceCategory')} /></SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="document">Document</SelectItem>
-                                            <SelectItem value="photo">Photo</SelectItem>
-                                            <SelectItem value="video">Video</SelectItem>
-                                            <SelectItem value="audio">Audio</SelectItem>
-                                            <SelectItem value="communication">Communication</SelectItem>
-                                            <SelectItem value="financial">Financial Record</SelectItem>
-                                            <SelectItem value="other">Other</SelectItem>
+                                            <SelectItem value="document">{t('wizard.catDocument')}</SelectItem>
+                                            <SelectItem value="photo">{t('wizard.catPhoto')}</SelectItem>
+                                            <SelectItem value="video">{t('wizard.catVideo')}</SelectItem>
+                                            <SelectItem value="audio">{t('wizard.catAudio')}</SelectItem>
+                                            <SelectItem value="communication">{t('wizard.catCommunication')}</SelectItem>
+                                            <SelectItem value="financial">{t('wizard.catFinancial')}</SelectItem>
+                                            <SelectItem value="other">{t('wizard.catOther')}</SelectItem>
                                         </SelectContent>
                                     </Select>
                                     <div className="flex gap-2">
                                         <Input
-                                            placeholder="Description"
+                                            placeholder={t('wizard.evidenceDescription')}
                                             value={ev.description}
                                             onChange={e => {
                                                 const descs = [...form.evidence_descriptions]
@@ -575,7 +597,7 @@ export default function NewCaseForm() {
                             <Button variant="outline" size="sm" onClick={() => {
                                 updateForm({ evidence_descriptions: [...form.evidence_descriptions, { label: '', description: '', category: '' }] })
                             }}>
-                                + Describe Evidence
+                                {t('wizard.addEvidence')}
                             </Button>
                         </>
                     )}
@@ -583,21 +605,21 @@ export default function NewCaseForm() {
                     {/* STEP 8: Witnesses */}
                     {step === 8 && (
                         <>
-                            <p className="text-sm text-muted-foreground">List anyone who can verify your claims. They may be contacted for witness statements.</p>
+                            <p className="text-sm text-muted-foreground">{t('wizard.witnessInstructions')}</p>
                             {form.witness_names.map((w, idx) => (
                                 <div key={idx} className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 rounded-lg border bg-muted/20">
-                                    <Input placeholder="Full name" value={w.name} onChange={e => {
+                                    <Input placeholder={t('wizard.witnessName')} value={w.name} onChange={e => {
                                         const ws = [...form.witness_names]
                                         ws[idx] = { ...ws[idx], name: e.target.value }
                                         updateForm({ witness_names: ws })
                                     }} />
-                                    <Input placeholder="Relationship" value={w.relationship} onChange={e => {
+                                    <Input placeholder={t('wizard.witnessRelationship')} value={w.relationship} onChange={e => {
                                         const ws = [...form.witness_names]
                                         ws[idx] = { ...ws[idx], relationship: e.target.value }
                                         updateForm({ witness_names: ws })
                                     }} />
                                     <div className="flex gap-2">
-                                        <Input placeholder="Contact (email/phone)" value={w.contact} onChange={e => {
+                                        <Input placeholder={t('wizard.witnessContact')} value={w.contact} onChange={e => {
                                             const ws = [...form.witness_names]
                                             ws[idx] = { ...ws[idx], contact: e.target.value }
                                             updateForm({ witness_names: ws })
@@ -611,7 +633,7 @@ export default function NewCaseForm() {
                             <Button variant="outline" size="sm" onClick={() => {
                                 updateForm({ witness_names: [...form.witness_names, { name: '', relationship: '', contact: '' }] })
                             }}>
-                                + Add Witness
+                                {t('wizard.addWitness')}
                             </Button>
                         </>
                     )}
@@ -620,39 +642,39 @@ export default function NewCaseForm() {
                     {step === 9 && (
                         <>
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                <FieldGroup label="Police Report Filed?">
+                                <FieldGroup label={t('wizard.policeReport')}>
                                     <Select value={form.police_report_filed} onValueChange={v => updateForm({ police_report_filed: v })}>
                                         <SelectTrigger><SelectValue /></SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="no">No</SelectItem>
-                                            <SelectItem value="yes">Yes</SelectItem>
-                                            <SelectItem value="pending">Pending</SelectItem>
+                                            <SelectItem value="no">{t('wizard.no')}</SelectItem>
+                                            <SelectItem value="yes">{t('wizard.yes')}</SelectItem>
+                                            <SelectItem value="pending">{t('wizard.pending')}</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </FieldGroup>
-                                <FieldGroup label="Lawyer Consulted?">
+                                <FieldGroup label={t('wizard.lawyerConsulted')}>
                                     <Select value={form.lawyer_consulted} onValueChange={v => updateForm({ lawyer_consulted: v })}>
                                         <SelectTrigger><SelectValue /></SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="no">No</SelectItem>
-                                            <SelectItem value="yes">Yes</SelectItem>
-                                            <SelectItem value="in_progress">In Progress</SelectItem>
+                                            <SelectItem value="no">{t('wizard.no')}</SelectItem>
+                                            <SelectItem value="yes">{t('wizard.yes')}</SelectItem>
+                                            <SelectItem value="in_progress">{t('wizard.inProgress')}</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </FieldGroup>
-                                <FieldGroup label="Court Case Filed?">
+                                <FieldGroup label={t('wizard.courtCaseFiled')}>
                                     <Select value={form.court_case_filed} onValueChange={v => updateForm({ court_case_filed: v })}>
                                         <SelectTrigger><SelectValue /></SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="no">No</SelectItem>
-                                            <SelectItem value="yes">Yes</SelectItem>
-                                            <SelectItem value="dismissed">Dismissed</SelectItem>
+                                            <SelectItem value="no">{t('wizard.no')}</SelectItem>
+                                            <SelectItem value="yes">{t('wizard.yes')}</SelectItem>
+                                            <SelectItem value="dismissed">{t('wizard.dismissed')}</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </FieldGroup>
                             </div>
-                            <FieldGroup label="Additional Legal Details">
-                                <Textarea value={form.legal_description} onChange={e => updateForm({ legal_description: e.target.value })} placeholder="Any additional legal context, case numbers, or outcomes..." rows={4} />
+                            <FieldGroup label={t('wizard.legalDetails')}>
+                                <Textarea value={form.legal_description} onChange={e => updateForm({ legal_description: e.target.value })} placeholder={t('wizard.legalPlaceholder')} rows={4} />
                             </FieldGroup>
                         </>
                     )}
@@ -660,18 +682,18 @@ export default function NewCaseForm() {
                     {/* STEP 10: Your Story */}
                     {step === 10 && (
                         <>
-                            <FieldGroup label="Story Title *">
-                                <Input value={form.story_title} onChange={e => updateForm({ story_title: e.target.value })} placeholder="A compelling title for your case story" />
+                            <FieldGroup label={`${t('wizard.storyTitle')} *`}>
+                                <Input value={form.story_title} onChange={e => updateForm({ story_title: e.target.value })} placeholder={t('wizard.storyTitlePlaceholder')} />
                             </FieldGroup>
-                            <FieldGroup label="Your Narrative *">
+                            <FieldGroup label={`${t('wizard.yourNarrative')} *`}>
                                 <Textarea
                                     value={form.story_narrative}
                                     onChange={e => updateForm({ story_narrative: e.target.value })}
-                                    placeholder="Tell your story in your own words. This will be the main body of your case file, visible to the public. Be detailed, honest, and include specific dates, amounts, and names where possible."
+                                    placeholder={t('wizard.narrativePlaceholder')}
                                     rows={12}
                                 />
                                 <p className="text-xs text-muted-foreground mt-1">
-                                    {form.story_narrative.length} characters · {form.story_narrative.split(/\s+/).filter(Boolean).length} words
+                                    {form.story_narrative.length} {t('wizard.characters')} · {form.story_narrative.split(/\s+/).filter(Boolean).length} {t('wizard.words')}
                                 </p>
                             </FieldGroup>
                         </>
@@ -680,38 +702,38 @@ export default function NewCaseForm() {
                     {/* STEP 11: Safety */}
                     {step === 11 && (
                         <>
-                            <FieldGroup label="Visibility Tier">
+                            <FieldGroup label={t('wizard.visibilityTier')}>
                                 <Select value={form.visibility} onValueChange={v => updateForm({ visibility: v })}>
                                     <SelectTrigger><SelectValue /></SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="open">🟢 Open — Full public visibility</SelectItem>
-                                        <SelectItem value="shielded">🟡 Shielded — Display name only, no real identity</SelectItem>
-                                        <SelectItem value="protected">🟠 Protected — Verified but anonymous to public</SelectItem>
-                                        <SelectItem value="proxy">🔴 Proxy — Filed through attorney or advocate</SelectItem>
+                                        <SelectItem value="open">{t('wizard.visOpen')}</SelectItem>
+                                        <SelectItem value="shielded">{t('wizard.visShielded')}</SelectItem>
+                                        <SelectItem value="protected">{t('wizard.visProtected')}</SelectItem>
+                                        <SelectItem value="proxy">{t('wizard.visProxy')}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </FieldGroup>
                             <div className="space-y-3 pt-2">
                                 <ConsentCheckbox
-                                    label="I consent to my real name being associated with this case"
+                                    label={t('wizard.consentRealName')}
                                     checked={form.consent_real_name}
                                     onChange={v => updateForm({ consent_real_name: v })}
                                 />
                                 <ConsentCheckbox
-                                    label="I consent to my contact information being shared with case investigators"
+                                    label={t('wizard.consentContact')}
                                     checked={form.consent_contact_sharing}
                                     onChange={v => updateForm({ consent_contact_sharing: v })}
                                 />
                                 <ConsentCheckbox
-                                    label="I agree to the terms of service and understand this record is permanent *"
+                                    label={`${t('wizard.consentTerms')} *`}
                                     checked={form.consent_terms}
                                     onChange={v => updateForm({ consent_terms: v })}
                                 />
                             </div>
                             <div className="rounded-lg border p-4 bg-amber-500/5 border-amber-500/20">
-                                <p className="text-sm font-medium text-amber-600 dark:text-amber-400">⚠️ Dead Man&apos;s Switch</p>
+                                <p className="text-sm font-medium text-amber-600 dark:text-amber-400">{t('wizard.deadManNote')}</p>
                                 <p className="text-xs text-muted-foreground mt-1">
-                                    You can configure a safety switch from your profile after filing. If you stop checking in, designated contacts will be notified.
+                                    {t('wizard.deadManDesc')}
                                 </p>
                             </div>
                         </>
@@ -721,48 +743,48 @@ export default function NewCaseForm() {
                     {step === 12 && (
                         <>
                             <div className="space-y-4">
-                                <ReviewBlock title="Defendant" items={[
+                                <ReviewBlock title={t('wizard.reviewDefendant')} items={[
                                     form.defendant_full_name || `${form.defendant_first_name} ${form.defendant_last_name}`.trim(),
                                     form.defendant_location && `📍 ${form.defendant_location}`,
                                     form.defendant_aliases && `AKA: ${form.defendant_aliases}`,
                                 ]} />
-                                <ReviewBlock title="Case Types" items={form.case_types.map(t => t.replace(/_/g, ' '))} />
-                                <ReviewBlock title="Relationship" items={[
-                                    form.relationship_type && `Type: ${form.relationship_type.replace(/_/g, ' ')}`,
-                                    form.relationship_duration && `Duration: ${form.relationship_duration}`,
+                                <ReviewBlock title={t('wizard.reviewCaseTypes')} items={form.case_types.map(ct => ct.replace(/_/g, ' '))} />
+                                <ReviewBlock title={t('wizard.reviewRelationship')} items={[
+                                    form.relationship_type && `${t('wizard.reviewType')}: ${form.relationship_type.replace(/_/g, ' ')}`,
+                                    form.relationship_duration && `${t('wizard.reviewDuration')}: ${form.relationship_duration}`,
                                 ]} />
-                                <ReviewBlock title="Financial Impact" items={[
+                                <ReviewBlock title={t('wizard.reviewFinancial')} items={[
                                     form.financial_amount && `$${parseFloat(form.financial_amount).toLocaleString()}`,
                                     form.financial_description,
                                 ]} />
-                                <ReviewBlock title="Timeline Events" items={
+                                <ReviewBlock title={t('wizard.reviewTimeline')} items={
                                     form.timeline_events.filter(e => e.event).map(e => `${e.date}: ${e.event}`)
                                 } />
-                                <ReviewBlock title="Legal Actions" items={[
-                                    `Police report: ${form.police_report_filed}`,
-                                    `Lawyer: ${form.lawyer_consulted}`,
-                                    `Court case: ${form.court_case_filed}`,
+                                <ReviewBlock title={t('wizard.reviewLegal')} items={[
+                                    `${t('wizard.reviewPolice')}: ${form.police_report_filed}`,
+                                    `${t('wizard.reviewLawyer')}: ${form.lawyer_consulted}`,
+                                    `${t('wizard.reviewCourt')}: ${form.court_case_filed}`,
                                 ]} />
-                                <ReviewBlock title="Story" items={[
+                                <ReviewBlock title={t('wizard.reviewStory')} items={[
                                     form.story_title && `"${form.story_title}"`,
-                                    form.story_narrative && `${form.story_narrative.split(/\s+/).filter(Boolean).length} words`,
+                                    form.story_narrative && `${form.story_narrative.split(/\s+/).filter(Boolean).length} ${t('wizard.words')}`,
                                 ]} />
-                                <ReviewBlock title="Safety" items={[
-                                    `Visibility: ${form.visibility}`,
-                                    `Terms accepted: ${form.consent_terms ? '✅' : '❌'}`,
+                                <ReviewBlock title={t('wizard.reviewSafety')} items={[
+                                    `${t('wizard.reviewVisibility')}: ${form.visibility}`,
+                                    `${t('wizard.reviewTerms')}: ${form.consent_terms ? '✅' : '❌'}`,
                                 ]} />
                             </div>
 
-                            <FieldGroup label="Nominal Damages Claimed ($)">
-                                <Input type="number" value={form.nominal_damages} onChange={e => updateForm({ nominal_damages: e.target.value })} placeholder="Amount you are claiming in damages" />
+                            <FieldGroup label={t('wizard.nominalDamages')}>
+                                <Input type="number" value={form.nominal_damages} onChange={e => updateForm({ nominal_damages: e.target.value })} placeholder={t('wizard.nominalDamagesPlaceholder')} />
                                 <p className="text-xs text-muted-foreground mt-1">
-                                    This is the amount you believe you are owed. Jury members will vote on whether to award this amount.
+                                    {t('wizard.nominalDamagesNote')}
                                 </p>
                             </FieldGroup>
 
                             {!form.consent_terms && (
                                 <div className="rounded-lg border border-destructive/50 bg-destructive/5 p-3">
-                                    <p className="text-sm text-destructive">You must accept the terms of service before submitting.</p>
+                                    <p className="text-sm text-destructive">{t('wizard.mustAcceptTerms')}</p>
                                 </div>
                             )}
                         </>
@@ -777,7 +799,7 @@ export default function NewCaseForm() {
                     onClick={() => setStep(Math.max(1, step - 1))}
                     disabled={step === 1}
                 >
-                    ← Previous
+                    {t('wizard.previous')}
                 </Button>
 
                 <div className="flex gap-2">
@@ -791,12 +813,12 @@ export default function NewCaseForm() {
                             setSavedAt(null)
                         }}
                     >
-                        Clear Draft
+                        {t('wizard.clearDraft')}
                     </Button>
 
                     {step < 12 ? (
                         <Button onClick={() => setStep(Math.min(STEPS.length, step + 1))}>
-                            Next →
+                            {t('wizard.nextStep')}
                         </Button>
                     ) : (
                         <Button
@@ -807,10 +829,10 @@ export default function NewCaseForm() {
                             {submitting ? (
                                 <span className="flex items-center gap-2">
                                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                                    Submitting...
+                                    {t('wizard.submitting')}
                                 </span>
                             ) : (
-                                '⚖️ Submit Case'
+                                t('wizard.submitCase')
                             )}
                         </Button>
                     )}

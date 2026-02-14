@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
 import { CaseComments } from './case-comments'
+import { VoteCTA } from '@/components/cases/vote-cta'
 import type { Metadata } from 'next'
 
 export const revalidate = 30
@@ -349,24 +350,9 @@ export default async function CaseDetailPage({ params }: PageProps) {
                 </TabsContent>
             </Tabs>
 
-            {/* Vote CTA */}
+            {/* Vote CTA — gated by vote permission */}
             {['judgment', 'investigation', 'pending_convergence'].includes(caseData.status) && (
-                <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
-                    <CardContent className="p-6 flex flex-col sm:flex-row items-center gap-4">
-                        <div className="text-4xl">⚖️</div>
-                        <div className="flex-1 text-center sm:text-left">
-                            <h3 className="text-lg font-bold">Cast Your Vote</h3>
-                            <p className="text-sm text-muted-foreground">
-                                This case is open for public judgment. Review the evidence and submit your verdict.
-                            </p>
-                        </div>
-                        <a href={`/vote?case=${caseData.id}`}>
-                            <Button size="lg" className="font-semibold">
-                                🗳️ Vote Now
-                            </Button>
-                        </a>
-                    </CardContent>
-                </Card>
+                <VoteCTA caseId={caseData.id} />
             )}
 
             {/* Comments Section */}

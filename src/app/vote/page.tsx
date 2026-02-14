@@ -10,17 +10,39 @@ import { Slider } from '@/components/ui/slider'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
+import { PermissionGate } from '@/components/auth/PermissionGate'
 import type { User } from '@supabase/supabase-js'
+import { useTranslation } from '@/i18n'
 
 export default function VotePage() {
+    const { t } = useTranslation()
+
     return (
-        <Suspense fallback={
-            <div className="flex min-h-[60vh] items-center justify-center">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-            </div>
-        }>
-            <VoteForm />
-        </Suspense>
+        <PermissionGate
+            permission="vote"
+            fallback={
+                <div className="max-w-lg mx-auto text-center py-20 space-y-4">
+                    <div className="text-6xl">🔒</div>
+                    <h1 className="text-2xl font-bold">{t('voting.accessDenied')}</h1>
+                    <p className="text-muted-foreground">
+                        {t('voting.loginRequired')}
+                    </p>
+                </div>
+            }
+            loadingFallback={
+                <div className="flex min-h-[60vh] items-center justify-center">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                </div>
+            }
+        >
+            <Suspense fallback={
+                <div className="flex min-h-[60vh] items-center justify-center">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                </div>
+            }>
+                <VoteForm />
+            </Suspense>
+        </PermissionGate>
     )
 }
 
@@ -29,6 +51,7 @@ function VoteForm() {
     const searchParams = useSearchParams()
     const caseId = searchParams.get('case')
     const supabase = createClient()
+    const { t } = useTranslation()
 
     const [user, setUser] = useState<User | null>(null)
     const [caseData, setCaseData] = useState<any>(null)
@@ -50,7 +73,7 @@ function VoteForm() {
             if (!user) { router.push(`/login?redirect=/vote?case=${caseId}`); return }
             setUser(user)
 
-            if (!caseId) { setError('No case specified'); setLoading(false); return }
+            if (!caseId) { setError(t('voting.noCaseId')); setLoading(false); return }
 
             // Load case
             const { data: caseResult } = await supabase
@@ -59,7 +82,7 @@ function VoteForm() {
                 .eq('id', caseId)
                 .single()
 
-            if (!caseResult) { setError('Case not found'); setLoading(false); return }
+            if (!caseResult) { setError(t('voting.caseNotFound')); setLoading(false); return }
             setCaseData(caseResult)
 
             // Check for existing vote
@@ -89,35 +112,24 @@ function VoteForm() {
         setError(null)
 
         try {
-            const maxPunitive = (caseData?.nominal_damages_claimed || 0) * 2
             const punitive = punitiveAmount ? parseFloat(punitiveAmount) : 0
 
-            if (punitive > maxPunitive) {
-                setError(`Punitive damages cannot exceed $${maxPunitive.toLocaleString()} (2x nominal)`)
-                setSubmitting(false)
-                return
-            }
+            const res = await fetch('/api/votes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    case_id: caseId,
+                    guilt_score: guiltScore,
+                    nominal_approved: nominalApproved,
+                    punitive_amount: punitive || null,
+                    justification: justification.trim() || null,
+                }),
+            })
 
-            const voteData = {
-                case_id: caseId,
-                voter_id: user.id,
-                guilt_score: guiltScore,
-                nominal_approved: nominalApproved,
-                punitive_amount: punitive || null,
-                justification: justification.trim() || null,
-            }
+            const result = await res.json()
 
-            if (existingVote) {
-                const { error: updateErr } = await supabase
-                    .from('votes')
-                    .update({ ...voteData, updated_at: new Date().toISOString() })
-                    .eq('id', existingVote.id)
-                if (updateErr) throw new Error(updateErr.message)
-            } else {
-                const { error: insertErr } = await supabase
-                    .from('votes')
-                    .insert(voteData)
-                if (insertErr) throw new Error(insertErr.message)
+            if (!res.ok) {
+                throw new Error(result.error || 'Failed to submit vote')
             }
 
             setSubmitted(true)
@@ -140,16 +152,16 @@ function VoteForm() {
         return (
             <div className="max-w-lg mx-auto text-center space-y-6 py-20">
                 <div className="text-6xl">⚖️</div>
-                <h1 className="text-2xl font-bold">Vote {existingVote ? 'Updated' : 'Recorded'}</h1>
+                <h1 className="text-2xl font-bold">{existingVote ? t('voting.voteUpdated') : t('voting.voteRecorded')}</h1>
                 <p className="text-muted-foreground">
-                    Your verdict has been sealed. Results will be revealed when voting closes.
+                    {t('voting.voteSealed')}
                 </p>
                 <div className="flex gap-3 justify-center">
                     <Button variant="outline" onClick={() => router.push(`/cases/${caseData?.case_number}`)}>
-                        Back to Case
+                        {t('common.back')}
                     </Button>
                     <Button onClick={() => router.push('/cases')}>
-                        Browse Cases
+                        {t('nav.browseCases')}
                     </Button>
                 </div>
             </div>
@@ -159,7 +171,7 @@ function VoteForm() {
     if (!caseData) {
         return (
             <div className="max-w-lg mx-auto text-center py-20">
-                <p className="text-lg text-muted-foreground">{error || 'Case not found'}</p>
+                <p className="text-lg text-muted-foreground">{error || t('voting.caseNotFound')}</p>
             </div>
         )
     }
@@ -168,29 +180,29 @@ function VoteForm() {
     const nominalDamages = caseData.nominal_damages_claimed || 0
     const maxPunitive = nominalDamages * 2
 
-    const guiltLabel = guiltScore <= 2 ? 'Innocent' : guiltScore <= 4 ? 'Likely Innocent' : guiltScore <= 6 ? 'Uncertain' : guiltScore <= 8 ? 'Likely Guilty' : 'Guilty'
+    const guiltLabel = guiltScore <= 2 ? t('voting.innocent') : guiltScore <= 4 ? t('voting.innocent') : guiltScore <= 6 ? t('voting.uncertain') : guiltScore <= 8 ? t('voting.guilty') : t('voting.guilty')
     const guiltColor = guiltScore <= 2 ? 'text-green-500' : guiltScore <= 4 ? 'text-emerald-500' : guiltScore <= 6 ? 'text-yellow-500' : guiltScore <= 8 ? 'text-orange-500' : 'text-red-500'
 
     return (
         <div className="max-w-2xl mx-auto space-y-6">
             {/* Header */}
             <div>
-                <Badge variant="outline" className="mb-2">Jury Duty</Badge>
-                <h1 className="text-2xl font-bold">Cast Your Vote</h1>
+                <Badge variant="outline" className="mb-2">{t('voting.title')}</Badge>
+                <h1 className="text-2xl font-bold">{t('voting.title')}</h1>
                 <p className="text-sm text-muted-foreground mt-1">
-                    Case {caseData.case_number} vs. {defendant?.full_name || 'Unknown'}
+                    {t('cases.caseNumber')} {caseData.case_number} {t('common.vs')} {defendant?.full_name || 'Unknown'}
                 </p>
                 {existingVote && (
-                    <Badge className="bg-blue-500/10 text-blue-600 mt-2">Updating existing vote</Badge>
+                    <Badge className="bg-blue-500/10 text-blue-600 mt-2">{t('voting.updatingExisting')}</Badge>
                 )}
             </div>
 
             {/* Guilt Score */}
             <Card className="shadow-md">
                 <CardHeader>
-                    <CardTitle className="text-lg">1. Guilt Assessment</CardTitle>
+                    <CardTitle className="text-lg">1. {t('voting.guiltAssessment')}</CardTitle>
                     <p className="text-xs text-muted-foreground">
-                        Based on the evidence, how guilty is the defendant? (1 = Innocent, 10 = Guilty)
+                        {t('voting.guiltDescription')}
                     </p>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -207,9 +219,9 @@ function VoteForm() {
                         className="py-4"
                     />
                     <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>1 — Innocent</span>
-                        <span>5 — Uncertain</span>
-                        <span>10 — Guilty</span>
+                        <span>1 — {t('voting.innocent')}</span>
+                        <span>5 — {t('voting.uncertain')}</span>
+                        <span>10 — {t('voting.guilty')}</span>
                     </div>
                 </CardContent>
             </Card>
@@ -217,9 +229,9 @@ function VoteForm() {
             {/* Nominal Damages */}
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-lg">2. Nominal Damages</CardTitle>
+                    <CardTitle className="text-lg">2. {t('voting.nominalDamages')}</CardTitle>
                     <p className="text-xs text-muted-foreground">
-                        The plaintiff claims <strong>${nominalDamages.toLocaleString()}</strong> in damages. Do you approve?
+                        {t('voting.nominalDescription')} <strong>${nominalDamages.toLocaleString()}</strong>
                     </p>
                 </CardHeader>
                 <CardContent>
@@ -229,14 +241,14 @@ function VoteForm() {
                             className={`flex-1 ${nominalApproved ? 'bg-green-600 hover:bg-green-700' : ''}`}
                             onClick={() => setNominalApproved(true)}
                         >
-                            ✅ Approve
+                            ✅ {t('voting.approve')}
                         </Button>
                         <Button
                             variant={!nominalApproved ? 'default' : 'outline'}
                             className={`flex-1 ${!nominalApproved ? 'bg-red-600 hover:bg-red-700' : ''}`}
                             onClick={() => setNominalApproved(false)}
                         >
-                            ❌ Deny
+                            ❌ {t('voting.deny')}
                         </Button>
                     </div>
                 </CardContent>
@@ -245,9 +257,9 @@ function VoteForm() {
             {/* Punitive Damages */}
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-lg">3. Punitive Damages (Optional)</CardTitle>
+                    <CardTitle className="text-lg">3. {t('voting.punitiveTitle')}</CardTitle>
                     <p className="text-xs text-muted-foreground">
-                        Set additional punitive damages. Maximum: ${maxPunitive.toLocaleString()} (2× nominal).
+                        {t('voting.punitiveDescription')} (Max: ${maxPunitive.toLocaleString()})
                     </p>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -283,9 +295,9 @@ function VoteForm() {
             {/* Justification */}
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-lg">4. Justification (Optional)</CardTitle>
+                    <CardTitle className="text-lg">4. {t('voting.justification')}</CardTitle>
                     <p className="text-xs text-muted-foreground">
-                        Explain your reasoning. This may be visible in the public record after verdict.
+                        {t('voting.justificationDescription')}
                     </p>
                 </CardHeader>
                 <CardContent>
@@ -306,19 +318,19 @@ function VoteForm() {
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
                         <div>
                             <p className={`text-2xl font-bold ${guiltColor}`}>{guiltScore}/10</p>
-                            <p className="text-xs text-muted-foreground">Guilt</p>
+                            <p className="text-xs text-muted-foreground">{t('voting.guilt')}</p>
                         </div>
                         <div>
                             <p className="text-2xl font-bold">{nominalApproved ? '✅' : '❌'}</p>
-                            <p className="text-xs text-muted-foreground">Nominal</p>
+                            <p className="text-xs text-muted-foreground">{t('voting.nominal')}</p>
                         </div>
                         <div>
                             <p className="text-2xl font-bold">${punitiveAmount ? parseFloat(punitiveAmount).toLocaleString() : '0'}</p>
-                            <p className="text-xs text-muted-foreground">Punitive</p>
+                            <p className="text-xs text-muted-foreground">{t('voting.punitive')}</p>
                         </div>
                         <div>
                             <p className="text-2xl font-bold">${(nominalApproved ? nominalDamages : 0) + (punitiveAmount ? parseFloat(punitiveAmount) : 0)}</p>
-                            <p className="text-xs text-muted-foreground">Total</p>
+                            <p className="text-xs text-muted-foreground">{t('voting.total')}</p>
                         </div>
                     </div>
                 </CardContent>
@@ -332,7 +344,7 @@ function VoteForm() {
 
             <div className="flex gap-3">
                 <Button variant="outline" className="flex-1" onClick={() => router.back()}>
-                    Cancel
+                    {t('common.cancel')}
                 </Button>
                 <Button
                     className="flex-1"
@@ -342,18 +354,18 @@ function VoteForm() {
                     {submitting ? (
                         <span className="flex items-center gap-2">
                             <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                            Submitting...
+                            {t('common.loading')}
                         </span>
                     ) : existingVote ? (
-                        '⚖️ Update Vote'
+                        `⚖️ ${t('voting.updateVote')}`
                     ) : (
-                        '⚖️ Submit Vote'
+                        `⚖️ ${t('voting.submitVote')}`
                     )}
                 </Button>
             </div>
 
             <p className="text-xs text-center text-muted-foreground">
-                You can change your vote until voting closes. Results are hidden until the verdict is sealed.
+                {t('voting.resultSealed')}
             </p>
         </div>
     )

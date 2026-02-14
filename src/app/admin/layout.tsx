@@ -14,14 +14,13 @@ export default async function AdminLayout({
     }
 
     // Check admin role using user_roles table
-    const { data: role } = await supabase
+    const { data: roles } = await supabase
         .from('user_roles')
-        .select('role')
+        .select('role_id')
         .eq('user_id', user.id)
-        .eq('role', 'admin')
-        .maybeSingle()
+        .in('role_id', ['admin', 'super_admin'])
 
-    if (!role) {
+    if (!roles || roles.length === 0) {
         redirect('/')
     }
 

@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
 import type { User } from '@supabase/supabase-js'
+import { useTranslation } from '@/i18n'
 
 type Profile = {
     id: string
@@ -36,6 +37,7 @@ type Profile = {
 export default function ProfilePage() {
     const router = useRouter()
     const supabase = createClient()
+    const { t } = useTranslation()
     const [user, setUser] = useState<User | null>(null)
     const [profile, setProfile] = useState<Profile | null>(null)
     const [loading, setLoading] = useState(true)
@@ -162,7 +164,7 @@ export default function ProfilePage() {
     if (!user || !profile) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
-                <p className="text-muted-foreground">Please sign in to view your profile.</p>
+                <p className="text-muted-foreground">{t('profile.loginRequired')}</p>
             </div>
         )
     }
@@ -209,11 +211,11 @@ export default function ProfilePage() {
                         <div className="flex-1">
                             <div className="flex items-center gap-2">
                                 <h1 className="text-xl sm:text-2xl font-bold">{profile.display_name}</h1>
-                                {profile.is_verified && <Badge className="bg-blue-500/10 text-blue-600 text-xs">Verified</Badge>}
+                                {profile.is_verified && <Badge className="bg-blue-500/10 text-blue-600 text-xs">{t('profile.verified')}</Badge>}
                             </div>
                             {profile.tagline && <p className="text-sm text-muted-foreground">{profile.tagline}</p>}
                             <p className="text-xs text-muted-foreground mt-1">
-                                Joined {new Date(profile.joined_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                                {t('profile.joined')} {new Date(profile.joined_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                             </p>
                         </div>
 
@@ -223,7 +225,7 @@ export default function ProfilePage() {
                             onClick={() => editing ? handleSave() : setEditing(true)}
                             disabled={saving}
                         >
-                            {saving ? 'Saving...' : editing ? 'Save Changes' : 'Edit Profile'}
+                            {saving ? t('profile.saving') : editing ? t('profile.saveChanges') : t('profile.editProfile')}
                         </Button>
                     </div>
                 </div>
@@ -242,11 +244,11 @@ export default function ProfilePage() {
 
             {/* Stats Bar */}
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                <StatCard label="Trust Score" value={`${profile.trust_score}/100`} />
-                <StatCard label="Cases Filed" value={profile.case_count.toString()} />
-                <StatCard label="Followers" value={profile.follower_count.toString()} />
-                <StatCard label="Following" value={profile.following_count.toString()} />
-                <StatCard label="Profile" value={`${profile.profile_completion}%`} extra={
+                <StatCard label={t('profile.trustScore')} value={`${profile.trust_score}/100`} />
+                <StatCard label={t('profile.casesFiled')} value={profile.case_count.toString()} />
+                <StatCard label={t('profile.followers')} value={profile.follower_count.toString()} />
+                <StatCard label={t('profile.following')} value={profile.following_count.toString()} />
+                <StatCard label={t('profile.completion')} value={`${profile.profile_completion}%`} extra={
                     <Progress value={profile.profile_completion} className="h-1 mt-1" />
                 } />
             </div>
@@ -254,18 +256,18 @@ export default function ProfilePage() {
             {/* Editing Form */}
             {editing && (
                 <Card>
-                    <CardHeader><CardTitle className="text-lg">Edit Profile</CardTitle></CardHeader>
+                    <CardHeader><CardTitle className="text-lg">{t('profile.editProfile')}</CardTitle></CardHeader>
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
-                            <Label>Display Name *</Label>
+                            <Label>{t('profile.displayName')} *</Label>
                             <Input value={editName} onChange={e => setEditName(e.target.value)} maxLength={50} />
                         </div>
                         <div className="space-y-2">
-                            <Label>Tagline</Label>
+                            <Label>{t('profile.tagline')}</Label>
                             <Input value={editTagline} onChange={e => setEditTagline(e.target.value)} placeholder="A short line about you" maxLength={100} />
                         </div>
                         <div className="space-y-2">
-                            <Label>Bio *</Label>
+                            <Label>{t('profile.bio')} *</Label>
                             <Textarea value={editBio} onChange={e => setEditBio(e.target.value)} rows={4} maxLength={500} />
                             <p className="text-xs text-muted-foreground">{editBio.length}/500</p>
                         </div>
@@ -285,10 +287,10 @@ export default function ProfilePage() {
                         </div>
                         <div className="flex gap-3">
                             <Button variant="outline" onClick={() => { setEditing(false); setAvatarFile(null); setAvatarPreview(null) }}>
-                                Cancel
+                                {t('common.cancel')}
                             </Button>
                             <Button onClick={handleSave} disabled={saving}>
-                                {saving ? 'Saving...' : 'Save Changes'}
+                                {saving ? t('profile.saving') : t('profile.saveChanges')}
                             </Button>
                         </div>
                     </CardContent>
@@ -309,13 +311,13 @@ export default function ProfilePage() {
             {/* Tabs: Cases & Posts */}
             <Tabs defaultValue="cases" className="space-y-4">
                 <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="cases">My Cases ({cases.length})</TabsTrigger>
-                    <TabsTrigger value="posts">My Posts ({posts.length})</TabsTrigger>
+                    <TabsTrigger value="cases">{t('profile.myCases')} ({cases.length})</TabsTrigger>
+                    <TabsTrigger value="posts">{t('profile.myPosts')} ({posts.length})</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="cases" className="space-y-3">
                     {cases.length === 0 ? (
-                        <EmptyCard message="No cases filed yet" cta="File a Case" href="/cases/new" />
+                        <EmptyCard message={t('profile.noCases')} cta={t('cases.fileCase')} href="/cases/new" />
                     ) : (
                         cases.map((c: any) => (
                             <Card key={c.id} className="hover:shadow-sm transition-shadow cursor-pointer"
@@ -341,7 +343,7 @@ export default function ProfilePage() {
 
                 <TabsContent value="posts" className="space-y-3">
                     {posts.length === 0 ? (
-                        <EmptyCard message="No posts yet" />
+                        <EmptyCard message={t('profile.noPosts')} />
                     ) : (
                         posts.map((post: any) => (
                             <Card key={post.id}>
@@ -365,15 +367,15 @@ export default function ProfilePage() {
                 <CardHeader><CardTitle className="text-base">Account</CardTitle></CardHeader>
                 <CardContent className="space-y-3 text-sm">
                     <div className="flex justify-between">
-                        <span className="text-muted-foreground">Email</span>
+                        <span className="text-muted-foreground">{t('auth.email')}</span>
                         <span>{user.email}</span>
                     </div>
                     <div className="flex justify-between">
-                        <span className="text-muted-foreground">Language</span>
+                        <span className="text-muted-foreground">{t('onboarding.language')}</span>
                         <span className="uppercase">{profile.language || 'en'}</span>
                     </div>
                     <div className="flex justify-between">
-                        <span className="text-muted-foreground">Last Active</span>
+                        <span className="text-muted-foreground">{t('profile.lastActive')}</span>
                         <span>{new Date(profile.last_active_at).toLocaleDateString()}</span>
                     </div>
                 </CardContent>

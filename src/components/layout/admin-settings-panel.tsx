@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
-import { XMarkIcon, BuildingOfficeIcon, UsersIcon, PaintBrushIcon, ChartBarIcon, MoonIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon, BuildingOfficeIcon, UsersIcon, PaintBrushIcon, ChartBarIcon, MoonIcon, ChevronDownIcon, FolderOpenIcon, UserGroupIcon, HandThumbUpIcon, FlagIcon } from '@heroicons/react/24/outline'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -18,7 +18,14 @@ interface AdminSettingsPanelProps {
 }
 
 const adminNavItems = [
-    { title: 'Organization Profile', icon: BuildingOfficeIcon, href: '/admin/organization' },
+    { title: 'Cases', icon: FolderOpenIcon, href: '/admin/cases' },
+    { title: 'Defendants', icon: UserGroupIcon, href: '/admin/defendants' },
+    { title: 'Votes & Moderation', icon: HandThumbUpIcon, href: '/admin/votes' },
+    { title: 'Reports & Flags', icon: FlagIcon, href: '/admin/reports' },
+]
+
+const settingsNavItems = [
+    { title: 'Site Management', icon: BuildingOfficeIcon, href: '/admin/site-management' },
     { title: 'Activity Log', icon: ChartBarIcon, href: '/admin/activity' },
 ]
 
@@ -99,6 +106,22 @@ export function AdminSettingsPanel({ open, onClose }: AdminSettingsPanelProps) {
                             ))}
                         </CollapsibleContent>
                     </Collapsible>
+
+                    <Separator className="my-2" />
+
+                    {settingsNavItems.map((item) => (
+                        <Button
+                            key={item.title}
+                            variant="ghost"
+                            className="w-full justify-start gap-3 h-11 text-sm"
+                            asChild
+                        >
+                            <a href={item.href}>
+                                <item.icon className="h-4 w-4 text-muted-foreground" />
+                                {item.title}
+                            </a>
+                        </Button>
+                    ))}
                 </nav>
             </SheetContent>
         </Sheet>

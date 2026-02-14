@@ -2,11 +2,17 @@
 
 import { useI18n, SUPPORTED_LOCALES, LOCALE_NAMES, type Locale } from '@/i18n'
 import { GlobeAltIcon } from '@heroicons/react/24/outline'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export function LanguageSwitcher() {
     const { locale, setLocale } = useI18n()
     const [open, setOpen] = useState(false)
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => { setMounted(true) }, [])
+
+    // Use default during SSR to avoid hydration mismatch
+    const displayName = mounted ? LOCALE_NAMES[locale] : LOCALE_NAMES['en']
 
     return (
         <div className="relative">
@@ -16,7 +22,7 @@ export function LanguageSwitcher() {
                 title="Change language"
             >
                 <GlobeAltIcon className="h-4 w-4" />
-                <span className="text-xs">{LOCALE_NAMES[locale]}</span>
+                <span className="text-xs">{displayName}</span>
             </button>
 
             {open && (
@@ -41,3 +47,4 @@ export function LanguageSwitcher() {
         </div>
     )
 }
+

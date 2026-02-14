@@ -10,9 +10,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
 import { ScaleIcon } from '@heroicons/react/24/outline'
 import type { User } from '@supabase/supabase-js'
+import { useTranslation } from '@/i18n'
 
 export default function OnboardingPage() {
     const router = useRouter()
+    const { t } = useTranslation()
     const [user, setUser] = useState<User | null>(null)
     const [step, setStep] = useState(1)
     const [displayName, setDisplayName] = useState('')
@@ -132,9 +134,9 @@ export default function OnboardingPage() {
                 {/* Header */}
                 <div className="text-center space-y-2">
                     <ScaleIcon className="h-12 w-12 mx-auto" style={{ color: 'hsl(var(--primary))' }} />
-                    <h1 className="text-2xl font-bold">Welcome to the Court</h1>
+                    <h1 className="text-2xl font-bold">{t('onboarding.welcome')}</h1>
                     <p className="text-sm text-muted-foreground">
-                        Set up your profile to get started. This is how you&apos;ll appear to others.
+                        {t('onboarding.setupProfile')}
                     </p>
                 </div>
 
@@ -144,12 +146,12 @@ export default function OnboardingPage() {
                 {step === 1 && (
                     <div className="rounded-xl border bg-card p-6 space-y-5">
                         <div>
-                            <h2 className="text-lg font-semibold">Your Identity</h2>
-                            <p className="text-xs text-muted-foreground mt-1">This is how other users will see you</p>
+                            <h2 className="text-lg font-semibold">{t('onboarding.identity')}</h2>
+                            <p className="text-xs text-muted-foreground mt-1">{t('onboarding.setupProfile')}</p>
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="displayName">Display Name *</Label>
+                            <Label htmlFor="displayName">{t('onboarding.displayName')} *</Label>
                             <Input
                                 id="displayName"
                                 value={displayName}
@@ -161,7 +163,7 @@ export default function OnboardingPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="tagline">Tagline</Label>
+                            <Label htmlFor="tagline">{t('onboarding.tagline')}</Label>
                             <Input
                                 id="tagline"
                                 value={tagline}
@@ -179,7 +181,7 @@ export default function OnboardingPage() {
                                 setStep(2)
                             }}
                         >
-                            Next →
+                            {t('common.next')} →
                         </Button>
                     </div>
                 )}
@@ -188,17 +190,17 @@ export default function OnboardingPage() {
                 {step === 2 && (
                     <div className="rounded-xl border bg-card p-6 space-y-5">
                         <div>
-                            <h2 className="text-lg font-semibold">Tell Us About Yourself</h2>
-                            <p className="text-xs text-muted-foreground mt-1">Your bio helps build trust in the community</p>
+                            <h2 className="text-lg font-semibold">{t('onboarding.about')}</h2>
+                            <p className="text-xs text-muted-foreground mt-1">{t('onboarding.setupProfile')}</p>
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="bio">Bio *</Label>
+                            <Label htmlFor="bio">{t('onboarding.bioLabel')} *</Label>
                             <Textarea
                                 id="bio"
                                 value={bio}
                                 onChange={e => setBio(e.target.value)}
-                                placeholder="What brings you to the Court of Public Record? Are you seeking justice, investigating fraud, or here to learn?"
+                                placeholder={t('onboarding.bioPlaceholder')}
                                 rows={4}
                                 maxLength={500}
                             />
@@ -206,7 +208,7 @@ export default function OnboardingPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Profile Photo (optional)</Label>
+                            <Label>{t('onboarding.avatar')}</Label>
                             <div className="flex items-center gap-4">
                                 {avatarPreview ? (
                                     <img src={avatarPreview} alt="Avatar" className="h-16 w-16 rounded-full object-cover ring-2 ring-border" />
@@ -226,7 +228,7 @@ export default function OnboardingPage() {
 
                         <div className="flex gap-3">
                             <Button variant="outline" className="flex-1" onClick={() => setStep(1)}>
-                                ← Back
+                                ← {t('common.back')}
                             </Button>
                             <Button
                                 className="flex-1"
@@ -236,7 +238,7 @@ export default function OnboardingPage() {
                                     setStep(3)
                                 }}
                             >
-                                Next →
+                                {t('common.next')} →
                             </Button>
                         </div>
                     </div>
@@ -246,8 +248,8 @@ export default function OnboardingPage() {
                 {step === 3 && (
                     <div className="rounded-xl border bg-card p-6 space-y-5">
                         <div>
-                            <h2 className="text-lg font-semibold">Review Your Profile</h2>
-                            <p className="text-xs text-muted-foreground mt-1">Make sure everything looks right</p>
+                            <h2 className="text-lg font-semibold">{t('onboarding.complete')}</h2>
+                            <p className="text-xs text-muted-foreground mt-1">{t('onboarding.setupProfile')}</p>
                         </div>
 
                         <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/30">
@@ -271,7 +273,7 @@ export default function OnboardingPage() {
 
                         <div className="flex gap-3">
                             <Button variant="outline" className="flex-1" onClick={() => setStep(2)}>
-                                ← Back
+                                ← {t('common.back')}
                             </Button>
                             <Button
                                 className="flex-1"
@@ -281,10 +283,10 @@ export default function OnboardingPage() {
                                 {saving ? (
                                     <span className="flex items-center gap-2">
                                         <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                                        Saving...
+                                        {t('profile.saving')}
                                     </span>
                                 ) : (
-                                    '✅ Complete Setup'
+                                    `✅ ${t('onboarding.finish')}`
                                 )}
                             </Button>
                         </div>

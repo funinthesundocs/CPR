@@ -34,11 +34,29 @@ export async function updateSession(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser()
 
-    // Protect admin routes
+    // Protect admin routes — check authentication
     if (request.nextUrl.pathname.startsWith('/admin') && !user) {
         const url = request.nextUrl.clone()
         url.pathname = '/login'
         return NextResponse.redirect(url)
+    }
+
+    // Protect admin routes — check authorization (DB role check)
+    if (request.nextUrl.pathname.startsWith('/admin') && user) {
+        const { data: userRoles } = await supabase
+            .from('user_roles')
+            .select('role_id')
+            .eq('user_id', user.id)
+            .in('role_id', ['admin', 'super_admin'])
+
+        const hasAdminRole = (userRoles || []).length > 0
+
+        if (!hasAdminRole) {
+            const url = request.nextUrl.clone()
+            url.pathname = '/'
+            url.searchParams.set('error', 'unauthorized')
+            return NextResponse.redirect(url)
+        }
     }
 
     return supabaseResponse

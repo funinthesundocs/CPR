@@ -1,24 +1,29 @@
+'use client'
+
 import Link from 'next/link'
 import { ScaleIcon } from '@heroicons/react/24/outline'
 import { Separator } from '@/components/ui/separator'
-
-const quickLinks = [
-    { title: 'Cases', href: '/cases' },
-    { title: 'Submit Testimony', href: '/cases/new' },
-    { title: 'How It Works', href: '/how-it-works' },
-]
-
-const companyLinks = [
-    { title: 'About', href: '/about' },
-    { title: 'Legal & Transparency', href: '/legal' },
-]
-
-const connectLinks = [
-    { title: 'Contact Us', href: '/contact' },
-    { title: 'Submit Testimony', href: '/cases/new' },
-]
+import { useTranslation } from '@/i18n'
 
 export function Footer() {
+    const { t } = useTranslation()
+
+    const quickLinks = [
+        { title: t('common.cases'), href: '/cases' },
+        { title: t('nav.fileCase'), href: '/cases/new' },
+        { title: t('nav.howItWorks'), href: '/how-it-works' },
+    ]
+
+    const companyLinks = [
+        { title: t('footer.about'), href: '/about' },
+        { title: t('footer.legal'), href: '/legal' },
+    ]
+
+    const connectLinks = [
+        { title: t('footer.contact'), href: '/contact' },
+        { title: t('nav.fileCase'), href: '/cases/new' },
+    ]
+
     return (
         <footer className="border-t bg-card/50">
             <div className="max-w-6xl mx-auto px-6 py-12">
@@ -27,16 +32,16 @@ export function Footer() {
                     <div className="space-y-3">
                         <div className="flex items-center gap-2 font-bold">
                             <ScaleIcon className="h-6 w-6" style={{ color: 'hsl(var(--primary))' }} />
-                            Court of Public Record
+                            {t('common.appName')}
                         </div>
                         <p className="text-sm text-muted-foreground italic">
-                            &ldquo;Truth isn&apos;t fragile. It just needs somewhere to live.&rdquo;
+                            {t('footer.tagline')}
                         </p>
                     </div>
 
                     {/* Quick Links */}
                     <div className="space-y-3">
-                        <h4 className="text-sm font-semibold">Quick Links</h4>
+                        <h4 className="text-sm font-semibold">{t('footer.platform')}</h4>
                         {quickLinks.map((link) => (
                             <Link
                                 key={link.href}
@@ -50,7 +55,7 @@ export function Footer() {
 
                     {/* Company */}
                     <div className="space-y-3">
-                        <h4 className="text-sm font-semibold">Company</h4>
+                        <h4 className="text-sm font-semibold">{t('footer.legal')}</h4>
                         {companyLinks.map((link) => (
                             <Link
                                 key={link.href}
@@ -64,7 +69,7 @@ export function Footer() {
 
                     {/* Connect */}
                     <div className="space-y-3">
-                        <h4 className="text-sm font-semibold">Connect</h4>
+                        <h4 className="text-sm font-semibold">{t('footer.connect')}</h4>
                         {connectLinks.map((link) => (
                             <Link
                                 key={link.href}
@@ -80,7 +85,7 @@ export function Footer() {
                 <Separator className="my-8" />
 
                 <p className="text-center text-xs text-muted-foreground">
-                    © 2026 Court of Public Record. Verified by the public, preserved by truth.
+                    © 2026 {t('common.appName')}. {t('footer.copyright')}
                 </p>
             </div>
         </footer>

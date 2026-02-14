@@ -4,8 +4,10 @@ import { useState } from 'react'
 import { PaperAirplaneIcon, ShieldCheckIcon, EnvelopeIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { useTranslation } from '@/i18n'
 
 export default function ContactPage() {
+    const { t } = useTranslation()
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -15,25 +17,26 @@ export default function ContactPage() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
-        // TODO: Wire to Supabase or email service
-        alert('Message sent! We will respond within 48 hours.')
+        alert(t('contact.messageSent'))
     }
+
+    const badges = [
+        { icon: ShieldCheckIcon, label: t('contact.secure'), desc: t('contact.secureDesc') },
+        { icon: EnvelopeIcon, label: t('contact.responsive'), desc: t('contact.responsiveDesc') },
+        { icon: ChatBubbleLeftRightIcon, label: t('contact.confidential'), desc: t('contact.confidentialDesc') },
+    ]
 
     return (
         <div className="max-w-2xl mx-auto space-y-8">
             <div className="text-center space-y-3">
-                <h1 className="text-3xl font-bold tracking-tight">Contact Us</h1>
+                <h1 className="text-3xl font-bold tracking-tight">{t('contact.title')}</h1>
                 <p className="text-muted-foreground">
-                    Secure communication channels for victims, journalists, and partners.
+                    {t('contact.subtitle')}
                 </p>
             </div>
 
             <div className="grid sm:grid-cols-3 gap-4">
-                {[
-                    { icon: ShieldCheckIcon, label: 'Secure', desc: 'All communications are encrypted' },
-                    { icon: EnvelopeIcon, label: 'Responsive', desc: 'We respond within 48 hours' },
-                    { icon: ChatBubbleLeftRightIcon, label: 'Confidential', desc: 'Your identity is protected' },
-                ].map((item) => (
+                {badges.map((item) => (
                     <div key={item.label} className="rounded-xl border bg-card p-4 text-center">
                         <item.icon className="h-6 w-6 mx-auto mb-2" style={{ color: 'hsl(var(--primary))' }} />
                         <p className="text-sm font-medium">{item.label}</p>
@@ -46,11 +49,11 @@ export default function ContactPage() {
                 <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <label htmlFor="name" className="text-sm font-medium">
-                            Your Name
+                            {t('contact.yourName')}
                         </label>
                         <Input
                             id="name"
-                            placeholder="Full name"
+                            placeholder={t('contact.yourName')}
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                             required
@@ -58,7 +61,7 @@ export default function ContactPage() {
                     </div>
                     <div className="space-y-2">
                         <label htmlFor="email" className="text-sm font-medium">
-                            Email Address
+                            {t('contact.emailAddress')}
                         </label>
                         <Input
                             id="email"
@@ -73,7 +76,7 @@ export default function ContactPage() {
 
                 <div className="space-y-2">
                     <label htmlFor="subject" className="text-sm font-medium">
-                        Subject
+                        {t('contact.subject')}
                     </label>
                     <select
                         id="subject"
@@ -81,21 +84,21 @@ export default function ContactPage() {
                         value={formData.subject}
                         onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                     >
-                        <option value="general">General Inquiry</option>
-                        <option value="evidence">Submit Evidence</option>
-                        <option value="legal">Legal</option>
-                        <option value="media">Media / Press</option>
+                        <option value="general">{t('contact.subjectGeneral')}</option>
+                        <option value="evidence">{t('contact.subjectEvidence')}</option>
+                        <option value="legal">{t('contact.subjectLegal')}</option>
+                        <option value="media">{t('contact.subjectMedia')}</option>
                     </select>
                 </div>
 
                 <div className="space-y-2">
                     <label htmlFor="message" className="text-sm font-medium">
-                        Message
+                        {t('contact.messageLabel')}
                     </label>
                     <textarea
                         id="message"
                         rows={5}
-                        placeholder="How can we help?"
+                        placeholder={t('contact.messagePlaceholder')}
                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
                         value={formData.message}
                         onChange={(e) => setFormData({ ...formData, message: e.target.value })}
@@ -105,7 +108,7 @@ export default function ContactPage() {
 
                 <Button type="submit" className="w-full gap-2">
                     <PaperAirplaneIcon className="h-4 w-4" />
-                    Send Message
+                    {t('contact.sendMessage')}
                 </Button>
             </form>
         </div>
