@@ -21,23 +21,34 @@ At the end of a session, the user says "harvest" or "extract pearls." Follow the
 6. **Update line count** — Update the `<!-- XX lines / ~150 max -->` comment at the top of `pearls.md`
 7. **Git sync** — Commit and push:
    ```powershell
-   git add .agent/alignment/ && git commit -m "harvest: [pearl title]" && git push
+   git add .agent/alignment/; git commit -m "harvest: [pearl title]"; git push
    ```
 
 ---
 
-## The Qualification Test
+## The Pearl Quality Gate
 
-**Would this help an agent working on a completely unrelated project?**
+> [!CAUTION]
+> A pearl is NOT just a useful fact. It is a **principle that changes behavior** — something that, had you known it beforehand, would have prevented real lost time.
 
-| Qualifies | Does NOT qualify |
-|-----------|-----------------|
-| "Replace every sleep() with an observable wait condition" | "We fixed the FareHarbor login bug" |
-| "Extract data from the DOM before triggering state changes" | "PAX count was 2 for tomorrow" |
-| "Windows charmap crashes on Unicode in subprocess output" | "The email was sent to funinthesundocs@gmail.com" |
-| "Always verify DOM element tags with a debug probe before writing selectors" | "The th.ng-table-header element holds the data" |
+**Every candidate must pass ALL THREE gates. If it fails any one, discard it.**
 
-If it's project-specific, it belongs in the skill, NOT in pearls.
+| Gate | Question | Fail = Rock |
+|------|----------|-------------|
+| **Non-obvious** | Would a competent agent get this wrong by default? | If any reasonable agent would already know this, it's a lookup, not wisdom |
+| **Pain-tested** | Did violating this cause real debugging time, not just a quick retry? | If the fix took < 30 seconds, it's trivia |
+| **Transferable** | Does this principle apply to 3+ fundamentally different types of work? | If it only helps one narrow domain, it belongs in a skill, not in pearls |
+
+### Pearls vs Rocks — learn the difference
+
+| Pearl (passes all 3 gates) | Rock (fails at least 1) | Which gate fails? |
+|---------------------------|------------------------|-------------------|
+| "Extract data from DOM before triggering state changes" | "PowerShell uses semicolons not &&" | Non-obvious: any developer can look this up |
+| "Set a numeric satisfaction threshold — open-ended loops never converge" | "git pull doesn't delete untracked files" | Pain-tested: no debugging time lost, just a momentary scare |
+| "Design shared files as append-only to prevent merge conflicts" | "Nested markdown code fences break rendering" | Transferable: only applies to markdown authoring |
+
+If it's a **fact you could find on Stack Overflow in 10 seconds**, it's a rock. Discard it.
+If it's a **principle you wish someone had told you before you wasted an hour**, it's a pearl. Keep it.
 
 ---
 
@@ -104,12 +115,14 @@ Starter categories (expand as needed):
 | Error | Cause | Fix |
 |-------|-------|-----|
 | Duplicate pearl added | Didn't read existing pearls first | Always read full `pearls.md` before step 5 |
-| Pearl too specific | Contains project names/filenames | Strip all specifics — apply the qualification test |
+| Pearl too specific | Contains project names/filenames | Strip all specifics — apply the 3-gate test |
 | Pearl too vague | "Be careful with code" | Must be actionable — "Use X instead of Y" or "Do X before Y" |
+| Rock slipped through | Passed the old loose test but fails a gate | Re-check: Non-obvious? Pain-tested? Transferable? Remove if it fails any |
 | Git push fails | No upstream configured | Run `git push --set-upstream origin main` first |
 
 ## Success Criteria
 
+- [OK] Every pearl passes ALL THREE quality gates (Non-obvious, Pain-tested, Transferable)
 - [OK] New pearl(s) added to correct category table
 - [OK] No project-specific details in any pearl
 - [OK] No duplicates — existing similar pearls were promoted instead
