@@ -1,4 +1,4 @@
-<!-- 52 lines / ~150 max -->
+<!-- 54 lines / ~150 max -->
 # Organizational Pearls of Wisdom
 
 > General principles extracted from real work sessions. These apply to ALL future work regardless of project.
@@ -18,7 +18,8 @@
 | Pearl | Rule | Maturity | Added |
 |-------|------|----------|-------|
 | ASCII-only subprocess output | Never use Unicode characters (checkmarks, arrows, emoji) in print() statements that run inside subprocesses — Windows charmap encoding will crash | Established | 2026-02-19 |
-| Declare OS and path format | Explicitly state the target OS and path style in every skill — models default to their training bias (Linux paths) and silently produce wrong commands | Confirmed | 2026-02-19 |
+| Declare OS and path format | Explicitly state the target OS and path style in every skill — models default to their training bias (Linux paths) and silently produce wrong commands | Established | 2026-02-19 |
+| PowerShell uses semicolons not && | PowerShell does not support && as a command separator — use semicolons (;) to chain commands | Seed | 2026-02-19 |
 
 ## Multi-Model Dispatch
 
