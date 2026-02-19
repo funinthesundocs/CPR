@@ -28,9 +28,7 @@ export default function HomePage() {
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
           {t('home.heroSubtitle')}
         </p>
-        <p className="text-lg text-muted-foreground/70">
-          {t('home.heroPowered')}
-        </p>
+
         <div className="flex flex-wrap justify-center gap-4 pt-4">
           <Button asChild size="lg" className="gap-2 text-base">
             <Link href="/cases">
