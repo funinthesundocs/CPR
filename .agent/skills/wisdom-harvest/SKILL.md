@@ -15,7 +15,7 @@ At the end of a session, the user says "harvest" or "extract pearls." Follow the
 
 ## The Harvest Process
 
-1. **Retrospective scan** — Review the session's key decisions, failures, fixes, and iterations
+1. **Find the harvest boundary** — Check if a previous harvest already occurred in this session. If yes, only scan the work done AFTER the last harvest (look for the most recent harvest summary table in the conversation). If no previous harvest exists, scan the entire session.
 2. **Extract candidates** — Identify moments where a general principle was learned (not project-specific outcomes)
 3. **Generalize** — Strip project names, client names, filenames. Rewrite as a universal one-sentence rule
 4. **Quality gate** — Run EVERY candidate through the 3-Gate Test below. Discard any that fail.
