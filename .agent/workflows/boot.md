@@ -11,11 +11,8 @@ description: Load organizational wisdom and alignment at session start. Use at t
 git pull
 ```
 
-2. Read the alignment pearls:
-```
-cat .agent/alignment/pearls.md
-```
+2. Read the organizational pearls of wisdom. The file is at `.agent/alignment/pearls.md`. Read it in full. If the file does not exist, skip to step 4.
 
-3. Silently internalize the pearls. Do NOT list them back to the user — just apply them to your work.
+3. Silently internalize the pearls. Do NOT list them back to the user. Apply them to all work in this session.
 
 4. Proceed with the user's request.

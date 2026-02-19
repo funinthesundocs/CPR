@@ -11,25 +11,24 @@ description: End-of-session retrospective that extracts generalizable principles
 
 At the end of a session, the user says "harvest" or "extract pearls." Follow the process below.
 
+> **New workspace?** If `.agent/alignment/pearls.md` does not exist, create it first using the template in the First-Time Setup section at the bottom of this document.
+
 ## The Harvest Process
 
 1. **Retrospective scan** — Review the session's key decisions, failures, fixes, and iterations
 2. **Extract candidates** — Identify moments where a general principle was learned (not project-specific outcomes)
 3. **Generalize** — Strip project names, client names, filenames. Rewrite as a universal one-sentence rule
-4. **Dedup check** — Read `.agent/alignment/pearls.md` and check if a similar pearl already exists
-5. **Write or promote** — If new, add as a Seed row in the appropriate category table. If similar exists, promote its maturity level (Seed → Confirmed → Established)
-6. **Update line count** — Update the `<!-- XX lines / ~150 max -->` comment at the top of `pearls.md`
-7. **Git sync** — Commit and push:
-   ```powershell
-   git add .agent/alignment/; git commit -m "harvest: [pearl title]"; git push
-   ```
+4. **Quality gate** — Run EVERY candidate through the 3-Gate Test below. Discard any that fail.
+5. **Dedup check** — Read `.agent/alignment/pearls.md` and check if a similar pearl already exists
+6. **Write or promote** — If new, add as a Seed row in the appropriate category table. If similar exists, promote its maturity level (Seed -> Confirmed -> Established)
+7. **Present summary** — Show the user a table of what was harvested: action (NEW/PROMOTED/DISCARDED), pearl title, category, and which gate rocks failed
+8. **Git sync** — Stage, commit, and push the alignment folder
 
 ---
 
 ## The Pearl Quality Gate
 
-> [!CAUTION]
-> A pearl is NOT just a useful fact. It is a **principle that changes behavior** — something that, had you known it beforehand, would have prevented real lost time.
+A pearl is NOT just a useful fact. It is a **principle that changes behavior** — something that, had you known it beforehand, would have prevented real lost time.
 
 **Every candidate must pass ALL THREE gates. If it fails any one, discard it.**
 
@@ -43,12 +42,11 @@ At the end of a session, the user says "harvest" or "extract pearls." Follow the
 
 | Pearl (passes all 3 gates) | Rock (fails at least 1) | Which gate fails? |
 |---------------------------|------------------------|-------------------|
-| "Extract data from DOM before triggering state changes" | "PowerShell uses semicolons not &&" | Non-obvious: any developer can look this up |
-| "Set a numeric satisfaction threshold — open-ended loops never converge" | "git pull doesn't delete untracked files" | Pain-tested: no debugging time lost, just a momentary scare |
-| "Design shared files as append-only to prevent merge conflicts" | "Nested markdown code fences break rendering" | Transferable: only applies to markdown authoring |
+| "Extract data before triggering state changes" | "PowerShell uses semicolons not &&" | Non-obvious: any developer can look this up |
+| "Set a numeric satisfaction threshold to converge" | "git pull doesn't delete untracked files" | Pain-tested: no real debugging time lost |
+| "Design shared files as append-only for merge safety" | "Use CDP for PDF instead of pdfkit" | Transferable: only applies to PDF generation |
 
-If it's a **fact you could find on Stack Overflow in 10 seconds**, it's a rock. Discard it.
-If it's a **principle you wish someone had told you before you wasted an hour**, it's a pearl. Keep it.
+**The litmus test:** If you could find it on Stack Overflow in 10 seconds, it's a rock. If it's a principle you wish someone had told you before you wasted an hour, it's a pearl.
 
 ---
 
@@ -68,7 +66,7 @@ Pearls live in a **table per category** inside `pearls.md`:
 
 - **Rule must be one sentence.** If you can't say it in one sentence, it's two pearls.
 - **No project names, client names, or specific filenames** in the Rule or title.
-- **Context goes as an HTML comment** below the table only if non-obvious: `<!-- browser scraping task -->`
+- **The rule must be actionable.** "Be careful with X" is not actionable. "Use X instead of Y" or "Do X before Y" is.
 
 ---
 
@@ -76,12 +74,11 @@ Pearls live in a **table per category** inside `pearls.md`:
 
 | Level | Criteria | Agent should... |
 |-------|----------|-----------------|
-| **Seed** | First observation | Consider it |
+| **Seed** | First observation, passed 3-gate test | Consider it |
 | **Confirmed** | Seen independently in 2+ sessions | Follow it |
 | **Established** | 3+ sessions or ratified by human | Treat as law |
 
-> [!IMPORTANT]
-> If a similar pearl already exists, **promote its maturity** instead of adding a duplicate. Change its maturity level in the existing row.
+If a similar pearl already exists, **promote its maturity** instead of adding a duplicate. Change its maturity level in the existing row.
 
 ---
 
@@ -94,19 +91,18 @@ Starter categories (expand as needed):
 - **API Integration** — HTTP calls, authentication, webhooks, email APIs
 - **Multi-Model Dispatch** — Agent orchestration, model selection, dispatch patterns
 - **Windows Compatibility** — Encoding, paths, subprocess, OS-specific issues
-- **Documentation & Skills** — Skill authoring, knowledge management, templates
-- **General Engineering** — Architecture, dependencies, error handling, testing
+- **Iterative Refinement** — Self-critique, convergence, documentation maintenance
+- **General Engineering** — Architecture, dependencies, data formats, testing
 
 ---
 
 ## Critical Rules
 
+- **Run the 3-gate test on EVERY candidate** — this is step 4, not optional.
 - **Never add project-specific details** — strip everything. The pearl must be universal.
 - **One sentence per rule** — if it needs two sentences, it's two pearls.
 - **Check for duplicates FIRST** — read the entire `pearls.md` before adding anything.
 - **Promote, don't duplicate** — if a similar pearl exists at a lower maturity, upgrade it.
-- **Update the line count comment** at the top of `pearls.md` after every harvest.
-- When `pearls.md` approaches **~150 lines**, warn the user it's time to split into domain files under `.agent/alignment/domains/`.
 
 ---
 
@@ -114,17 +110,32 @@ Starter categories (expand as needed):
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Duplicate pearl added | Didn't read existing pearls first | Always read full `pearls.md` before step 5 |
-| Pearl too specific | Contains project names/filenames | Strip all specifics — apply the 3-gate test |
+| Rock slipped through | Skipped the 3-gate test or applied it loosely | Re-check: Non-obvious? Pain-tested? Transferable? Remove if it fails any |
+| Duplicate pearl added | Didn't read existing pearls first | Always read full `pearls.md` before step 6 |
+| Pearl too specific | Contains project names/filenames | Strip all specifics, rewrite as universal principle |
 | Pearl too vague | "Be careful with code" | Must be actionable — "Use X instead of Y" or "Do X before Y" |
-| Rock slipped through | Passed the old loose test but fails a gate | Re-check: Non-obvious? Pain-tested? Transferable? Remove if it fails any |
 | Git push fails | No upstream configured | Run `git push --set-upstream origin main` first |
 
 ## Success Criteria
 
-- [OK] Every pearl passes ALL THREE quality gates (Non-obvious, Pain-tested, Transferable)
+- [OK] Every candidate was tested against ALL THREE quality gates
+- [OK] Only pearls that passed all 3 gates were added
 - [OK] New pearl(s) added to correct category table
 - [OK] No project-specific details in any pearl
 - [OK] No duplicates — existing similar pearls were promoted instead
-- [OK] Line count comment updated
 - [OK] Changes committed and pushed
+
+---
+
+## First-Time Setup
+
+If `.agent/alignment/pearls.md` does not exist in your workspace, create it with this content:
+
+```markdown
+# Organizational Pearls of Wisdom
+
+> General principles extracted from real work sessions. These apply to ALL future work regardless of project.
+> Maintained by the `wisdom-harvest` skill (see `.agent/skills/wisdom-harvest/SKILL.md`).
+```
+
+Then add category headers as pearls are discovered. See the Category Guide above for starter categories.
