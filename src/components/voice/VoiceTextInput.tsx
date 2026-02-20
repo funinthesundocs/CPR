@@ -206,7 +206,11 @@ export function VoiceTextInput({
                     'flex items-center justify-center w-5 h-5 rounded',
                     'transition-all duration-150',
                     'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                    isError ? 'text-destructive opacity-60' : isListening ? 'text-red-500' : 'text-muted-foreground hover:text-foreground',
+                    isError
+                        ? 'text-destructive opacity-60'
+                        : isListening
+                            ? 'text-red-500 drop-shadow-[0_0_6px_rgba(239,68,68,0.7)]'
+                            : 'text-primary drop-shadow-[0_0_5px_color-mix(in_oklch,var(--primary)_40%,transparent)] hover:drop-shadow-[0_0_8px_color-mix(in_oklch,var(--primary)_60%,transparent)]',
                     disabled ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer hover:bg-muted/60',
                 )}
                 title={

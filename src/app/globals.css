@@ -162,3 +162,27 @@
 .dark ::-webkit-scrollbar-corner {
   background: oklch(0.145 0 0);
 }
+
+/* Step navigation scrollbar — primary color at 50% opacity */
+.step-scrollbar::-webkit-scrollbar {
+  height: 4px;
+}
+
+.step-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.step-scrollbar::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--primary) 50%, transparent);
+  border-radius: 999px;
+}
+
+.step-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklch, var(--primary) 70%, transparent);
+}
+
+/* Firefox */
+.step-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklch, var(--primary) 50%, transparent) transparent;
+}
