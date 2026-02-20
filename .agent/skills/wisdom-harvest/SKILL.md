@@ -16,14 +16,16 @@ At the end of a session, the user says "harvest" or "extract pearls." Follow the
 ## The Harvest Process
 
 1. **Find the harvest boundary** — Check if a previous harvest already occurred in this session. If yes, only scan the work done AFTER the last harvest (look for the most recent harvest summary table in the conversation). If no previous harvest exists, scan the entire session.
-2. **Extract candidates** — Identify moments where a general principle was learned (not project-specific outcomes)
-3. **Generalize** — Strip project names, client names, filenames. Rewrite as a universal one-sentence rule
-4. **Quality gate** — Run EVERY candidate through the 3-Gate Test below. Discard any that fail.
-5. **Dedup check** — Read `.agent/alignment/pearls.md` and check if a similar pearl already exists
-6. **Write or promote** — If new, add as a Seed row in the appropriate category table. If similar exists, promote its maturity level (Seed -> Confirmed -> Established)
-7. **Present summary** — Show the user a table of what was harvested: action (NEW/PROMOTED/DISCARDED), pearl title, category, and which gate rocks failed
-8. **Pre-commit check** — Run `git status` inside the alignment folder. If there are no changes, warn the user that another agent may have already harvested this session. Do NOT commit or push if there is nothing new.
-9. **Git sync** — Stage, commit, and push the alignment folder. If `.agent/alignment/` is a separate git repo, commit and push inside it. Otherwise, commit and push the project repo.
+2. **Scan for ⚡ invocation logs** — Search the session for any lines starting with `⚡ Pearl invoked:`. For each one found, find the matching pearl in `pearls.md` by title and increment its `Uses` counter by 1. Do this BEFORE extracting new candidates.
+3. **Extract candidates** — Identify moments where a general principle was learned (not project-specific outcomes)
+4. **Generalize** — Strip project names, client names, filenames. Rewrite as a universal one-sentence rule
+5. **Quality gate** — Run EVERY candidate through the 3-Gate Test below. Discard any that fail.
+6. **Dedup check** — Read `.agent/alignment/pearls.md` and check if a similar pearl already exists
+7. **Write or promote** — If new, add as a Seed row with `Uses = 0`. If similar exists, promote its maturity level (Seed -> Confirmed -> Established)
+8. **Present summary** — Show the user a table of what was harvested: action (NEW/PROMOTED/DISCARDED/USES+1), pearl title, category, and which gate rocks failed
+9. **Pre-commit check** — Run `git status` inside the alignment folder. If there are no changes, warn the user that another agent may have already harvested this session. Do NOT commit or push if there is nothing new.
+10. **Pruning review** — If `pearls.md` now has more than 40 pearl rows, apply the pruning scoring system from the Pruning Guide in `pearls.md`. List the bottom 3 candidates for the user to approve before removing.
+11. **Git sync** — Stage, commit, and push the alignment folder. If `.agent/alignment/` is a separate git repo, commit and push inside it. Otherwise, commit and push the project repo.
 
 ---
 
@@ -58,9 +60,9 @@ Pearls live in a **table per category** inside `pearls.md`:
 ```markdown
 ## [Category Name]
 
-| Pearl | Rule | Maturity | Added |
+| Pearl | Rule | Maturity | Added | Uses |
 |-------|------|----------|-------|
-| [short title] | [one-sentence actionable rule] | Seed/Confirmed/Established | [date] |
+| [short title] | [one-sentence actionable rule] | Seed/Confirmed/Established | [date] | 0 |
 ```
 
 ### Hard constraints

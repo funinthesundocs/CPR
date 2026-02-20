@@ -18,23 +18,17 @@ Every agent session generates throwaway intelligence — lessons learned, failur
 flowchart TD
     A[Session Start] -->|User types /boot| B[boot.md workflow]
     B -->|git pull| C[pearls.md gets latest]
-    B -->|reads| D[pearls.md]
-    D -->|agent internalizes silently| E[Work Session]
-    E -->|User types /harvest OR agent offers at end| F[wisdom-harvest/SKILL.md]
-    F -->|Step 1: Find boundary| G{Previous harvest\nthis session?}
-    G -->|Yes| H[Scan only since last harvest]
-    G -->|No| I[Scan full session]
-    H & I --> J[Extract candidates]
-    J -->|Step 4: 3-Gate Test| K{Passes ALL\n3 gates?}
-    K -->|Fail any gate| L[DISCARD - Rock]
-    K -->|Pass all 3| M[Step 5: Dedup check]
-    M -->|Exists| N[PROMOTE maturity level]
-    M -->|New| O[ADD as Seed row]
-    N & O --> P[Step 7: Present summary to user]
-    P -->|Step 8: git status check| Q{Changes\nexist?}
-    Q -->|Nothing new| R[Warn: already harvested]
-    Q -->|New changes| S[git commit + push]
-    S --> C
+    B -->|reads + activates tracking| D[pearls.md]
+    D --> E[Work Session]
+    E -->|Pearl prevents mistake| F["⚡ Pearl invoked: title — what changed"]
+    F -->|logged inline in response| E
+    E -->|User types /harvest| G[wisdom-harvest/SKILL.md]
+    G -->|Step 2: Scan for ⚡ logs| H[Increment Uses counters]
+    G -->|Step 3-5| I{Passes ALL 3 gates?}
+    I -->|Fail| J[DISCARD - Rock]
+    I -->|Pass| K[Write or promote]
+    K -->|Step 10: 40+ rows?| L[Pruning review]
+    K & L & H -->|Step 11: git commit + push| C
 ```
 
 ---
@@ -99,15 +93,15 @@ Pearls live in `pearls.md` as one table per category:
 ```markdown
 ## [Category Name]
 
-| Pearl | Rule | Maturity | Added |
-|-------|------|----------|-------|
-| [short title] | [one-sentence actionable rule] | Seed/Confirmed/Established | YYYY-MM-DD |
+| Pearl | Rule | Maturity | Added | Uses |
+|-------|------|----------|-------|------|
+| [short title] | [one-sentence actionable rule] | Seed/Confirmed/Established | YYYY-MM-DD | 0 |
 ```
 
 **Hard rules:**
 - Rule = one sentence, always actionable ("Use X instead of Y" or "Do X before Y")
 - No project names, client names, or filenames
-- No line count tracking — the file self-documents via git history
+- `Uses` starts at 0 and is incremented by harvest each time a ⚡ invocation log is found
 
 ---
 
@@ -139,14 +133,18 @@ When a new harvest finds a similar existing pearl, **promote its maturity** inst
 
 ---
 
-## Current Pearl Inventory (12 Pearls)
+## Current Pearl Inventory (22 Pearls, 7 Categories)
 
 | Category | Count | Top Pearl |
 |----------|-------|-----------|
 | Browser Automation | 3 | "Extract before transform" (Established) |
-| Windows Compatibility | 2 | "ASCII-only subprocess output" (Established) |
+| Windows Compatibility | 3 | "ASCII-only subprocess output" (Established) |
 | Iterative Refinement | 4 | "Recursive self-critique with a target" (Established) |
-| General Engineering | 3 | "Never assume response format" (Confirmed) |
+| General Engineering | 6 | "Never assume response format" (Confirmed) |
+| Frontend & Full-Stack | 6 | "Audit display pages after form redesign" (Seed) |
+| Database & Auth | 3 | "Check triggers before assuming INSERT fails" (Seed) |
+
+**Pruning threshold: 40 rows.** See Pruning Guide inside `pearls.md` for scoring logic.
 
 ---
 
