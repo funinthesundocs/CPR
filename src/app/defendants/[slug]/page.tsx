@@ -18,15 +18,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const supabase = await createClient()
     const { data: defendant } = await supabase
         .from('defendants')
-        .select('full_name, location')
+        .select('full_name, location, entity_type')
         .eq('slug', slug)
         .single()
 
     if (!defendant) return { title: 'Defendant Not Found' }
 
+    const entityLabel = defendant.entity_type === 'business' ? 'Organization' :
+        defendant.entity_type === 'unknown' ? 'Unknown Identity' : 'Individual'
+
     return {
         title: `${defendant.full_name} — Court of Public Record`,
-        description: `Public record for ${defendant.full_name}${defendant.location ? ` from ${defendant.location}` : ''}. View cases, evidence, and verdicts.`,
+        description: `Public record for ${entityLabel}: ${defendant.full_name}${defendant.location ? ` from ${defendant.location}` : ''}. View cases, evidence, and verdicts.`,
         openGraph: {
             title: `${defendant.full_name} — Court of Public Record`,
             description: `Public record for ${defendant.full_name}. View cases, evidence, timeline, and verdicts.`,
@@ -39,7 +42,7 @@ export default async function DefendantPage({ params }: PageProps) {
     const { slug } = await params
     const supabase = await createClient()
 
-    // Fetch defendant with related data
+    // Fetch defendant
     const { data: defendant, error } = await supabase
         .from('defendants')
         .select('*')
@@ -48,51 +51,70 @@ export default async function DefendantPage({ params }: PageProps) {
 
     if (error || !defendant) notFound()
 
-    // Fetch cases linked to this defendant
+    // Fetch cases linked to this defendant (include one_line_summary for previews)
     const { data: cases } = await supabase
         .from('cases')
-        .select(`
-      id,
-      case_number,
-      status,
-      case_types,
-      nominal_damages_claimed,
-      created_at,
-      verdict_at
-    `)
+        .select(`id, case_number, status, case_types, one_line_summary, nominal_damages_claimed, created_at, verdict_at`)
         .eq('defendant_id', defendant.id)
         .not('status', 'eq', 'draft')
         .order('created_at', { ascending: false })
 
-    // Fetch timeline events
-    const { data: timeline } = await supabase
-        .from('timeline_events')
-        .select('*')
-        .in('case_id', (cases || []).map(c => c.id))
-        .order('sort_order', { ascending: true })
+    const caseIds = (cases || []).map(c => c.id)
 
-    // Fetch verdicts
-    const { data: verdicts } = await supabase
-        .from('verdict_results')
-        .select('*')
-        .in('case_id', (cases || []).map(c => c.id))
-
-    // Fetch defendant responses
-    const { data: responses } = await supabase
-        .from('defendant_responses')
-        .select('*')
-        .in('case_id', (cases || []).map(c => c.id))
-        .order('created_at', { ascending: false })
+    // Parallel queries for related data
+    const [
+        { data: timeline },
+        { data: verdicts },
+        { data: responses },
+        { data: financialImpacts },
+    ] = await Promise.all([
+        supabase.from('timeline_events').select('*')
+            .in('case_id', caseIds).order('sort_order', { ascending: true }),
+        supabase.from('verdict_results').select('*').in('case_id', caseIds),
+        supabase.from('defendant_responses').select('*')
+            .in('case_id', caseIds).order('created_at', { ascending: false }),
+        caseIds.length > 0
+            ? supabase.from('financial_impacts').select('direct_payments, lost_wages, property_loss, legal_fees, medical_costs, credit_damage, other_amount, total_lost, case_id').in('case_id', caseIds)
+            : Promise.resolve({ data: [] }),
+    ])
 
     const activeCases = (cases || []).filter(c => !['draft', 'pending_convergence'].includes(c.status))
-    const totalDamages = activeCases.reduce((sum, c) => sum + (c.nominal_damages_claimed || 0), 0)
+
+    // Aggregate all financial damages across all cases
+    const allFi = (financialImpacts || []) as any[]
+    const totalDocumentedDamages = allFi.reduce((sum, fi) => {
+        return sum + (fi.total_lost || (
+            (fi.direct_payments || 0) + (fi.lost_wages || 0) + (fi.property_loss || 0) +
+            (fi.legal_fees || 0) + (fi.medical_costs || 0) + (fi.credit_damage || 0) + (fi.other_amount || 0)
+        ))
+    }, 0) || activeCases.reduce((sum, c) => sum + (c.nominal_damages_claimed || 0), 0)
+
     const guiltyVerdicts = (verdicts || []).filter(v => v.verdict === 'guilty')
+
+    const ENTITY_BADGES: Record<string, { label: string; class: string }> = {
+        person: { label: '👤 Individual', class: 'bg-blue-500/10 text-blue-700 dark:text-blue-400' },
+        business: { label: '🏢 Business / Organization', class: 'bg-amber-500/10 text-amber-700 dark:text-amber-400' },
+        unknown: { label: '❓ Unknown Identity', class: 'bg-muted text-muted-foreground' },
+    }
+    const entityBadge = ENTITY_BADGES[defendant.entity_type] || ENTITY_BADGES.person
+
+    const EVENT_COLORS: Record<string, string> = {
+        first_contact: 'bg-green-500/10 text-green-700 dark:text-green-400',
+        trust_built: 'bg-blue-500/10 text-blue-700 dark:text-blue-400',
+        red_flag: 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400',
+        escalation: 'bg-orange-500/10 text-orange-700 dark:text-orange-400',
+        incident: 'bg-red-500/10 text-red-700 dark:text-red-400',
+        discovery: 'bg-gray-500/10 text-gray-700 dark:text-gray-400',
+        aftermath: 'bg-purple-500/10 text-purple-700 dark:text-purple-400',
+    }
 
     return (
         <div className="space-y-8">
-            {/* Hero Section */}
+
+            {/* ── HERO ── */}
             <div className="relative rounded-2xl border bg-gradient-to-br from-card via-card to-muted/30 p-8 md:p-10">
                 <div className="flex flex-col md:flex-row gap-6 items-start">
+
                     {/* Avatar */}
                     {defendant.photo_url ? (
                         <img
@@ -108,14 +130,19 @@ export default async function DefendantPage({ params }: PageProps) {
 
                     {/* Info */}
                     <div className="flex-1 space-y-3">
-                        <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start justify-between gap-4 flex-wrap">
                             <div>
                                 <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">{defendant.full_name}</h1>
                                 {defendant.location && (
                                     <p className="text-muted-foreground mt-1">📍 {defendant.location}</p>
                                 )}
                             </div>
-                            <DefendantStatusBadge status={defendant.status} />
+                            <div className="flex flex-col items-end gap-2">
+                                <DefendantStatusBadge status={defendant.status} />
+                                <Badge variant="outline" className={`text-xs ${entityBadge.class}`}>
+                                    {entityBadge.label}
+                                </Badge>
+                            </div>
                         </div>
 
                         {/* Aliases */}
@@ -137,17 +164,17 @@ export default async function DefendantPage({ params }: PageProps) {
                     </div>
                 </div>
 
-                {/* Stats Bar */}
+                {/* Stats bar */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8">
                     <StatCard
-                        label="Active Cases"
+                        label="Cases Filed"
                         value={activeCases.length.toString()}
                         detail={`${activeCases.filter(c => c.status === 'investigation').length} under investigation`}
                     />
                     <StatCard
                         label="Total Damages"
-                        value={totalDamages > 0 ? `$${totalDamages.toLocaleString()}` : '$0'}
-                        detail="Nominal damages claimed"
+                        value={totalDocumentedDamages > 0 ? `$${totalDocumentedDamages.toLocaleString()}` : '$0'}
+                        detail="Documented across all cases"
                     />
                     <StatCard
                         label="Verdicts"
@@ -162,7 +189,7 @@ export default async function DefendantPage({ params }: PageProps) {
                 </div>
             </div>
 
-            {/* Tabbed Content */}
+            {/* ── TABS ── */}
             <Tabs defaultValue="cases" className="space-y-6">
                 <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="cases">Cases ({activeCases.length})</TabsTrigger>
@@ -178,16 +205,26 @@ export default async function DefendantPage({ params }: PageProps) {
                     ) : (
                         activeCases.map((c) => {
                             const verdict = (verdicts || []).find(v => v.case_id === c.id)
+                            // Find financial impact for this case
+                            const fi = allFi.find(f => f.case_id === c.id)
+                            const caseDamages = fi
+                                ? (fi.total_lost || (fi.direct_payments || 0) + (fi.lost_wages || 0) + (fi.property_loss || 0) + (fi.legal_fees || 0) + (fi.medical_costs || 0) + (fi.credit_damage || 0) + (fi.other_amount || 0))
+                                : (c.nominal_damages_claimed || 0)
+
                             return (
                                 <Link key={c.id} href={`/cases/${c.case_number}`}>
                                     <Card className="hover:shadow-md transition-shadow cursor-pointer mb-3">
-                                        <CardContent className="p-5">
-                                            <div className="flex items-center justify-between">
-                                                <div className="space-y-1">
-                                                    <div className="flex items-center gap-2">
+                                        <CardContent className="p-5 space-y-2">
+                                            <div className="flex items-start justify-between gap-4 flex-wrap">
+                                                <div className="space-y-1.5 flex-1">
+                                                    <div className="flex items-center gap-2 flex-wrap">
                                                         <span className="font-mono text-sm font-bold">{c.case_number}</span>
                                                         <CaseStatusBadge status={c.status} />
                                                     </div>
+                                                    {/* One-line summary — the key new field */}
+                                                    {c.one_line_summary && (
+                                                        <p className="text-sm text-muted-foreground italic">&ldquo;{c.one_line_summary}&rdquo;</p>
+                                                    )}
                                                     {c.case_types && c.case_types.length > 0 && (
                                                         <div className="flex flex-wrap gap-1">
                                                             {c.case_types.map((type: string, i: number) => (
@@ -201,9 +238,9 @@ export default async function DefendantPage({ params }: PageProps) {
                                                         Filed {new Date(c.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                                                     </p>
                                                 </div>
-                                                <div className="text-right space-y-1">
-                                                    {c.nominal_damages_claimed && (
-                                                        <p className="text-lg font-bold">${c.nominal_damages_claimed.toLocaleString()}</p>
+                                                <div className="text-right space-y-1 shrink-0">
+                                                    {caseDamages > 0 && (
+                                                        <p className="text-lg font-bold">${caseDamages.toLocaleString()}</p>
                                                     )}
                                                     {verdict && (
                                                         <Badge className={verdict.verdict === 'guilty'
@@ -223,20 +260,22 @@ export default async function DefendantPage({ params }: PageProps) {
                     )}
                 </TabsContent>
 
-                {/* Timeline Tab */}
+                {/* Timeline Tab — aggregated across all cases */}
                 <TabsContent value="timeline" className="space-y-4">
                     {!timeline || timeline.length === 0 ? (
                         <EmptyState message="No timeline events" />
                     ) : (
-                        <div className="relative pl-6 space-y-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-px before:bg-border">
+                        <div className="relative pl-6 space-y-4 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-px before:bg-border">
                             {timeline.map((event) => (
                                 <div key={event.id} className="relative">
                                     <div className="absolute -left-6 top-1 h-4 w-4 rounded-full border-2 border-primary bg-background" />
                                     <Card>
                                         <CardContent className="p-4 space-y-2">
-                                            <div className="flex items-center justify-between">
-                                                <Badge variant="outline" className="text-xs capitalize">{event.event_type.replace(/_/g, ' ')}</Badge>
-                                                <span className="text-xs text-muted-foreground">{event.date_or_year}</span>
+                                            <div className="flex items-center justify-between flex-wrap gap-2">
+                                                <Badge variant="outline" className={`text-xs capitalize ${EVENT_COLORS[event.event_type] || ''}`}>
+                                                    {event.event_type?.replace(/_/g, ' ')}
+                                                </Badge>
+                                                <span className="text-xs text-muted-foreground font-mono">{event.date_or_year}</span>
                                             </div>
                                             <p className="text-sm">{event.description}</p>
                                             {(event.city || event.country) && (
@@ -279,24 +318,30 @@ export default async function DefendantPage({ params }: PageProps) {
                     <Card>
                         <CardContent className="p-6 space-y-4">
                             <DetailRow label="Full Name" value={defendant.full_name} />
+                            <DetailRow label="Entity Type" value={entityBadge.label} />
                             {defendant.date_of_birth && <DetailRow label="Date of Birth" value={defendant.date_of_birth} />}
                             {defendant.location && <DetailRow label="Known Location" value={defendant.location} />}
                             {defendant.address && <DetailRow label="Address" value={defendant.address} />}
                             {defendant.phone && <DetailRow label="Phone" value={defendant.phone} />}
+
+                            {/* Social profiles — from new entity data */}
                             {defendant.social_profiles && Object.keys(defendant.social_profiles).length > 0 && (
                                 <div>
-                                    <p className="text-sm font-medium text-muted-foreground mb-1">Social Profiles</p>
+                                    <p className="text-sm font-medium text-muted-foreground mb-2">Social Profiles</p>
                                     <div className="flex flex-wrap gap-2">
-                                        {Object.entries(defendant.social_profiles as Record<string, string>).map(([platform, url]) => (
-                                            <a key={platform} href={url} target="_blank" rel="noopener noreferrer">
-                                                <Badge variant="outline" className="text-xs hover:bg-accent capitalize">
-                                                    🔗 {platform}
-                                                </Badge>
-                                            </a>
-                                        ))}
+                                        {Object.entries(defendant.social_profiles as Record<string, string>)
+                                            .filter(([, url]) => url)
+                                            .map(([platform, url]) => (
+                                                <a key={platform} href={url} target="_blank" rel="noopener noreferrer">
+                                                    <Badge variant="outline" className="text-xs hover:bg-accent capitalize">
+                                                        🔗 {platform}
+                                                    </Badge>
+                                                </a>
+                                            ))}
                                     </div>
                                 </div>
                             )}
+
                             <Separator />
                             <p className="text-xs text-muted-foreground">
                                 Record created {new Date(defendant.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
