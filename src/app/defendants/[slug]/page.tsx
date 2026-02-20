@@ -18,18 +18,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const supabase = await createClient()
     const { data: defendant } = await supabase
         .from('defendants')
-        .select('full_name, location, entity_type')
+        .select('full_name, location')
         .eq('slug', slug)
         .single()
 
     if (!defendant) return { title: 'Defendant Not Found' }
 
-    const entityLabel = defendant.entity_type === 'business' ? 'Organization' :
-        defendant.entity_type === 'unknown' ? 'Unknown Identity' : 'Individual'
-
     return {
         title: `${defendant.full_name} — Court of Public Record`,
-        description: `Public record for ${entityLabel}: ${defendant.full_name}${defendant.location ? ` from ${defendant.location}` : ''}. View cases, evidence, and verdicts.`,
+        description: `Public record for ${defendant.full_name}${defendant.location ? ` from ${defendant.location}` : ''}. View cases, evidence, and verdicts.`,
         openGraph: {
             title: `${defendant.full_name} — Court of Public Record`,
             description: `Public record for ${defendant.full_name}. View cases, evidence, timeline, and verdicts.`,
@@ -51,13 +48,17 @@ export default async function DefendantPage({ params }: PageProps) {
 
     if (error || !defendant) notFound()
 
-    // Fetch cases linked to this defendant (include one_line_summary for previews)
+    // Fetch cases linked to this defendant (include story_narrative for one_line_summary previews)
     const { data: cases } = await supabase
         .from('cases')
-        .select(`id, case_number, status, case_types, one_line_summary, nominal_damages_claimed, created_at, verdict_at`)
+        .select(`id, case_number, status, case_types, story_narrative, relationship_narrative, nominal_damages_claimed, created_at, verdict_at`)
         .eq('defendant_id', defendant.id)
         .not('status', 'eq', 'draft')
         .order('created_at', { ascending: false })
+
+    // Derive entity_type from the first case's relationship_narrative (not a DB column on defendants)
+    const firstCaseRelNav = (cases?.[0]?.relationship_narrative as any) || {}
+    const derivedEntityType = firstCaseRelNav.entity_type || 'person'
 
     const caseIds = (cases || []).map(c => c.id)
 
@@ -96,7 +97,7 @@ export default async function DefendantPage({ params }: PageProps) {
         business: { label: '🏢 Business / Organization', class: 'bg-amber-500/10 text-amber-700 dark:text-amber-400' },
         unknown: { label: '❓ Unknown Identity', class: 'bg-muted text-muted-foreground' },
     }
-    const entityBadge = ENTITY_BADGES[defendant.entity_type] || ENTITY_BADGES.person
+    const entityBadge = ENTITY_BADGES[derivedEntityType] || ENTITY_BADGES.person
 
     const EVENT_COLORS: Record<string, string> = {
         first_contact: 'bg-green-500/10 text-green-700 dark:text-green-400',
@@ -221,9 +222,9 @@ export default async function DefendantPage({ params }: PageProps) {
                                                         <span className="font-mono text-sm font-bold">{c.case_number}</span>
                                                         <CaseStatusBadge status={c.status} />
                                                     </div>
-                                                    {/* One-line summary — the key new field */}
-                                                    {c.one_line_summary && (
-                                                        <p className="text-sm text-muted-foreground italic">&ldquo;{c.one_line_summary}&rdquo;</p>
+                                                    {/* One-line summary — extracted from story_narrative JSONB */}
+                                                    {(c.story_narrative as any)?.one_line_summary && (
+                                                        <p className="text-sm text-muted-foreground italic">&ldquo;{(c.story_narrative as any).one_line_summary}&rdquo;</p>
                                                     )}
                                                     {c.case_types && c.case_types.length > 0 && (
                                                         <div className="flex flex-wrap gap-1">

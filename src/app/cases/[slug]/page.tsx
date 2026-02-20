@@ -21,13 +21,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const supabase = await createClient()
     const { data } = await supabase
         .from('cases')
-        .select('one_line_summary, case_summary, defendants(full_name)')
+        .select('story_narrative, defendants(full_name)')
         .eq('case_number', slug)
         .single()
 
     if (!data) return { title: 'Case Not Found' }
     const defendant = (data.defendants as any)?.full_name || 'Unknown'
-    const summary = data.one_line_summary || data.case_summary?.slice(0, 160) || ''
+    const storyMeta = data.story_narrative as any || {}
+    const summary = storyMeta.one_line_summary || (storyMeta.body as string)?.slice(0, 160) || ''
 
     return {
         title: `vs. ${defendant} — Court of Public Record`,
@@ -78,6 +79,45 @@ export default async function CaseDetailPage({ params }: PageProps) {
     ])
 
     const defendant = caseData.defendants as any
+
+    // ── DESTRUCTURE JSONB COLUMNS ──
+    // The form writes into these 6 JSONB columns. Extract all fields from them.
+    const relationship = (caseData.relationship_narrative as any) || {}
+    const promise = (caseData.promise_narrative as any) || {}
+    const betrayal = (caseData.betrayal_narrative as any) || {}
+    const impact = (caseData.personal_impact as any) || {}
+    const legal = (caseData.legal_actions as any) || {}
+    const story = (caseData.story_narrative as any) || {}
+    const vis = (caseData.visibility_settings as any) || {}
+
+    // Extracted flat values for easy use in JSX
+    const one_line_summary = story.one_line_summary || ''
+    const case_summary = story.body || ''
+    const what_happened = betrayal.what_happened || ''
+    const primary_incident = betrayal.primary_incident || ''
+    const when_realized = betrayal.when_realized || ''
+    const how_confirmed = betrayal.how_confirmed || ''
+    const is_ongoing = betrayal.is_ongoing || ''
+    const relationship_type = relationship.type || ''
+    const relationship_duration = relationship.duration || ''
+    const first_interaction = relationship.first_interaction || ''
+    const early_warnings = relationship.early_warnings || ''
+    const explicit_agreement = promise.explicit_agreement || ''
+    const agreement_terms = promise.agreement_terms || ''
+    const reasonable_expectation = promise.reasonable_expectation || ''
+    const evidence_of_trust = promise.evidence_of_trust || ''
+    const others_vouch = promise.others_vouch || ''
+    const emotional_impact = impact.emotional || ''
+    const physical_impact = impact.physical || ''
+    const wish_understood = impact.wish_understood || ''
+    const police_report_filed = legal.police_report || ''
+    const lawyer_consulted = legal.lawyer || ''
+    const court_case_filed = legal.court_case || ''
+    const legal_details = legal.description || ''
+    const why_filing = legal.why_filing || ''
+    const other_victims = legal.other_victims || ''
+    const other_victims_count = legal.other_victims_count || null
+    const visibility = vis.tier || ''
 
     // Financial totals
     const fi = financialImpacts as any
@@ -143,11 +183,11 @@ export default async function CaseDetailPage({ params }: PageProps) {
                                     <Badge variant="outline" className={`capitalize ${statusColors[caseData.status] || ''}`}>
                                         {caseData.status.replace(/_/g, ' ')}
                                     </Badge>
-                                    {caseData.visibility && caseData.visibility !== 'open' && (
+                                    {visibility && visibility !== 'open' && (
                                         <Badge variant="outline" className="text-xs capitalize">
-                                            {caseData.visibility === 'shielded' ? '🟡 Shielded' :
-                                                caseData.visibility === 'protected' ? '🟠 Protected' :
-                                                    caseData.visibility === 'proxy' ? '🔴 Proxy' : caseData.visibility}
+                                            {visibility === 'shielded' ? '🟡 Shielded' :
+                                                visibility === 'protected' ? '🟠 Protected' :
+                                                    visibility === 'proxy' ? '🔴 Proxy' : visibility}
                                         </Badge>
                                     )}
                                 </div>
@@ -161,9 +201,9 @@ export default async function CaseDetailPage({ params }: PageProps) {
                         </div>
 
                         {/* One-line summary */}
-                        {caseData.one_line_summary && (
+                        {one_line_summary && (
                             <p className="text-base text-muted-foreground italic leading-snug">
-                                &ldquo;{caseData.one_line_summary}&rdquo;
+                                &ldquo;{one_line_summary}&rdquo;
                             </p>
                         )}
 
@@ -181,7 +221,7 @@ export default async function CaseDetailPage({ params }: PageProps) {
                         <p className="text-sm text-muted-foreground">
                             Filed {new Date(caseData.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                             {defendant?.location && <span> · 📍 {defendant.location}</span>}
-                            {caseData.is_ongoing === 'yes' && <span className="text-red-500 font-medium"> · ⚠️ Ongoing</span>}
+                            {is_ongoing === 'yes' && <span className="text-red-500 font-medium"> · ⚠️ Ongoing</span>}
                         </p>
                     </div>
                 </div>
@@ -230,93 +270,93 @@ export default async function CaseDetailPage({ params }: PageProps) {
                 <TabsContent value="case" className="space-y-6">
 
                     {/* Case Summary — the primary narrative */}
-                    {caseData.case_summary && (
+                    {case_summary && (
                         <Card>
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-base">📋 Case Summary</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap leading-relaxed">
-                                    {caseData.case_summary}
+                                    {case_summary}
                                 </div>
                             </CardContent>
                         </Card>
                     )}
 
                     {/* What Happened / Incident */}
-                    {(caseData.what_happened || caseData.primary_incident) && (
+                    {(what_happened || primary_incident) && (
                         <Card>
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-base">🔴 The Incident</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                {caseData.what_happened && (
-                                    <FactBlock label="What Happened" value={caseData.what_happened} />
+                                {what_happened && (
+                                    <FactBlock label="What Happened" value={what_happened} />
                                 )}
-                                {caseData.primary_incident && (
-                                    <FactBlock label="Primary Incident" value={caseData.primary_incident} />
+                                {primary_incident && (
+                                    <FactBlock label="Primary Incident" value={primary_incident} />
                                 )}
-                                {caseData.when_realized && (
-                                    <FactBlock label="When Something Felt Wrong" value={caseData.when_realized} />
+                                {when_realized && (
+                                    <FactBlock label="When Something Felt Wrong" value={when_realized} />
                                 )}
-                                {caseData.how_confirmed && (
-                                    <FactBlock label="How It Was Confirmed" value={caseData.how_confirmed} />
+                                {how_confirmed && (
+                                    <FactBlock label="How It Was Confirmed" value={how_confirmed} />
                                 )}
                             </CardContent>
                         </Card>
                     )}
 
                     {/* Connection */}
-                    {(caseData.relationship_type || caseData.first_interaction || caseData.early_warnings) && (
+                    {(relationship_type || first_interaction || early_warnings) && (
                         <Card>
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-base">🔗 The Connection</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                {caseData.relationship_type && (
-                                    <FactBlock label="Relationship" value={caseData.relationship_type.replace(/_/g, ' ')} />
+                                {relationship_type && (
+                                    <FactBlock label="Relationship" value={relationship_type.replace(/_/g, ' ')} />
                                 )}
-                                {caseData.relationship_duration && (
-                                    <FactBlock label="Duration" value={caseData.relationship_duration} />
+                                {relationship_duration && (
+                                    <FactBlock label="Duration" value={relationship_duration} />
                                 )}
-                                {caseData.first_interaction && (
-                                    <FactBlock label="How They Met" value={caseData.first_interaction} />
+                                {first_interaction && (
+                                    <FactBlock label="How They Met" value={first_interaction} />
                                 )}
-                                {caseData.early_warnings && (
-                                    <FactBlock label="Early Warning Signs" value={caseData.early_warnings} />
+                                {early_warnings && (
+                                    <FactBlock label="Early Warning Signs" value={early_warnings} />
                                 )}
                             </CardContent>
                         </Card>
                     )}
 
                     {/* Basis of Trust */}
-                    {(caseData.explicit_agreement || caseData.agreement_terms || caseData.reasonable_expectation) && (
+                    {(explicit_agreement || agreement_terms || reasonable_expectation) && (
                         <Card>
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-base">🤝 Basis of Trust</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                {caseData.explicit_agreement && (
-                                    <FactBlock label="Explicit Agreement" value={caseData.explicit_agreement} />
+                                {explicit_agreement && (
+                                    <FactBlock label="Explicit Agreement" value={explicit_agreement} />
                                 )}
-                                {caseData.agreement_terms && (
-                                    <FactBlock label="Terms" value={caseData.agreement_terms} />
+                                {agreement_terms && (
+                                    <FactBlock label="Terms" value={agreement_terms} />
                                 )}
-                                {caseData.reasonable_expectation && (
-                                    <FactBlock label="Reasonable Expectation" value={caseData.reasonable_expectation} />
+                                {reasonable_expectation && (
+                                    <FactBlock label="Reasonable Expectation" value={reasonable_expectation} />
                                 )}
-                                {caseData.evidence_of_trust && (
-                                    <FactBlock label="Evidence Supporting Trust" value={caseData.evidence_of_trust} />
+                                {evidence_of_trust && (
+                                    <FactBlock label="Evidence Supporting Trust" value={evidence_of_trust} />
                                 )}
-                                {caseData.others_vouch && (
-                                    <FactBlock label="Third-Party Endorsement" value={caseData.others_vouch} />
+                                {others_vouch && (
+                                    <FactBlock label="Third-Party Endorsement" value={others_vouch} />
                                 )}
                             </CardContent>
                         </Card>
                     )}
 
                     {/* Damages & Impact */}
-                    {(fi || caseData.emotional_impact || caseData.physical_impact) && (
+                    {(fi || emotional_impact || physical_impact) && (
                         <Card>
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-base">💥 Damages & Impact</CardTitle>
@@ -342,16 +382,16 @@ export default async function CaseDetailPage({ params }: PageProps) {
                                         )}
                                     </div>
                                 )}
-                                {caseData.emotional_impact && (
-                                    <FactBlock label="Psychological & Emotional Effects" value={caseData.emotional_impact} />
+                                {emotional_impact && (
+                                    <FactBlock label="Psychological & Emotional Effects" value={emotional_impact} />
                                 )}
-                                {caseData.physical_impact && (
-                                    <FactBlock label="Physical Injuries & Health Effects" value={caseData.physical_impact} />
+                                {physical_impact && (
+                                    <FactBlock label="Physical Injuries & Health Effects" value={physical_impact} />
                                 )}
-                                {caseData.wish_understood && (
+                                {wish_understood && (
                                     <div className="rounded-lg bg-muted/20 border p-4">
                                         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">What the plaintiff wants understood</p>
-                                        <p className="text-sm italic leading-relaxed">&ldquo;{caseData.wish_understood}&rdquo;</p>
+                                        <p className="text-sm italic leading-relaxed">&ldquo;{wish_understood}&rdquo;</p>
                                     </div>
                                 )}
                             </CardContent>
@@ -359,40 +399,40 @@ export default async function CaseDetailPage({ params }: PageProps) {
                     )}
 
                     {/* Legal Actions */}
-                    {(caseData.police_report_filed || caseData.lawyer_consulted || caseData.court_case_filed || caseData.why_filing) && (
+                    {(police_report_filed || lawyer_consulted || court_case_filed || why_filing) && (
                         <Card>
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-base">⚖️ Legal Actions</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="flex flex-wrap gap-3">
-                                    {caseData.police_report_filed && caseData.police_report_filed !== 'no' && (
+                                    {police_report_filed && police_report_filed !== 'no' && (
                                         <Badge variant="outline" className="text-xs">
-                                            🚔 Police Report: {caseData.police_report_filed.replace(/_/g, ' ')}
+                                            🚔 Police Report: {police_report_filed.replace(/_/g, ' ')}
                                         </Badge>
                                     )}
-                                    {caseData.lawyer_consulted && caseData.lawyer_consulted !== 'no' && (
+                                    {lawyer_consulted && lawyer_consulted !== 'no' && (
                                         <Badge variant="outline" className="text-xs">
-                                            ⚖️ Lawyer: {caseData.lawyer_consulted.replace(/_/g, ' ')}
+                                            ⚖️ Lawyer: {lawyer_consulted.replace(/_/g, ' ')}
                                         </Badge>
                                     )}
-                                    {caseData.court_case_filed && caseData.court_case_filed !== 'no' && (
+                                    {court_case_filed && court_case_filed !== 'no' && (
                                         <Badge variant="outline" className="text-xs">
-                                            🏛️ Court Case: {caseData.court_case_filed.replace(/_/g, ' ')}
+                                            🏛️ Court Case: {court_case_filed.replace(/_/g, ' ')}
                                         </Badge>
                                     )}
                                 </div>
-                                {caseData.legal_details && (
-                                    <FactBlock label="Legal Details" value={caseData.legal_details} />
+                                {legal_details && (
+                                    <FactBlock label="Legal Details" value={legal_details} />
                                 )}
-                                {caseData.why_filing && (
-                                    <FactBlock label="Why Filing on the Public Record" value={caseData.why_filing} />
+                                {why_filing && (
+                                    <FactBlock label="Why Filing on the Public Record" value={why_filing} />
                                 )}
-                                {caseData.other_victims && caseData.other_victims !== 'no' && (
+                                {other_victims && other_victims !== 'no' && (
                                     <p className="text-sm text-muted-foreground">
                                         🔗 Other victims reported:{' '}
-                                        <strong>{caseData.other_victims === 'yes' ? 'Yes' : 'Suspected'}</strong>
-                                        {caseData.other_victims_count && ` — approximately ${caseData.other_victims_count}`}
+                                        <strong>{other_victims === 'yes' ? 'Yes' : 'Suspected'}</strong>
+                                        {other_victims_count && ` — approximately ${other_victims_count}`}
                                     </p>
                                 )}
                             </CardContent>
@@ -495,8 +535,8 @@ export default async function CaseDetailPage({ params }: PageProps) {
                                                 </Badge>
                                             )}
                                         </div>
-                                        {w.can_verify && (
-                                            <FactBlock label="Can Verify" value={w.can_verify} />
+                                        {w.details?.can_verify && (
+                                            <FactBlock label="Can Verify" value={w.details.can_verify} />
                                         )}
                                         {w.statement && (
                                             <FactBlock label="Statement" value={w.statement} />

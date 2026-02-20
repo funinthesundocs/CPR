@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
+import { VoiceTextInput } from '@/components/voice/VoiceTextInput'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
@@ -494,7 +494,7 @@ export default function NewCaseForm() {
                             )}
                             {form.entity_type === 'unknown' && (
                                 <FieldGroup label={t('wizard.description')}>
-                                    <Textarea value={form.defendant_description} onChange={e => updateForm({ defendant_description: e.target.value })} placeholder={t('wizard.descriptionPlaceholder')} rows={3} />
+                                    <VoiceTextInput value={form.defendant_description} onChange={(val) => updateForm({ defendant_description: val })} placeholder={t('wizard.descriptionPlaceholder')} rows={3} />
                                 </FieldGroup>
                             )}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -506,7 +506,7 @@ export default function NewCaseForm() {
                                 </FieldGroup>
                             </div>
                             <FieldGroup label={t('wizard.address')}>
-                                <Textarea value={form.defendant_address} onChange={e => updateForm({ defendant_address: e.target.value })} placeholder={t('wizard.addressPlaceholder')} rows={2} />
+                                <VoiceTextInput value={form.defendant_address} onChange={(val) => updateForm({ defendant_address: val })} placeholder={t('wizard.addressPlaceholder')} rows={2} />
                             </FieldGroup>
                             {/* Social Profiles */}
                             <FieldGroup label={t('wizard.socialProfiles')}>
@@ -570,10 +570,10 @@ export default function NewCaseForm() {
                                 </FieldGroup>
                             </div>
                             <FieldGroup label={t('wizard.firstInteraction')}>
-                                <Textarea value={form.first_interaction} onChange={e => updateForm({ first_interaction: e.target.value })} placeholder={t('wizard.firstInteractionPlaceholder')} rows={3} />
+                                <VoiceTextInput value={form.first_interaction} onChange={(val) => updateForm({ first_interaction: val })} placeholder={t('wizard.firstInteractionPlaceholder')} rows={3} />
                             </FieldGroup>
                             <FieldGroup label={t('wizard.earlyWarnings')}>
-                                <Textarea value={form.early_warnings} onChange={e => updateForm({ early_warnings: e.target.value })} placeholder={t('wizard.earlyWarningsPlaceholder')} rows={2} />
+                                <VoiceTextInput value={form.early_warnings} onChange={(val) => updateForm({ early_warnings: val })} placeholder={t('wizard.earlyWarningsPlaceholder')} rows={2} />
                             </FieldGroup>
                             <p className="text-xs text-muted-foreground italic">{t('wizard.step2Micro')}</p>
                         </>
@@ -583,19 +583,19 @@ export default function NewCaseForm() {
                     {step === 3 && (
                         <>
                             <FieldGroup label={t('wizard.explicitAgreement')}>
-                                <Textarea value={form.explicit_agreement} onChange={e => updateForm({ explicit_agreement: e.target.value })} placeholder={t('wizard.explicitAgreementPlaceholder')} rows={3} />
+                                <VoiceTextInput value={form.explicit_agreement} onChange={(val) => updateForm({ explicit_agreement: val })} placeholder={t('wizard.explicitAgreementPlaceholder')} rows={3} />
                             </FieldGroup>
                             <FieldGroup label={t('wizard.agreementTerms')}>
-                                <Textarea value={form.agreement_terms} onChange={e => updateForm({ agreement_terms: e.target.value })} placeholder={t('wizard.agreementTermsPlaceholder')} rows={3} />
+                                <VoiceTextInput value={form.agreement_terms} onChange={(val) => updateForm({ agreement_terms: val })} placeholder={t('wizard.agreementTermsPlaceholder')} rows={3} />
                             </FieldGroup>
                             <FieldGroup label={t('wizard.reasonableExpectation')}>
-                                <Textarea value={form.reasonable_expectation} onChange={e => updateForm({ reasonable_expectation: e.target.value })} placeholder={t('wizard.reasonableExpectationPlaceholder')} rows={3} />
+                                <VoiceTextInput value={form.reasonable_expectation} onChange={(val) => updateForm({ reasonable_expectation: val })} placeholder={t('wizard.reasonableExpectationPlaceholder')} rows={3} />
                             </FieldGroup>
                             <FieldGroup label={t('wizard.evidenceOfTrust')}>
-                                <Textarea value={form.evidence_of_trust} onChange={e => updateForm({ evidence_of_trust: e.target.value })} placeholder={t('wizard.evidenceOfTrustPlaceholder')} rows={3} />
+                                <VoiceTextInput value={form.evidence_of_trust} onChange={(val) => updateForm({ evidence_of_trust: val })} placeholder={t('wizard.evidenceOfTrustPlaceholder')} rows={3} />
                             </FieldGroup>
                             <FieldGroup label={t('wizard.othersVouch')}>
-                                <Textarea value={form.others_vouch} onChange={e => updateForm({ others_vouch: e.target.value })} placeholder={t('wizard.othersVouchPlaceholder')} rows={2} />
+                                <VoiceTextInput value={form.others_vouch} onChange={(val) => updateForm({ others_vouch: val })} placeholder={t('wizard.othersVouchPlaceholder')} rows={2} />
                             </FieldGroup>
                             <p className="text-xs text-muted-foreground italic">{t('wizard.step3Micro')}</p>
                         </>
@@ -605,16 +605,16 @@ export default function NewCaseForm() {
                     {step === 4 && (
                         <>
                             <FieldGroup label={`${t('wizard.whatHappened')} *`}>
-                                <Textarea value={form.what_happened} onChange={e => updateForm({ what_happened: e.target.value })} placeholder={t('wizard.whatHappenedPlaceholder')} rows={5} />
+                                <VoiceTextInput value={form.what_happened} onChange={(val) => updateForm({ what_happened: val })} placeholder={t('wizard.whatHappenedPlaceholder')} rows={5} />
                             </FieldGroup>
                             <FieldGroup label={t('wizard.primaryIncident')}>
-                                <Textarea value={form.primary_incident} onChange={e => updateForm({ primary_incident: e.target.value })} placeholder={t('wizard.primaryIncidentPlaceholder')} rows={3} />
+                                <VoiceTextInput value={form.primary_incident} onChange={(val) => updateForm({ primary_incident: val })} placeholder={t('wizard.primaryIncidentPlaceholder')} rows={3} />
                             </FieldGroup>
                             <FieldGroup label={t('wizard.whenRealized')}>
                                 <Input value={form.when_realized} onChange={e => updateForm({ when_realized: e.target.value })} placeholder={t('wizard.whenRealizedPlaceholder')} />
                             </FieldGroup>
                             <FieldGroup label={t('wizard.howConfirmed')}>
-                                <Textarea value={form.how_confirmed} onChange={e => updateForm({ how_confirmed: e.target.value })} placeholder={t('wizard.howConfirmedPlaceholder')} rows={3} />
+                                <VoiceTextInput value={form.how_confirmed} onChange={(val) => updateForm({ how_confirmed: val })} placeholder={t('wizard.howConfirmedPlaceholder')} rows={3} />
                             </FieldGroup>
                             <FieldGroup label={t('wizard.isOngoing')}>
                                 <Select value={form.is_ongoing} onValueChange={v => updateForm({ is_ongoing: v })}>
@@ -678,7 +678,7 @@ export default function NewCaseForm() {
                                 <p className="text-xs text-muted-foreground mt-1">{form.one_line_summary.length}/140</p>
                             </FieldGroup>
                             <FieldGroup label={`${t('wizard.caseSummary')} *`}>
-                                <Textarea value={form.case_summary} onChange={e => updateForm({ case_summary: e.target.value })} placeholder={t('wizard.caseSummaryPlaceholder')} rows={12} />
+                                <VoiceTextInput value={form.case_summary} onChange={(val) => updateForm({ case_summary: val })} placeholder={t('wizard.caseSummaryPlaceholder')} rows={12} />
                                 <p className="text-xs text-muted-foreground mt-1">
                                     {form.case_summary.length} {t('wizard.characters')} · {form.case_summary.split(/\s+/).filter(Boolean).length} {t('wizard.words')}
                                 </p>
@@ -722,13 +722,13 @@ export default function NewCaseForm() {
                                 return total > 0 ? <div className="rounded-lg bg-primary/5 border border-primary/20 p-3"><p className="text-sm font-semibold">{t('wizard.finTotal')}: <span className="text-primary">${total.toLocaleString()}</span></p></div> : null
                             })()}
                             <FieldGroup label={t('wizard.emotionalImpact')}>
-                                <Textarea value={form.emotional_impact} onChange={e => updateForm({ emotional_impact: e.target.value })} placeholder={t('wizard.emotionalPlaceholder')} rows={3} />
+                                <VoiceTextInput value={form.emotional_impact} onChange={(val) => updateForm({ emotional_impact: val })} placeholder={t('wizard.emotionalPlaceholder')} rows={3} />
                             </FieldGroup>
                             <FieldGroup label={t('wizard.physicalImpact')}>
-                                <Textarea value={form.physical_impact} onChange={e => updateForm({ physical_impact: e.target.value })} placeholder={t('wizard.physicalPlaceholder')} rows={3} />
+                                <VoiceTextInput value={form.physical_impact} onChange={(val) => updateForm({ physical_impact: val })} placeholder={t('wizard.physicalPlaceholder')} rows={3} />
                             </FieldGroup>
                             <FieldGroup label={t('wizard.wishUnderstood')}>
-                                <Textarea value={form.wish_understood} onChange={e => updateForm({ wish_understood: e.target.value })} placeholder={t('wizard.wishUnderstoodPlaceholder')} rows={2} />
+                                <VoiceTextInput value={form.wish_understood} onChange={(val) => updateForm({ wish_understood: val })} placeholder={t('wizard.wishUnderstoodPlaceholder')} rows={2} />
                             </FieldGroup>
                             <p className="text-xs text-muted-foreground italic">{t('wizard.step7Micro')}</p>
                         </>
@@ -859,10 +859,10 @@ export default function NewCaseForm() {
                                 </FieldGroup>
                             </div>
                             <FieldGroup label={t('wizard.legalDetails')}>
-                                <Textarea value={form.legal_description} onChange={e => updateForm({ legal_description: e.target.value })} placeholder={t('wizard.legalPlaceholder')} rows={4} />
+                                <VoiceTextInput value={form.legal_description} onChange={(val) => updateForm({ legal_description: val })} placeholder={t('wizard.legalPlaceholder')} rows={4} />
                             </FieldGroup>
                             <FieldGroup label={t('wizard.whyFiling')}>
-                                <Textarea value={form.why_filing} onChange={e => updateForm({ why_filing: e.target.value })} placeholder={t('wizard.whyFilingPlaceholder')} rows={3} />
+                                <VoiceTextInput value={form.why_filing} onChange={(val) => updateForm({ why_filing: val })} placeholder={t('wizard.whyFilingPlaceholder')} rows={3} />
                             </FieldGroup>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <FieldGroup label={t('wizard.otherVictims')}>
