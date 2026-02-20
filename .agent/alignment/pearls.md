@@ -35,3 +35,13 @@
 | Dense formats scale better | When designing a living document with a token budget, choose the densest readable format (tables > heading blocks) because format density determines how much knowledge fits before you hit limits | Seed | 2026-02-19 |
 | Append-only for merge safety | Design shared files so edits are row appends rather than in-place modifications — this makes concurrent contributor merge conflicts trivial to resolve | Seed | 2026-02-19 |
 | Externalized judgment scales capability | Writing judgment criteria into a document (gates, contrast examples, litmus tests) lets mid-tier models perform tasks that otherwise require frontier models — the quality ceiling shifts with the quality of the framework, not just the model | Seed | 2026-02-19 |
+| Flat columns over JSONB blobs | Store form submission fields as individual named columns rather than JSONB objects — display pages reference flat columns directly, while JSONB field renames break silently at runtime with no build error | Seed | 2026-02-20 |
+
+## Frontend & Full-Stack
+
+| Pearl | Rule | Maturity | Added |
+|-------|------|----------|-------|
+| Audit display pages after form redesign | Whenever a data entry form's schema is redesigned, immediately audit every page that reads its submitted data — stale field references render nothing silently with no compile-time error | Seed | 2026-02-20 |
+| HMR skips module-level constants | Any value computed at module load time requires a full dev server restart to reflect source file changes — hot reload only patches component boundaries, not module-scope initialization | Seed | 2026-02-20 |
+| i18n key mismatches invisible at build time | A missing translation key returns the raw key string at runtime with zero build warnings — grep the translation file for every t() call after adding new keys to a component | Seed | 2026-02-20 |
+
