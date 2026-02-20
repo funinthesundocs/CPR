@@ -17,6 +17,7 @@
 |-------|------|----------|-------|
 | ASCII-only subprocess output | Never use Unicode characters (checkmarks, arrows, emoji) in print() statements that run inside subprocesses — Windows charmap encoding will crash | Established | 2026-02-19 |
 | Declare OS and path format | Explicitly state the target OS and path style in every skill or instruction — models default to their training bias (usually Linux) and silently produce wrong commands | Established | 2026-02-19 |
+| PowerShell multi-line -m hangs silently | Never use embedded newlines inside a git commit -m "..." on PowerShell — the shell enters multi-line input mode and the command produces no output while appearing to still run | Seed | 2026-02-20 |
 
 ## Iterative Refinement
 
@@ -35,7 +36,8 @@
 | Dense formats scale better | When designing a living document with a token budget, choose the densest readable format (tables > heading blocks) because format density determines how much knowledge fits before you hit limits | Seed | 2026-02-19 |
 | Append-only for merge safety | Design shared files so edits are row appends rather than in-place modifications — this makes concurrent contributor merge conflicts trivial to resolve | Seed | 2026-02-19 |
 | Externalized judgment scales capability | Writing judgment criteria into a document (gates, contrast examples, litmus tests) lets mid-tier models perform tasks that otherwise require frontier models — the quality ceiling shifts with the quality of the framework, not just the model | Seed | 2026-02-19 |
-| Flat columns over JSONB blobs | Store form submission fields as individual named columns rather than JSONB objects — display pages reference flat columns directly, while JSONB field renames break silently at runtime with no build error | Seed | 2026-02-20 |
+| Flat columns over JSONB blobs | Store form submission fields as individual named columns rather than JSONB objects — display pages reference flat columns directly, while JSONB field renames break silently at runtime with no build error | **Confirmed** | 2026-02-20 |
+| JSONB fields are TypeScript-invisible | A field name mismatch inside a JSONB column compiles clean with zero TypeScript errors but renders nothing at runtime — grep every display page for JSONB key references after any schema change | Seed | 2026-02-20 |
 
 ## Frontend & Full-Stack
 
@@ -48,3 +50,10 @@
 | False-default gates hide UI on first render | A React boolean state that gates UI visibility should default to `true` (then disable if unsupported), not `false` (then enable if supported) — the false-default causes a blank first render that persists if the enabling effect never fires | Seed | 2026-02-20 |
 | Check capability lazily not eagerly | Detect browser capabilities (microphone, camera, geolocation, clipboard) on first user interaction rather than on component mount — eager detection causes blank UI if the async check races with the first render | Seed | 2026-02-20 |
 
+## Database & Auth
+
+| Pearl | Rule | Maturity | Added |
+|-------|------|----------|-------|
+| Check triggers before assuming INSERT fails | Before concluding a NOT NULL column with no visible default will break an INSERT, query pg_trigger for that table — a BEFORE INSERT trigger may auto-populate it silently | Seed | 2026-02-20 |
+| RLS self-referencing join is always true | A WHERE join that compares a table alias to itself (e.g. cp.id = cp.id) creates a constant-true condition, silently granting every row to every user — always verify every join predicate references a different table | Seed | 2026-02-20 |
+| RLS-disabled can be intentional for catalog tables | RBAC configuration tables (roles, permissions, mappings) legitimately disable RLS because all users need read access — flag disabled-RLS as a finding but verify intent before treating it as a vulnerability | Seed | 2026-02-20 |
