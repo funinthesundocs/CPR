@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react'
 import en from './locales/en.json'
 
 export const SUPPORTED_LOCALES = ['en', 'es', 'pt', 'fr', 'de', 'ja', 'ar'] as const
@@ -63,13 +63,9 @@ const localeLoaders: Record<Locale, () => Promise<Record<string, any>>> = {
 const loadedLocales: Record<string, Record<string, string>> = { en: flatEN }
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-    const [locale, setLocaleState] = useState<Locale>(() => {
-        if (typeof window !== 'undefined') {
-            const saved = localStorage.getItem('cpr-locale')
-            if (saved && SUPPORTED_LOCALES.includes(saved as Locale)) return saved as Locale
-        }
-        return 'en'
-    })
+    // Always start with 'en' so server and client initial renders match.
+    // Saved locale is restored in a useEffect after hydration.
+    const [locale, setLocaleState] = useState<Locale>('en')
     const [translations, setTranslations] = useState<Record<string, string>>(flatEN)
 
     const setLocale = useCallback(async (newLocale: Locale) => {
@@ -95,6 +91,14 @@ export function I18nProvider({ children }: { children: ReactNode }) {
             document.documentElement.lang = newLocale
         }
     }, [])
+
+    // Restore saved locale after hydration — must be in useEffect, not useState initializer
+    useEffect(() => {
+        const saved = localStorage.getItem('cpr-locale')
+        if (saved && SUPPORTED_LOCALES.includes(saved as Locale) && saved !== 'en') {
+            setLocale(saved as Locale)
+        }
+    }, [setLocale])
 
     const t = useCallback((key: string): string => {
         return translations[key] ?? flatEN[key] ?? key
