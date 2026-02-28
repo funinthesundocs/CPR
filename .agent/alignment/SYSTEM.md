@@ -133,15 +133,15 @@ When a new harvest finds a similar existing pearl, **promote its maturity** inst
 
 ---
 
-## Current Pearl Inventory (22 Pearls, 7 Categories)
+## Current Pearl Inventory (20 Pearls, 6 Categories)
 
 | Category | Count | Top Pearl |
 |----------|-------|-----------|
 | Browser Automation | 3 | "Extract before transform" (Established) |
 | Windows Compatibility | 3 | "ASCII-only subprocess output" (Established) |
-| Iterative Refinement | 4 | "Recursive self-critique with a target" (Established) |
-| General Engineering | 6 | "Never assume response format" (Confirmed) |
-| Frontend & Full-Stack | 6 | "Audit display pages after form redesign" (Seed) |
+| Iterative Refinement | 3 | "Recursive self-critique with a target" (Established) |
+| General Engineering | 5 | "Never assume response format" (Confirmed) |
+| Frontend & Full-Stack | 6 | "False-default gates hide UI on first render" (Seed) |
 | Database & Auth | 3 | "Check triggers before assuming INSERT fails" (Seed) |
 
 **Pruning threshold: 40 rows.** See Pruning Guide inside `pearls.md` for scoring logic.
