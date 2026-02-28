@@ -4,6 +4,19 @@ import { NextResponse } from 'next/server'
 export async function GET() {
     const supabase = await createClient()
 
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+        return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+    const { data: adminRoles } = await supabase
+        .from('user_roles')
+        .select('role_id')
+        .eq('user_id', user.id)
+        .in('role_id', ['admin', 'super_admin'])
+    if (!adminRoles || adminRoles.length === 0) {
+        return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
+    }
+
     try {
         // Fetch all roles
         const { data: roles, error: rolesError } = await supabase
@@ -57,6 +70,19 @@ export async function GET() {
 
 export async function POST(request: Request) {
     const supabase = await createClient()
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+        return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+    const { data: adminRoles } = await supabase
+        .from('user_roles')
+        .select('role_id')
+        .eq('user_id', user.id)
+        .in('role_id', ['admin', 'super_admin'])
+    if (!adminRoles || adminRoles.length === 0) {
+        return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
+    }
 
     try {
         const { grants } = await request.json()

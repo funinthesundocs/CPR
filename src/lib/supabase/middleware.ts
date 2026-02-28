@@ -15,7 +15,7 @@ export async function updateSession(request: NextRequest) {
                     return request.cookies.getAll()
                 },
                 setAll(cookiesToSet) {
-                    cookiesToSet.forEach(({ name, value, options }) =>
+                    cookiesToSet.forEach(({ name, value }) =>
                         request.cookies.set(name, value)
                     )
                     supabaseResponse = NextResponse.next({
@@ -34,15 +34,23 @@ export async function updateSession(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser()
 
-    // Protect admin routes — check authentication
-    if (request.nextUrl.pathname.startsWith('/admin') && !user) {
-        const url = request.nextUrl.clone()
-        url.pathname = '/login'
-        return NextResponse.redirect(url)
-    }
+    // Protect admin routes — UI (/admin/*) and API (/api/admin/*)
+    const { pathname } = request.nextUrl
+    const isAdminUiPath = pathname.startsWith('/admin')
+    const isAdminApiPath = pathname.startsWith('/api/admin')
 
-    // Protect admin routes — check authorization (DB role check)
-    if (request.nextUrl.pathname.startsWith('/admin') && user) {
+    if (isAdminUiPath || isAdminApiPath) {
+        // Authentication check
+        if (!user) {
+            if (isAdminApiPath) {
+                return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+            }
+            const url = request.nextUrl.clone()
+            url.pathname = '/login'
+            return NextResponse.redirect(url)
+        }
+
+        // Authorization check — DB role check, do not trust JWT claims
         const { data: userRoles } = await supabase
             .from('user_roles')
             .select('role_id')
@@ -52,6 +60,9 @@ export async function updateSession(request: NextRequest) {
         const hasAdminRole = (userRoles || []).length > 0
 
         if (!hasAdminRole) {
+            if (isAdminApiPath) {
+                return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
+            }
             const url = request.nextUrl.clone()
             url.pathname = '/'
             url.searchParams.set('error', 'unauthorized')
