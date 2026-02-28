@@ -78,6 +78,7 @@ Prune in this order — lowest score = first to go:
 | Dead HMR connection silences all new files | When a dev server's WebSocket HMR connection drops, new source files are never delivered to the browser — always restart the dev server when changes appear absent and the console shows WebSocket failures | Seed | 2026-02-20 | 0 |
 | False-default gates hide UI on first render | A React boolean state that gates UI visibility should default to `true` (then disable if unsupported), not `false` (then enable if supported) — the false-default causes a blank first render that persists if the enabling effect never fires | Seed | 2026-02-20 | 0 |
 | Check capability lazily not eagerly | Detect browser capabilities (microphone, camera, geolocation, clipboard) on first user interaction rather than on component mount — eager detection causes blank UI if the async check races with the first render | Seed | 2026-02-20 | 0 |
+| Admin UI/API namespace split | When adding middleware admin route guards, explicitly protect both the UI namespace (/admin/*) and the API namespace (/api/admin/*) — they share no prefix and a guard on one does not cover the other | Seed | 2026-02-28 | 0 |
 
 ## Database & Auth
 
