@@ -126,6 +126,14 @@ export function AppSidebar() {
                                 {/* Conditionally render admin or public nav based on current path */}
                                 {pathname?.startsWith('/admin') ? (
                                     <>
+                                        {/* Skeleton while permissions load to prevent flash */}
+                                        {permissionsLoading ? (
+                                            <div className="space-y-1 px-2 py-1">
+                                                {[...Array(5)].map((_, i) => (
+                                                    <div key={i} className="h-8 rounded-md bg-sidebar-accent/40 animate-pulse" />
+                                                ))}
+                                            </div>
+                                        ) : (<>
                                         {/* Admin nav items — gated by permissions */}
                                         {hasPermission('manage_cases') && (
                                             <SidebarMenuItem>
@@ -248,6 +256,7 @@ export function AppSidebar() {
                                                 </SidebarMenuItem>
                                             </Collapsible>
                                         )}
+                                        </>)}
                                     </>
                                 ) : (
                                     <>
