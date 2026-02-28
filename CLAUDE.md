@@ -1,14 +1,12 @@
 # Court of Public Record — Claude Alignment
 
-> Auto-loaded every session. Keep under 100 lines.
-
 ## Project
 
-**Court of Public Record (CPR)** — Social accountability platform. Plaintiffs file cases against defendants. Convergence (2+ independent plaintiffs) activates a case. The public investigates, votes, and delivers a permanent verdict.
+**Court of Public Record (CPR)** — Social accountability platform. Plaintiffs file cases against defendants. Convergence (2+ plaintiffs from separate accounts) activates a case. The public investigates, votes, and delivers a permanent verdict.
 
 **Stack:** Next.js 16.1.6 · App Router · React 19 · TypeScript · Supabase (PostgreSQL + Auth + Storage) · Tailwind v4 · shadcn/ui · Radix UI
 
-**Dev:** `npm run dev` → localhost:3000
+**Dev:** `npm run dev` → localhost:3000 · Requires `.env.local` with `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
 ---
 
@@ -21,22 +19,29 @@
 ### RBAC / Permissions
 - All permission checks resolve from the **database via API** — never cache roles or permissions in localStorage, sessionStorage, cookies, or any browser store
 - Hook: `usePermissions()` → `hasPermission()`, `hasRole()`, `isAdmin`
-- Gate: `<PermissionGate permission="vote">` for declarative gating
+- Gate: `<PermissionGate permission="vote">` for single-permission · `anyPermission={[...]}` · `allPermissions={[...]}` · `role="admin"` props also available
+- Role IDs: `admin` · `super_admin` · `jury_member` · `moderator` · `plaintiff` · `defendant` · `witness` — see `PERMISSIONS.md` for full matrix
+
+### Supabase
+- **`client.ts`** — browser / Client Components only
+- **`server.ts`** — Server Components and API routes only (wrong file = silent session failure)
+- All tables use RLS — queries without auth context silently return empty rows
 
 ### UI Patterns
 - **Primary buttons:** `bg-primary text-primary-foreground`
 - **Secondary/cancel:** `bg-muted/50 text-foreground/80 hover:bg-primary hover:text-primary-foreground` — no borders
 - **Theme colors:** always CSS vars (`hsl(var(--primary))`), never hardcoded hex/rgb
 - **Tables:** `rounded-lg border bg-card overflow-hidden`, sticky headers `z-40 bg-muted`, alternating rows `bg-card` / `bg-secondary`
+- **Errors:** inline `useState<string | null>(null)` — render with `text-destructive`. No global toast system.
 
-### Git / PowerShell
+### Shell / Git
 - **Never use `&&`** to chain commands — run each separately
 - **Never embed newlines in `git commit -m "..."`** — single line only or it hangs silently
 - Use Bash tool for each git command individually
 
 ### i18n
 - Missing translation key returns the raw key string at runtime — **zero build warnings**
-- Always grep for every `t()` call added to a component against the locale files before committing
+- Always grep every `t()` call added against `src/i18n/locales/en.json` before committing
 - 7 locales: `en`, `es`, `pt`, `fr`, `de`, `ja`, `ar` (ar is RTL). Admin pages: English only.
 
 ### HMR / Dev Server
@@ -50,7 +55,14 @@
 `draft → pending → admin_review → investigation → judgment → verdict → restitution`
 
 Voting opens at: `judgment` | `investigation` | `pending_convergence`
-Voting closes: first of — deadline OR 400 votes · Scale 1–10 · Guilty: ≥ 6
+Voting closes: whichever comes first — deadline or 400 votes · Scale 1–10 · Guilty threshold: ≥ 6
+
+---
+
+## Key DB Tables
+
+**Core:** `cases` · `defendants` · `profiles` (auth-linked, has email) · `user_profiles` (display name + user fields) · `votes` · `evidence` · `comments` · `notifications`
+**RBAC:** `roles` · `permissions` · `role_permissions` · `user_roles`
 
 ---
 
@@ -63,19 +75,21 @@ Voting closes: first of — deadline OR 400 votes · Scale 1–10 · Guilty: ≥
 | Permission gate | `src/components/auth/PermissionGate.tsx` |
 | New Case Form | `src/app/cases/new/page.tsx` (12-step wizard) |
 | Root layout | `src/app/layout.tsx` |
-| Supabase client | `src/lib/supabase/client.ts` (browser) / `server.ts` |
+| Supabase client | `src/lib/supabase/client.ts` (browser) / `server.ts` (SSR) |
+| Sidebar | `src/components/layout/app-sidebar.tsx` |
+| Middleware | `src/lib/supabase/middleware.ts` |
 | Vote page | `src/app/vote/page.tsx` |
 | Admin dashboard | `src/app/admin/page.tsx` |
-| i18n provider | `src/i18n/index.tsx` |
+| i18n provider | `src/i18n/index.tsx` · locales: `src/i18n/locales/` |
 
 ---
 
 ## Alignment System
 
-- **Pearls:** `.agent/alignment/pearls.md` — 20 universal principles, 6 categories
+- **Pearls:** `.agent/alignment/pearls.md` — 21 universal principles, 6 categories
 - **On session start:** run `/boot` to load pearls + pull latest
 - **On session end:** run `/harvest` if significant iterative work occurred
 - **Pearl invocations:** log as `⚡ Pearl invoked: "[Title]" — [what changed]`
-- **Full spec:** `docs/cpr_full_spec.md` (50+ design decisions)
+- **Full spec:** `docs/cpr_full_spec.md`
 - **UI patterns:** `CODING_PATTERNS.md`
 - **RBAC docs:** `PERMISSIONS.md`
