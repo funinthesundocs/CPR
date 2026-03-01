@@ -43,7 +43,7 @@ export function TrueImpactClimax({
                         className="relative"
                     >
                         <span className="absolute -top-10 -left-6 text-7xl text-red-500/20 font-serif leading-none select-none">"</span>
-                        <p className="text-2xl sm:text-4xl lg:text-5xl text-white font-serif leading-tight tracking-tight mt-6 relative z-10">
+                        <p className="text-xl sm:text-2xl lg:text-3xl text-white font-serif leading-snug tracking-tight mt-6 relative z-10">
                             {displayQuote}
                         </p>
                     </motion.blockquote>
