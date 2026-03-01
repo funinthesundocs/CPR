@@ -124,6 +124,10 @@ export default async function CaseDetailPage({ params }: PageProps) {
     const other_victims_count = legal.other_victims_count || null
     const visibility = vis.tier || ''
 
+    // If the ComparisonBlock in S4 already displays what_happened as the "reality" column,
+    // suppress the redundant FactBlock in S6 so the same text doesn't appear twice.
+    const showedComparisonBlock = !!(explicit_agreement && what_happened)
+
     // ── COMPUTED VALUES ──
     const fi = financialImpacts as any
     const financialTotal = fi
@@ -238,7 +242,7 @@ export default async function CaseDetailPage({ params }: PageProps) {
             {/* S6 — WHAT HAPPENED */}
             {(what_happened || primary_incident || case_summary || (timeline && timeline.length > 0)) && (
                 <ChapterSection title="What Happened" bg="bg-background">
-                    {what_happened && (
+                    {what_happened && !showedComparisonBlock && (
                         <FactBlock label="What Happened" value={what_happened} />
                     )}
                     {primary_incident && (

@@ -38,10 +38,10 @@ export function RevealSection({
   // SupportingField handles empty string via its own `if (!value) return null` guard —
   // safe to pass any string; empty values render nothing.
   const hasSupportingFields =
-    whenRealized ||
-    howConfirmed ||
-    (!usedEmotionalAsQuote && emotionalImpact) ||
-    physicalImpact
+    !!whenRealized ||
+    !!howConfirmed ||
+    (!usedEmotionalAsQuote && !!emotionalImpact) ||
+    !!physicalImpact
 
   return (
     <section className="w-full bg-primary/5 border-y border-primary/20 py-16">

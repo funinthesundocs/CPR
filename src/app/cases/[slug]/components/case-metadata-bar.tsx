@@ -18,7 +18,7 @@ export function CaseMetadataBar({
 }: CaseMetadataBarProps) {
   return (
     <section aria-label="Case metadata" className="border-b bg-muted/30 px-8 py-4">
-      <div className="flex flex-wrap gap-6 items-start">
+      <div className="max-w-5xl mx-auto flex flex-wrap gap-6 items-start">
         {/* Group 1 — Identity: case types */}
         {caseTypes.length > 0 && (
           <div className="space-y-1">

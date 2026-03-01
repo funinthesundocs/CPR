@@ -9,6 +9,7 @@ import {
   ComputerDesktopIcon,
 } from '@heroicons/react/24/outline'
 import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import {
   Collapsible,
   CollapsibleContent,
@@ -113,13 +114,21 @@ export default function WitnessGrid({ witnesses, caseRoles }: WitnessGridProps) 
           </p>
           <div className="flex flex-wrap gap-2">
             {caseRoles.map((cr, i) => (
-              <span
+              <div
                 key={i}
-                className="bg-secondary text-secondary-foreground px-3 py-1 text-xs rounded-full"
+                className="flex items-center gap-2 bg-secondary text-secondary-foreground px-3 py-1.5 text-xs rounded-full"
               >
-                {cr.user_profiles?.display_name ?? 'Unknown'} &mdash;{' '}
-                {cr.role.replace(/_/g, ' ')}
-              </span>
+                <Avatar className="h-5 w-5 shrink-0">
+                  <AvatarImage src={cr.user_profiles?.avatar_url ?? undefined} />
+                  <AvatarFallback className="text-[10px]">
+                    {cr.user_profiles?.display_name?.charAt(0)?.toUpperCase() ?? '?'}
+                  </AvatarFallback>
+                </Avatar>
+                <span>
+                  {cr.user_profiles?.display_name ?? 'Unknown'} &mdash;{' '}
+                  {cr.role.replace(/_/g, ' ')}
+                </span>
+              </div>
             ))}
           </div>
         </div>

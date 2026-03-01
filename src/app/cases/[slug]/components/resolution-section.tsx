@@ -1,6 +1,16 @@
 'use client'
 
 import { useState } from 'react'
+
+// Basic client-side sanitization — strips script tags, inline event handlers, and
+// javascript: URIs before rendering defendant-submitted HTML. Server-side sanitization
+// should be the primary defense; this is a second layer.
+function sanitizeHtml(html: string): string {
+  return html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/\bon\w+\s*=\s*["'][^"']*["']/gi, '')
+    .replace(/javascript:/gi, '')
+}
 import {
   ScaleIcon,
   ShieldCheckIcon,
@@ -158,7 +168,7 @@ export default function ResolutionSection({
                   {r.body_html && (
                     <div
                       className="prose prose-sm dark:prose-invert"
-                      dangerouslySetInnerHTML={{ __html: r.body_html }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(r.body_html) }}
                     />
                   )}
                 </div>

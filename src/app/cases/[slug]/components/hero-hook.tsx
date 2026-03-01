@@ -53,7 +53,7 @@ export function HeroHook({
   verdict,
 }: HeroHookProps) {
   return (
-    <section aria-labelledby="hero-heading" className="border-b bg-gradient-to-br from-card via-card to-muted/30 px-8 py-10">
+    <section aria-labelledby="hero-heading" className="border-b bg-gradient-to-br from-primary/5 via-card to-muted/20 px-8 py-10">
       <div className="flex flex-col md:flex-row gap-6 items-start">
         {/* Defendant avatar */}
         <Link href={`/defendants/${defendant.slug}`}>
