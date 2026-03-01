@@ -121,8 +121,13 @@
     @apply border-border outline-ring/50;
   }
 
+  html {
+    overflow-x: hidden;
+  }
+
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden;
   }
 }
 
@@ -185,4 +190,28 @@
 .step-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: color-mix(in oklch, var(--primary) 50%, transparent) transparent;
+}
+
+/* Hide scrollbar completely (used by horizontal scroll galleries) */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Thin styled scrollbar for content overflow areas */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: oklch(0.4 0 0);
+  border-radius: 999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.55 0 0);
 }

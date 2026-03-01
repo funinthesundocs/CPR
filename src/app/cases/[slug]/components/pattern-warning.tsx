@@ -21,13 +21,13 @@ export default function PatternWarning({
 }: PatternWarningProps) {
   return (
     <section className="bg-destructive/5 border-y border-destructive/20 py-10" aria-labelledby="pattern-warning-heading">
-      <div className="max-w-2xl mx-auto px-6">
+      <div className="max-w-7xl w-full mx-auto px-6 sm:px-12">
         <div className="flex items-center gap-3 mb-6">
           <ExclamationTriangleIcon
             className="h-6 w-6 text-destructive"
             aria-hidden="true"
           />
-          <h2 id="pattern-warning-heading" className="text-lg font-bold text-destructive">
+          <h2 id="pattern-warning-heading" className="text-3xl font-black uppercase tracking-tighter text-destructive">
             Recognized Pattern
           </h2>
         </div>

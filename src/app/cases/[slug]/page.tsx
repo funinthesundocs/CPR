@@ -7,14 +7,12 @@ import type { Metadata } from 'next'
 
 import { HeroHook } from './components/hero-hook'
 import { CaseMetadataBar } from './components/case-metadata-bar'
-import { ChapterSection, FactBlock, ComparisonBlock } from './components/chapter-section'
-import { FinancialImpactCard } from './components/financial-impact-card'
-import { CaseTimeline } from './components/case-timeline'
-import { RevealSection } from './components/reveal-section'
-import WitnessGrid from './components/witness-grid'
-import EvidenceSummary from './components/evidence-summary'
-import PatternWarning from './components/pattern-warning'
+import { ComparisonSlider } from './components/comparison-slider'
+import { InteractiveStepper, StepperEvent } from './components/interactive-stepper'
+import { ProofGallery } from './components/proof-gallery'
+import { TrueImpactClimax } from './components/true-impact-climax'
 import ResolutionSection from './components/resolution-section'
+import PatternWarning from './components/pattern-warning'
 
 export const revalidate = 30
 
@@ -60,7 +58,7 @@ export default async function CaseDetailPage({ params }: PageProps) {
 
     if (error || !caseData) notFound()
 
-    // Parallel queries for all related data
+    // Parallel queries
     const [
         { data: timeline },
         { data: evidence },
@@ -95,38 +93,42 @@ export default async function CaseDetailPage({ params }: PageProps) {
     const story = (caseData.story_narrative as any) || {}
     const vis = (caseData.visibility_settings as any) || {}
 
-    // Extracted flat values
-    const one_line_summary = story.one_line_summary || ''
-    const case_summary = story.body || ''
-    const what_happened = betrayal.what_happened || ''
-    const primary_incident = betrayal.primary_incident || ''
-    const when_realized = betrayal.when_realized || ''
-    const how_confirmed = betrayal.how_confirmed || ''
-    const is_ongoing = betrayal.is_ongoing || ''
-    const relationship_type = relationship.type || ''
-    const relationship_duration = relationship.duration || ''
-    const first_interaction = relationship.first_interaction || ''
-    const early_warnings = relationship.early_warnings || ''
+    // ── EXTRACTED VALUES ──
     const explicit_agreement = promise.explicit_agreement || ''
-    const agreement_terms = promise.agreement_terms || ''
-    const reasonable_expectation = promise.reasonable_expectation || ''
-    const evidence_of_trust = promise.evidence_of_trust || ''
-    const others_vouch = promise.others_vouch || ''
-    const emotional_impact = impact.emotional || ''
-    const physical_impact = impact.physical || ''
-    const wish_understood = impact.wish_understood || ''
-    const police_report_filed = legal.police_report || ''
-    const lawyer_consulted = legal.lawyer || ''
-    const court_case_filed = legal.court_case || ''
-    const legal_details = legal.description || ''
-    const why_filing = legal.why_filing || ''
-    const other_victims = legal.other_victims || ''
-    const other_victims_count = legal.other_victims_count || null
-    const visibility = vis.tier || ''
+    const what_happened = betrayal.what_happened || ''
 
-    // If the ComparisonBlock in S4 already displays what_happened as the "reality" column,
-    // suppress the redundant FactBlock in S6 so the same text doesn't appear twice.
-    const showedComparisonBlock = !!(explicit_agreement && what_happened)
+    // Create stepper events from timeline AND narrative
+    const stepperEvents: StepperEvent[] = []
+
+    if (relationship.first_interaction) {
+        stepperEvents.push({ id: 'meet', title: 'How They Met', description: relationship.first_interaction, date: 'The Beginning' })
+    }
+    if (relationship.early_warnings) {
+        stepperEvents.push({ id: 'warning', title: 'Early Warning Signs', description: relationship.early_warnings, date: 'Red Flags' })
+    }
+    if (betrayal.what_happened && !explicit_agreement) {
+        stepperEvents.push({ id: 'incident', title: 'What Happened', description: betrayal.what_happened, date: 'The Betrayal' })
+    }
+    if (betrayal.primary_incident) {
+        stepperEvents.push({ id: 'primary', title: 'Primary Incident', description: betrayal.primary_incident, date: 'The Turning Point' })
+    }
+
+    // Add timeline items
+    if (timeline && timeline.length > 0) {
+        timeline.forEach(t => {
+            stepperEvents.push({
+                id: t.id,
+                title: t.title || 'Event',
+                description: t.description || undefined,
+                // Fallback to year if no date_occurred is present
+                date: t.date_occurred ? new Date(t.date_occurred).toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) : 'As Part of the Timeline'
+            })
+        })
+    }
+
+    if (story.body) {
+        stepperEvents.push({ id: 'summary', title: 'The Full Narrative', description: story.body, date: 'The Reality' })
+    }
 
     // ── COMPUTED VALUES ──
     const fi = financialImpacts as any
@@ -148,171 +150,119 @@ export default async function CaseDetailPage({ params }: PageProps) {
     const showVoteCTA = ['judgment', 'investigation', 'pending_convergence'].includes(caseData.status)
 
     const showPatternWarning =
-        (other_victims && other_victims !== 'no') ||
+        (legal.other_victims && legal.other_victims !== 'no') ||
         (caseData.case_types && caseData.case_types.length > 0)
 
-    const hasRevealContent = wish_understood || emotional_impact || when_realized || how_confirmed
-
-    const hasWitnessSection =
-        (witnesses && witnesses.length > 0) || (evidence && evidence.length > 0)
-
-    const filedDate = new Date(caseData.created_at).toLocaleDateString('en-US', {
-        year: 'numeric', month: 'long', day: 'numeric',
-    })
-
     return (
-        <div className="space-y-0 max-w-5xl mx-auto">
+        <div className="w-full bg-[#050505] text-white selection:bg-primary/30 selection:text-white pb-32 overflow-x-hidden">
 
-            {/* S1 — HERO HOOK */}
+            {/* 1. HERO HOOK */}
             <HeroHook
                 caseNumber={caseData.case_number}
                 status={caseData.status}
-                defendant={{
-                    full_name: defendant?.full_name || 'Unknown',
-                    slug: defendant?.slug || '',
-                    photo_url: defendant?.photo_url || null,
-                    location: defendant?.location || null,
-                }}
-                summary={one_line_summary}
+                defendant={defendant}
+                summary={story.one_line_summary || ''}
                 financialTotal={financialTotal}
                 evidenceCount={(evidence || []).length}
                 witnessCount={(witnesses || []).length}
                 timelineCount={(timeline || []).length}
-                visibility={visibility}
-                isOngoing={is_ongoing === 'yes'}
+                visibility={vis.tier || ''}
+                isOngoing={betrayal.is_ongoing === 'yes'}
                 verdict={verdict as any}
             />
 
-            {/* S2 — CASE METADATA BAR */}
+            {/* 2. CONTEXT / METADATA */}
             <CaseMetadataBar
                 caseTypes={caseData.case_types || []}
-                filedDate={filedDate}
+                filedDate={new Date(caseData.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                 location={defendant?.location || null}
-                relationshipType={relationship_type}
-                relationshipDuration={relationship_duration}
+                relationshipType={relationship.type || ''}
+                relationshipDuration={relationship.duration || ''}
             />
 
-            {/* S3 — THE CONNECTION */}
-            {(first_interaction || early_warnings) && (
-                <ChapterSection title="The Connection" bg="bg-background">
-                    {first_interaction && (
-                        <FactBlock label="How They Met" value={first_interaction} />
-                    )}
-                    {early_warnings && (
-                        <FactBlock label="Early Warning Signs" value={early_warnings} />
-                    )}
-                </ChapterSection>
-            )}
-
-            {/* S4 — THE PROMISE */}
-            {(explicit_agreement || agreement_terms || reasonable_expectation || evidence_of_trust || others_vouch) && (
-                <ChapterSection title="The Promise" bg="bg-muted/10">
-                    {explicit_agreement && what_happened && (
-                        <ComparisonBlock
-                            leftLabel="What Was Promised"
-                            leftValue={explicit_agreement}
-                            rightLabel="What Actually Happened"
-                            rightValue={what_happened}
+            {/* 3. THE PROMISE (Slider) */}
+            {(explicit_agreement || betrayal.what_happened) && (
+                <section className="relative py-24 bg-[#050505] overflow-hidden" aria-labelledby="setup-heading">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:32px_32px]" />
+                    <div className="relative z-10 px-6 sm:px-12 flex flex-col items-center text-center">
+                        <h2 id="setup-heading" className="text-3xl font-bold tracking-tight mb-2 uppercase text-white/50">The Setup</h2>
+                        <p className="text-lg font-light text-white/40 mb-12">Drag the slider to reveal the difference between the promise and the reality.</p>
+                        <ComparisonSlider
+                            promiseHtml={explicit_agreement || promise.agreement_terms || "No explicit promise was recorded."}
+                            realityHtml={betrayal.what_happened || "The reality fell short."}
                         />
-                    )}
-                    {/* Suppress "Agreement Made" FactBlock when ComparisonBlock already shows explicit_agreement */}
-                    {explicit_agreement && !what_happened && (
-                        <FactBlock label="Agreement Made" value={explicit_agreement} />
-                    )}
-                    {agreement_terms && (
-                        <FactBlock label="Terms" value={agreement_terms} />
-                    )}
-                    {reasonable_expectation && (
-                        <FactBlock label="Why It Seemed Reasonable" value={reasonable_expectation} />
-                    )}
-                    {evidence_of_trust && (
-                        <FactBlock label="Evidence of Good Faith" value={evidence_of_trust} />
-                    )}
-                    {others_vouch && (
-                        <FactBlock label="Third-Party Endorsement" value={others_vouch} />
-                    )}
-                </ChapterSection>
-            )}
-
-            {/* S5 — FINANCIAL IMPACT */}
-            {financialTotal > 0 && (
-                <FinancialImpactCard total={financialTotal} breakdown={breakdown} />
-            )}
-
-            {/* S6 — WHAT HAPPENED */}
-            {(what_happened || primary_incident || case_summary || (timeline && timeline.length > 0)) && (
-                <ChapterSection title="What Happened" bg="bg-background">
-                    {what_happened && !showedComparisonBlock && (
-                        <FactBlock label="What Happened" value={what_happened} />
-                    )}
-                    {primary_incident && (
-                        <FactBlock label="Primary Incident" value={primary_incident} />
-                    )}
-                    {case_summary && (
-                        <div className="prose prose-sm dark:prose-invert max-w-none leading-relaxed">
-                            {case_summary}
-                        </div>
-                    )}
-                    {timeline && timeline.length > 0 && (
-                        <CaseTimeline events={timeline as any} />
-                    )}
-                </ChapterSection>
-            )}
-
-            {/* S7 — THE REVEAL (CLIMAX) */}
-            {hasRevealContent && (
-                <RevealSection
-                    pullQuote={wish_understood}
-                    emotionalImpact={emotional_impact}
-                    physicalImpact={physical_impact}
-                    whenRealized={when_realized}
-                    howConfirmed={how_confirmed}
-                />
-            )}
-
-            {/* S8 — WITNESSES & EVIDENCE */}
-            {hasWitnessSection && (
-                <section className="bg-muted/20 py-12" aria-label="Witnesses and Evidence">
-                    {witnesses && witnesses.length > 0 && (
-                        <WitnessGrid
-                            witnesses={witnesses as any}
-                            caseRoles={roles as any}
-                        />
-                    )}
-                    {evidence && evidence.length > 0 && (
-                        <EvidenceSummary evidence={evidence as any} />
-                    )}
+                    </div>
                 </section>
             )}
 
-            {/* S9 — PATTERN WARNING */}
-            {showPatternWarning && (
-                <PatternWarning
-                    otherVictims={other_victims}
-                    count={other_victims_count}
-                    caseTypes={caseData.case_types || []}
+            {/* 4. THE INCIDENT / TIMELINE */}
+            {stepperEvents.length > 0 && (
+                <section className="relative py-12 bg-gradient-to-b from-[#050505] to-[#0A0A0A]" aria-labelledby="timeline-heading">
+                    <div className="px-6 sm:px-12 text-center mb-10">
+                        <h2 id="timeline-heading" className="text-3xl font-bold tracking-tight mb-2 text-white">The Incident Timeline</h2>
+                    </div>
+                    <InteractiveStepper events={stepperEvents} />
+                </section>
+            )}
+
+            {/* 5. EVIDENCE AND WITNESSES */}
+            {((witnesses && witnesses.length > 0) || (evidence && evidence.length > 0)) && (
+                <ProofGallery
+                    witnesses={witnesses || []}
+                    evidence={evidence || []}
+                    caseRoles={roles || []}
                 />
             )}
 
-            {/* S10 — RESOLUTION */}
+            {/* 6. TRUE IMPACT (CLIMAX) */}
+            {(financialTotal > 0 || impact.wish_understood || impact.emotional) && (
+                <TrueImpactClimax
+                    financialTotal={financialTotal}
+                    breakdown={breakdown}
+                    pullQuote={impact.wish_understood || ''}
+                    emotionalImpact={impact.emotional || ''}
+                    physicalImpact={impact.physical || ''}
+                    whenRealized={betrayal.when_realized || ''}
+                    howConfirmed={betrayal.how_confirmed || ''}
+                />
+            )}
+
+            {/* 7. PATTERN WARNING */}
+            {showPatternWarning && (
+                <div className="bg-[#050505] pt-12">
+                    <PatternWarning
+                        otherVictims={legal.other_victims}
+                        count={legal.other_victims_count}
+                        caseTypes={caseData.case_types || []}
+                    />
+                </div>
+            )}
+
+            {/* 8. RESOLUTION & LEGAL CTA */}
             <ResolutionSection
                 legal={{
-                    policeReport: police_report_filed,
-                    lawyer: lawyer_consulted,
-                    courtCase: court_case_filed,
-                    details: legal_details,
-                    whyFiling: why_filing,
+                    policeReport: legal.police_report || 'no',
+                    lawyer: legal.lawyer || 'no',
+                    courtCase: legal.court_case || 'no',
+                    details: legal.description || '',
+                    whyFiling: legal.why_filing || '',
                 }}
                 nominalDamages={caseData.nominal_damages_claimed || 0}
                 responses={responses as any}
             />
 
-            {/* VOTE CTA */}
-            {showVoteCTA && <VoteCTA caseId={caseData.id} />}
+            {showVoteCTA && (
+                <div className="max-w-7xl w-full mx-auto px-6 sm:px-12 mt-12">
+                    <VoteCTA caseId={caseData.id} />
+                </div>
+            )}
 
-            {/* COMMENTS */}
-            <Separator />
-            <CaseComments caseId={caseData.id} />
+            <div className="max-w-7xl w-full mx-auto px-6 sm:px-12 mt-16">
+                <Separator className="bg-white/10 mb-8" />
+                <div className="bg-black/40 p-8 sm:p-12 rounded-3xl border border-white/5">
+                    <CaseComments caseId={caseData.id} />
+                </div>
+            </div>
 
         </div>
     )
