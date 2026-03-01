@@ -7,7 +7,7 @@ import type { Metadata } from 'next'
 
 import { HeroHook } from './components/hero-hook'
 import { CaseMetadataBar } from './components/case-metadata-bar'
-import { ChapterSection, FactBlock } from './components/chapter-section'
+import { ChapterSection, FactBlock, ComparisonBlock } from './components/chapter-section'
 import { FinancialImpactCard } from './components/financial-impact-card'
 import { CaseTimeline } from './components/case-timeline'
 import { RevealSection } from './components/reveal-section'
@@ -157,7 +157,7 @@ export default async function CaseDetailPage({ params }: PageProps) {
     })
 
     return (
-        <div className="space-y-0">
+        <div className="space-y-0 max-w-5xl mx-auto">
 
             {/* S1 — HERO HOOK */}
             <HeroHook
@@ -203,7 +203,16 @@ export default async function CaseDetailPage({ params }: PageProps) {
             {/* S4 — THE PROMISE */}
             {(explicit_agreement || agreement_terms || reasonable_expectation || evidence_of_trust || others_vouch) && (
                 <ChapterSection title="The Promise" bg="bg-muted/10">
-                    {explicit_agreement && (
+                    {explicit_agreement && what_happened && (
+                        <ComparisonBlock
+                            leftLabel="What Was Promised"
+                            leftValue={explicit_agreement}
+                            rightLabel="What Actually Happened"
+                            rightValue={what_happened}
+                        />
+                    )}
+                    {/* Suppress "Agreement Made" FactBlock when ComparisonBlock already shows explicit_agreement */}
+                    {explicit_agreement && !what_happened && (
                         <FactBlock label="Agreement Made" value={explicit_agreement} />
                     )}
                     {agreement_terms && (
@@ -259,7 +268,7 @@ export default async function CaseDetailPage({ params }: PageProps) {
 
             {/* S8 — WITNESSES & EVIDENCE */}
             {hasWitnessSection && (
-                <section className="bg-muted/20 py-12">
+                <section className="bg-muted/20 py-12" aria-label="Witnesses and Evidence">
                     {witnesses && witnesses.length > 0 && (
                         <WitnessGrid
                             witnesses={witnesses as any}

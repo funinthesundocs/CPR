@@ -22,6 +22,7 @@ const statusColors: Record<string, string> = {
   admin_review: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
   investigation: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
   judgment: 'bg-orange-500/10 text-orange-600 dark:text-orange-400',
+  verdict: 'bg-orange-500/10 text-orange-600 dark:text-orange-400',
   verdict_guilty: 'bg-red-500/10 text-red-700 dark:text-red-400',
   verdict_innocent: 'bg-green-500/10 text-green-600 dark:text-green-400',
   restitution: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400',
@@ -52,7 +53,7 @@ export function HeroHook({
   verdict,
 }: HeroHookProps) {
   return (
-    <section aria-labelledby="hero-heading" className="rounded-2xl border bg-gradient-to-br from-card via-card to-muted/30 p-8">
+    <section aria-labelledby="hero-heading" className="border-b bg-gradient-to-br from-card via-card to-muted/30 px-8 py-10">
       <div className="flex flex-col md:flex-row gap-6 items-start">
         {/* Defendant avatar */}
         <Link href={`/defendants/${defendant.slug}`}>

@@ -54,9 +54,9 @@ export default function ResolutionSection({
   const [detailsOpen, setDetailsOpen] = useState(false)
 
   return (
-    <section className="bg-gradient-to-br from-card via-card to-muted/30 border-t py-12">
+    <section className="bg-gradient-to-br from-card via-card to-muted/30 border-t py-12" aria-labelledby="resolution-heading">
       <div className="max-w-4xl mx-auto px-6 space-y-8">
-        <h2 className="text-xl font-bold mb-6">Legal Status &amp; Resolution</h2>
+        <h2 id="resolution-heading" className="text-xl font-bold mb-6">Legal Status &amp; Resolution</h2>
 
         {/* Legal action badges */}
         <div className="flex flex-wrap gap-2">

@@ -36,13 +36,15 @@ export default function EvidenceSummary({ evidence }: EvidenceSummaryProps) {
         <button
           onClick={() => setExpanded(!expanded)}
           className="text-sm text-primary"
+          aria-expanded={expanded}
+          aria-controls="evidence-list"
         >
           {expanded ? 'Hide' : 'Show all'}
         </button>
       </div>
 
       {expanded && (
-        <div className="mt-4">
+        <div id="evidence-list" className="mt-4">
           {evidence.map((item) => (
             <div
               key={item.id}

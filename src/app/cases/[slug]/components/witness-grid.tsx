@@ -80,9 +80,11 @@ function WitnessCard({ witness }: { witness: Witness }) {
             <p className="text-sm text-muted-foreground">{statement}</p>
           ) : (
             <Collapsible open={open} onOpenChange={setOpen}>
-              <p className="text-sm text-muted-foreground">
-                {open ? '' : `${statement.slice(0, 150)}...`}
-              </p>
+              {!open && (
+                <p className="text-sm text-muted-foreground">
+                  {statement.slice(0, 150)}...
+                </p>
+              )}
               <CollapsibleContent>
                 <p className="text-sm text-muted-foreground">{statement}</p>
               </CollapsibleContent>

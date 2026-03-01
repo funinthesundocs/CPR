@@ -20,14 +20,14 @@ export default function PatternWarning({
   caseTypes,
 }: PatternWarningProps) {
   return (
-    <section className="bg-destructive/5 border-y border-destructive/20 py-10">
+    <section className="bg-destructive/5 border-y border-destructive/20 py-10" aria-labelledby="pattern-warning-heading">
       <div className="max-w-2xl mx-auto px-6">
         <div className="flex items-center gap-3 mb-6">
           <ExclamationTriangleIcon
             className="h-6 w-6 text-destructive"
             aria-hidden="true"
           />
-          <h2 className="text-lg font-bold text-destructive">
+          <h2 id="pattern-warning-heading" className="text-lg font-bold text-destructive">
             Recognized Pattern
           </h2>
         </div>

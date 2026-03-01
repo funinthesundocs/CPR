@@ -40,10 +40,10 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
 
   return (
     <div>
-      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mt-8 mb-2">
+      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mt-8 mb-4">
         Timeline of Events
-      </p>
-      <ol className="relative pl-8 space-y-6 mt-8 border-l-2 border-border ml-3">
+      </h3>
+      <ol className="relative pl-8 space-y-6 border-l-2 border-border ml-3">
         {events.map((event) => {
           const colors = EVENT_COLORS[event.event_type] ?? DEFAULT_COLORS
           const location = formatLocation(event.city, event.country)

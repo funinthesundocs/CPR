@@ -9,13 +9,13 @@ export function FinancialImpactCard({ total, breakdown }: FinancialImpactCardPro
   const visibleItems = breakdown.filter((item) => item.amount > 0)
 
   return (
-    <section className="bg-destructive/5 border border-destructive/20 rounded-2xl">
+    <section className="bg-destructive/5 border-y border-destructive/20" aria-labelledby="financial-impact-heading">
       <div className="max-w-4xl mx-auto px-6 py-12">
         <div className="flex items-center gap-2 mb-2">
           <BanknotesIcon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          <h2 id="financial-impact-heading" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
             Financial Impact
-          </p>
+          </h2>
         </div>
         <p className="text-4xl font-extrabold text-foreground">
           ${total.toLocaleString()}
