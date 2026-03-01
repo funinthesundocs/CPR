@@ -14,6 +14,7 @@ import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
 import type { User } from '@supabase/supabase-js'
 import { useTranslation } from '@/i18n'
+import { PencilSquareIcon } from '@heroicons/react/24/outline'
 
 type Profile = {
     id: string
@@ -168,6 +169,8 @@ export default function ProfilePage() {
             </div>
         )
     }
+
+    const EDITABLE_STATUSES = ['draft', 'pending', 'pending_convergence', 'admin_review', 'investigation']
 
     const statusColors: Record<string, string> = {
         draft: 'bg-muted text-muted-foreground',
@@ -332,9 +335,21 @@ export default function ProfilePage() {
                                         </div>
                                         <p className="text-sm">vs. {c.defendants?.full_name || 'Unknown'}</p>
                                     </div>
-                                    <p className="text-xs text-muted-foreground">
-                                        {new Date(c.created_at).toLocaleDateString()}
-                                    </p>
+                                    <div className="flex items-center gap-3">
+                                        {EDITABLE_STATUSES.includes(c.status) && (
+                                            <a
+                                                href={`/cases/${c.case_number}/edit`}
+                                                onClick={(e) => e.stopPropagation()}
+                                                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
+                                            >
+                                                <PencilSquareIcon className="h-3.5 w-3.5" />
+                                                Edit
+                                            </a>
+                                        )}
+                                        <p className="text-xs text-muted-foreground">
+                                            {new Date(c.created_at).toLocaleDateString()}
+                                        </p>
+                                    </div>
                                 </CardContent>
                             </Card>
                         ))
