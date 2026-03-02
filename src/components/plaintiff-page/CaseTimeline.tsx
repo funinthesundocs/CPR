@@ -112,7 +112,7 @@ function FlipCard({ event }: { event: TimelineEvent }) {
           )}
           <button
             onClick={() => flip(false)}
-            className="mt-3 text-[11px] font-semibold text-[var(--accent-300)] hover:text-white transition-colors tracking-wide"
+            className="mt-3 px-3 py-1 text-[11px] font-semibold rounded-md bg-[var(--accent-500)]/20 hover:bg-[var(--accent-500)]/50 border border-[var(--accent-500)]/40 hover:border-[var(--accent-500)]/80 text-[var(--accent-300)] hover:text-white transition-all tracking-wide"
           >
             ← Back
           </button>
