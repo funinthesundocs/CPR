@@ -2,10 +2,12 @@
 
 import React, { useRef, useState, useCallback } from 'react'
 
-const LENS_SIZE  = 320   // diameter of the lens circle (px)
+const LENS_SIZE  = 352   // diameter of the lens circle (px) — 320 * 1.1
 const ZOOM       = 2.8   // magnification factor
-const HANDLE_W   = 12    // handle width (px)
-const HANDLE_H   = 80    // handle length (px)
+const HANDLE_W   = 14    // handle body width (px)
+const HANDLE_H   = 120   // handle body length (px)
+const FERRULE_H  = 24    // metallic collar height (px)
+const FERRULE_W  = HANDLE_W + 8   // collar wider than handle
 const HANDLE_DEG = 42    // rotation angle of handle
 
 interface MagnifyLensProps {
@@ -24,7 +26,7 @@ interface MousePos {
 
 export function MagnifyLens({ imageUrl, alt, className, children }: MagnifyLensProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const [pos, setPos]         = useState<MousePos | null>(null)
+  const [pos, setPos]           = useState<MousePos | null>(null)
   const [isInside, setIsInside] = useState(false)
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
@@ -39,7 +41,7 @@ export function MagnifyLens({ imageUrl, alt, className, children }: MagnifyLensP
     })
   }, [])
 
-  const handleMouseEnter = useCallback(() => setIsInside(true),  [])
+  const handleMouseEnter = useCallback(() => setIsInside(true), [])
   const handleMouseLeave = useCallback(() => { setIsInside(false); setPos(null) }, [])
 
   // Background-size of the magnified image inside the lens
@@ -53,6 +55,11 @@ export function MagnifyLens({ imageUrl, alt, className, children }: MagnifyLensP
   // Position of the lens top-left corner
   const lensLeft = pos ? pos.x - LENS_SIZE / 2 : 0
   const lensTop  = pos ? pos.y - LENS_SIZE / 2 : 0
+
+  // Handle assembly positioning — attaches at ~4-5 o'clock on the rim
+  const totalHandleH = FERRULE_H + HANDLE_H
+  const assemblyBottom = -(totalHandleH - LENS_SIZE / 2 + 10)
+  const assemblyRight  = -(FERRULE_W / 2 + 8)
 
   return (
     <div
@@ -86,8 +93,8 @@ export function MagnifyLens({ imageUrl, alt, className, children }: MagnifyLensP
             className="absolute inset-0 rounded-full"
             style={{
               background: 'conic-gradient(from 120deg, #e8e8e8, #a0a0a0, #f5f5f5, #888, #e0e0e0, #c0c0c0, #e8e8e8)',
-              padding: 5,
-              boxShadow: '0 8px 32px rgba(0,0,0,0.7), 0 2px 8px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.3)',
+              padding: 6,
+              boxShadow: '0 10px 40px rgba(0,0,0,0.75), 0 2px 10px rgba(0,0,0,0.5), inset 0 1px 3px rgba(255,255,255,0.3)',
             }}
           >
             {/* ── Lens glass (magnified image) ── */}
@@ -107,42 +114,80 @@ export function MagnifyLens({ imageUrl, alt, className, children }: MagnifyLensP
                   background: 'radial-gradient(ellipse at 32% 28%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.06) 45%, transparent 70%)',
                 }}
               />
+              {/* Subtle edge vignette for depth */}
+              <div
+                className="absolute inset-0 rounded-full pointer-events-none"
+                style={{
+                  boxShadow: 'inset 0 0 20px rgba(0,0,0,0.25)',
+                }}
+              />
             </div>
           </div>
 
-          {/* ── Handle ── */}
+          {/* ── Handle assembly (ferrule + grip) ── */}
           <div
-            className="absolute"
+            className="absolute flex flex-col items-center"
             style={{
-              width:  HANDLE_W,
-              height: HANDLE_H,
-              bottom: -(HANDLE_H - LENS_SIZE / 2 + 10),
-              right:  -(HANDLE_W / 2 + 8),
-              borderRadius: HANDLE_W / 2,
-              background: 'linear-gradient(to right, #9a9a9a, #d4d4d4, #8a8a8a)',
-              boxShadow: '2px 4px 12px rgba(0,0,0,0.6)',
-              transformOrigin: `${HANDLE_W / 2}px 0px`,
+              width:  FERRULE_W,
+              bottom: assemblyBottom,
+              right:  assemblyRight,
+              transformOrigin: `${FERRULE_W / 2}px 0px`,
               transform: `rotate(${HANDLE_DEG}deg)`,
             }}
-          />
-
-          {/* Handle grip bands */}
-          {[20, 38, 56].map((offset) => (
+          >
+            {/* Ferrule — metallic collar connecting handle to rim */}
             <div
-              key={offset}
-              className="absolute"
               style={{
-                width:  HANDLE_W + 2,
-                height: 4,
-                bottom: -(HANDLE_H - LENS_SIZE / 2 + 10) + HANDLE_H - offset,
-                right:  -(HANDLE_W / 2 + 9),
-                borderRadius: 2,
-                background: 'rgba(0,0,0,0.35)',
-                transformOrigin: `${(HANDLE_W + 2) / 2}px 2px`,
-                transform: `rotate(${HANDLE_DEG}deg)`,
+                width:  FERRULE_W,
+                height: FERRULE_H,
+                flexShrink: 0,
+                borderRadius: '4px 4px 2px 2px',
+                background: 'linear-gradient(to right, #5a5a5a 0%, #d8d8d8 28%, #f2f2f2 50%, #c0c0c0 72%, #5a5a5a 100%)',
+                boxShadow: '0 3px 8px rgba(0,0,0,0.65), inset 0 1px 2px rgba(255,255,255,0.4)',
               }}
             />
-          ))}
+
+            {/* Handle body — dark rubber grip */}
+            <div
+              style={{
+                width:    HANDLE_W,
+                height:   HANDLE_H,
+                flexShrink: 0,
+                borderRadius: `2px 2px ${HANDLE_W / 2}px ${HANDLE_W / 2}px`,
+                background: 'linear-gradient(to right, #0a0a0a 0%, #282828 38%, #181818 62%, #0a0a0a 100%)',
+                boxShadow: '3px 6px 20px rgba(0,0,0,0.9)',
+                position: 'relative',
+                overflow: 'hidden',
+              }}
+            >
+              {/* Rubber grip ridges — fine repeating texture */}
+              <div
+                style={{
+                  position: 'absolute', inset: 0,
+                  background: 'repeating-linear-gradient(0deg, transparent 0px, transparent 5px, rgba(255,255,255,0.04) 5px, rgba(255,255,255,0.04) 7px)',
+                }}
+              />
+              {/* Left highlight edge — gives handle 3D roundness */}
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 2, top: '4%', bottom: '18%', width: 2,
+                  background: 'linear-gradient(to bottom, rgba(255,255,255,0.2), rgba(255,255,255,0.06), transparent)',
+                  borderRadius: 1,
+                }}
+              />
+              {/* Tip taper ring — end of handle */}
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: 8, left: 1, right: 1,
+                  height: 6,
+                  background: 'linear-gradient(to right, #111, #3a3a3a, #111)',
+                  borderRadius: 3,
+                }}
+              />
+            </div>
+          </div>
         </div>
       )}
     </div>
