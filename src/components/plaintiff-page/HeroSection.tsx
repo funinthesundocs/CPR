@@ -172,7 +172,7 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
       {/* VS badge — emerges from collision explosion */}
       <motion.div
         className="absolute left-1/2 top-[calc(50%-30px)] -translate-x-1/2 -translate-y-1/2 z-30
-                   w-[84px] h-[84px] md:w-24 md:h-24 rounded-full bg-blue-500 flex items-center justify-center
+                   w-[101px] h-[101px] md:w-[115px] md:h-[115px] rounded-full bg-blue-500 flex items-center justify-center
                    text-white font-black text-2xl md:text-3xl border-2 border-black"
         initial={{ scale: 0, opacity: 0, y: 0 }}
         animate={{
