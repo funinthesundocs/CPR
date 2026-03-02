@@ -28,59 +28,78 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
 
   return (
     <section className="relative min-h-[44vh] md:min-h-[48vh] overflow-hidden bg-black">
-      {/* Fire animation keyframes */}
+      {/* Realistic fire animation */}
       <style>{`
-        @keyframes fireBurn {
-          0% {
-            box-shadow:
-              0 0 10px 3px rgba(255,100,0,0.8),
-              0 0 25px 8px rgba(255,60,0,0.6),
-              0 0 40px 12px rgba(255,30,0,0.4),
-              inset 0 0 30px rgba(255,150,0,0.3)
-          }
-          25% {
-            box-shadow:
-              0 0 15px 4px rgba(255,120,0,0.85),
-              0 0 30px 10px rgba(255,80,0,0.65),
-              0 0 50px 15px rgba(255,40,0,0.45),
-              inset 0 0 35px rgba(255,170,0,0.35)
-          }
-          50% {
-            box-shadow:
-              0 0 20px 5px rgba(255,140,0,0.9),
-              0 0 35px 12px rgba(255,100,0,0.7),
-              0 0 60px 18px rgba(255,50,0,0.5),
-              inset 0 0 40px rgba(255,180,0,0.4)
-          }
-          75% {
-            box-shadow:
-              0 0 12px 3px rgba(255,110,0,0.82),
-              0 0 28px 9px rgba(255,70,0,0.62),
-              0 0 45px 14px rgba(255,35,0,0.42),
-              inset 0 0 32px rgba(255,160,0,0.32)
-          }
-          100% {
-            box-shadow:
-              0 0 10px 3px rgba(255,100,0,0.8),
-              0 0 25px 8px rgba(255,60,0,0.6),
-              0 0 40px 12px rgba(255,30,0,0.4),
-              inset 0 0 30px rgba(255,150,0,0.3)
-          }
+        @keyframes flameFlicker1 {
+          0%, 100% { transform: scaleY(1) scaleX(0.95) translateY(0px); opacity: 0.8; }
+          25% { transform: scaleY(1.15) scaleX(1.1) translateY(-8px); opacity: 0.95; }
+          50% { transform: scaleY(0.95) scaleX(0.9) translateY(-4px); opacity: 0.7; }
+          75% { transform: scaleY(1.2) scaleX(1.05) translateY(-10px); opacity: 0.85; }
+        }
+
+        @keyframes flameFlicker2 {
+          0%, 100% { transform: scaleY(0.9) scaleX(1.05) translateY(-2px); opacity: 0.75; }
+          25% { transform: scaleY(0.95) scaleX(0.95) translateY(-6px); opacity: 0.8; }
+          50% { transform: scaleY(1.1) scaleX(1.15) translateY(-12px); opacity: 0.9; }
+          75% { transform: scaleY(1.05) scaleX(1.0) translateY(-8px); opacity: 0.7; }
+        }
+
+        @keyframes flameFlicker3 {
+          0%, 100% { transform: scaleY(1.05) scaleX(0.98) translateY(-5px); opacity: 0.85; }
+          25% { transform: scaleY(0.92) scaleX(1.08) translateY(-11px); opacity: 0.75; }
+          50% { transform: scaleY(1.15) scaleX(1.02) translateY(-3px); opacity: 0.88; }
+          75% { transform: scaleY(0.98) scaleX(0.95) translateY(-9px); opacity: 0.8; }
+        }
+
+        @keyframes fireWobble {
+          0%, 100% { transform: translateX(0px); }
+          25% { transform: translateX(4px); }
+          50% { transform: translateX(-3px); }
+          75% { transform: translateX(2px); }
         }
 
         @keyframes emberRise {
           0% {
             opacity: 1;
-            transform: translateY(0px) translateX(0px);
+            transform: translateY(0px) translateX(0px) scale(1);
           }
           100% {
             opacity: 0;
-            transform: translateY(-120px) translateX(var(--ember-x));
+            transform: translateY(-140px) translateX(var(--ember-x)) scale(0.3);
           }
         }
 
-        .fire-ember {
-          animation: emberRise 2s ease-out forwards;
+        .fire-layer {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          border-radius: 50%;
+          filter: blur(8px);
+        }
+
+        .fire-layer-1 {
+          width: 100%;
+          height: 100%;
+          background: radial-gradient(circle at 50% 30%, rgba(255,255,0,0.8) 0%, rgba(255,150,0,0.6) 30%, rgba(255,50,0,0.4) 60%, transparent 100%);
+          animation: flameFlicker1 0.5s ease-in-out infinite, fireWobble 0.8s ease-in-out infinite;
+        }
+
+        .fire-layer-2 {
+          width: 95%;
+          height: 95%;
+          margin-left: -47.5%;
+          margin-top: -47.5%;
+          background: radial-gradient(circle at 50% 35%, rgba(255,220,0,0.7) 0%, rgba(255,120,0,0.5) 35%, rgba(255,30,0,0.3) 65%, transparent 100%);
+          animation: flameFlicker2 0.6s ease-in-out infinite 0.1s, fireWobble 1s ease-in-out infinite 0.15s;
+        }
+
+        .fire-layer-3 {
+          width: 85%;
+          height: 85%;
+          margin-left: -42.5%;
+          margin-top: -42.5%;
+          background: radial-gradient(circle at 50% 25%, rgba(255,255,100,0.6) 0%, rgba(255,100,0,0.4) 40%, rgba(200,20,0,0.2) 70%, transparent 100%);
+          animation: flameFlicker3 0.55s ease-in-out infinite 0.2s, fireWobble 1.2s ease-in-out infinite 0.3s;
         }
       `}</style>
 
@@ -224,14 +243,9 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
         </div>
       </motion.div>
 
-      {/* VS badge — emerges from collision explosion, set ablaze */}
+      {/* VS badge — emerges from collision explosion, set ABLAZE with realistic fire */}
       <motion.div
-        className="absolute left-1/2 top-[calc(50%-30px)] -translate-x-1/2 -translate-y-1/2 z-30
-                   w-[101px] h-[101px] md:w-[115px] md:h-[115px] rounded-full bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600 flex items-center justify-center
-                   text-white font-black text-2xl md:text-3xl border-2 border-black"
-        style={{
-          animation: 'fireBurn 0.8s ease-in-out infinite',
-        }}
+        className="absolute left-1/2 top-[calc(50%-30px)] -translate-x-1/2 -translate-y-1/2 z-30"
         initial={{ scale: 0, opacity: 0, y: 0 }}
         animate={{
           scale: [0, 1.5, 1, 1, 1],
@@ -244,20 +258,32 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
           y: { delay: 0.7, duration: 0.5 },
         }}
       >
+        {/* Animated fire layers */}
+        <div className="relative w-[101px] h-[101px] md:w-[115px] md:h-[115px]">
+          <div className="fire-layer fire-layer-1" />
+          <div className="fire-layer fire-layer-2" />
+          <div className="fire-layer fire-layer-3" />
+
+          {/* VS text on top */}
+          <div className="absolute inset-0 flex items-center justify-center rounded-full border-2 border-black bg-black/60 z-10
+                          text-white font-black text-2xl md:text-3xl">
+            VS
+          </div>
+        </div>
+
         {/* Rising embers */}
-        {[...Array(6)].map((_, i) => (
+        {[...Array(8)].map((_, i) => (
           <div
             key={`ember-${i}`}
-            className="absolute w-1 h-1 rounded-full bg-orange-400 fire-ember"
+            className="absolute w-1.5 h-1.5 rounded-full bg-orange-400"
             style={{
               left: '50%',
-              bottom: '-5px',
-              '--ember-x': `${Math.cos((i / 6) * Math.PI * 2) * 40}px`,
-              animation: `emberRise 2s ease-out ${i * 0.15}s infinite`,
+              top: '50%',
+              '--ember-x': `${Math.cos((i / 8) * Math.PI * 2) * 50}px`,
+              animation: `emberRise 2.5s ease-out ${i * 0.2}s infinite`,
             } as React.CSSProperties}
           />
         ))}
-        VS
       </motion.div>
 
       {/* Status badge — emerges from explosion upward */}
