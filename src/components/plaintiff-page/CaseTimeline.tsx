@@ -146,7 +146,7 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
         >
           <div
             style={{ minWidth: `${events.length * 240}px` }}
-            className="relative flex items-center px-12 py-48"
+            className="relative flex items-center px-12 py-72"
           >
             {/* Timeline spine */}
             <div className="absolute left-0 right-0 top-1/2 h-0.5 bg-[var(--accent-500)]/50" />
@@ -166,7 +166,7 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
                   <div
                     className={`w-9 h-9 rounded-full ${dotColor} border-2 border-[#0a0a0a] flex items-center justify-center relative z-10`}
                   >
-                    <span className="text-[13px] font-bold text-white leading-none">{i + 1}</span>
+                    <span className="text-[16px] font-bold text-black leading-none">{i + 1}</span>
                   </div>
 
                   {/* Connector line — starts at dot edge */}
