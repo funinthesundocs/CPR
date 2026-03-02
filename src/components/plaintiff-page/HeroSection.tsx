@@ -90,16 +90,16 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
         className="absolute inset-0 bg-black"
       />
 
-      {/* EXPLOSION PARTICLES — radiate from collision point */}
-      {[...Array(8)].map((_, i) => {
-        const angle = (i / 8) * Math.PI * 2
+      {/* EXPLOSION PARTICLES — radiate from collision point (left side only) */}
+      {[...Array(4)].map((_, i) => {
+        const angle = (i / 4) * Math.PI - Math.PI / 2  // Only left side (90° range)
         const distance = 150
         const x = Math.cos(angle) * distance
         const y = Math.sin(angle) * distance
         return (
           <motion.div
             key={`particle-${i}`}
-            className="absolute left-1/2 top-1/2 w-3 h-3 rounded-full bg-blue-400/80"
+            className="absolute left-1/2 top-1/2 w-3 h-3 rounded-full bg-orange-500/80"
             initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
             animate={{ x, y, opacity: 0, scale: 0 }}
             transition={{ delay: 0.7, duration: 0.6, ease: 'easeOut' }}
@@ -107,11 +107,11 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
         )
       })}
 
-      {/* EXPLOSION FLASH — bright center burst */}
+      {/* EXPLOSION FLASH — bright center burst (fire) */}
       <motion.div
         className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-25 w-32 h-32 rounded-full"
         style={{
-          background: 'radial-gradient(circle, rgba(59,130,246,0.8) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(255,140,0,0.9) 0%, rgba(255,80,0,0.6) 40%, transparent 70%)',
         }}
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: [0, 2, 0], opacity: [0, 1, 0] }}
