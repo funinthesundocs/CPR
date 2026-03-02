@@ -9,7 +9,7 @@ const sectionVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' as const } },
 }
 
-// [lng, lat] — MapLibre uses longitude first
+// [lng, lat]
 const CITY_COORDS: Record<string, [number, number]> = {
   'brisbane':        [153.0251, -27.4698],
   'melbourne':       [144.9631, -37.8136],
@@ -41,7 +41,7 @@ const CITY_COORDS: Record<string, [number, number]> = {
 }
 
 function resolveCoords(name: string, coords?: [number, number]): [number, number] | null {
-  if (coords) return [coords[1], coords[0]] // input is [lat,lng], MapLibre wants [lng,lat]
+  if (coords) return coords  // already [lng, lat]
   const key = name.toLowerCase()
   for (const [city, c] of Object.entries(CITY_COORDS)) {
     if (key.includes(city)) return c
@@ -58,7 +58,7 @@ interface Location {
 
 interface ResolvedPoint {
   loc: Location
-  coords: [number, number]
+  coords: [number, number]  // [lng, lat]
   index: number
 }
 
@@ -69,99 +69,135 @@ interface LocationMapProps {
 function MapCanvas({ resolvedPoints }: { resolvedPoints: ResolvedPoint[] }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef       = useRef<any>(null)
-  const [loaded, setLoaded]     = useState(false)
-  const [mapError, setMapError] = useState(false)
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     if (!containerRef.current || resolvedPoints.length === 0 || mapRef.current) return
 
     const init = async () => {
-      // Dynamic import keeps maplibre-gl out of SSR bundle
-      const maplibregl = (await import('maplibre-gl')).default
+      // Dynamic import — keeps Leaflet out of SSR bundle
+      const L = (await import('leaflet')).default
 
-      // Inject MapLibre CSS once
-      if (!document.getElementById('maplibre-css')) {
+      // Inject Leaflet CSS once
+      if (!document.getElementById('leaflet-css')) {
         const link = document.createElement('link')
-        link.id   = 'maplibre-css'
+        link.id   = 'leaflet-css'
         link.rel  = 'stylesheet'
-        link.href = 'https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.css'
+        link.href = 'https://unpkg.com/leaflet@1/dist/leaflet.css'
         document.head.appendChild(link)
       }
 
-      const coords = resolvedPoints.map(p => p.coords)
-      const lngs   = coords.map(c => c[0])
-      const lats   = coords.map(c => c[1])
+      // Leaflet uses [lat, lng] — flip our [lng, lat] storage
+      const latLngs = resolvedPoints.map(p => [p.coords[1], p.coords[0]] as [number, number])
 
-      const map = new maplibregl.Map({
-        container:          containerRef.current!,
-        style:              'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
-        bounds:             [[Math.min(...lngs) - 8, Math.min(...lats) - 8], [Math.max(...lngs) + 8, Math.max(...lats) + 8]],
-        fitBoundsOptions:   { padding: 70 },
+      // Compute bounds
+      const lats = latLngs.map(c => c[0])
+      const lngs = latLngs.map(c => c[1])
+      const bounds: [[number, number], [number, number]] = [
+        [Math.min(...lats) - 5, Math.min(...lngs) - 5],
+        [Math.max(...lats) + 5, Math.max(...lngs) + 5],
+      ]
+
+      const map = L.map(containerRef.current!, {
+        zoomControl:       true,
         attributionControl: false,
-        interactive:        true,
-      })
+      }).fitBounds(bounds, { padding: [40, 40] })
 
       mapRef.current = map
 
-      map.on('load', () => {
-        setLoaded(true)
+      // CARTO dark-matter tiles (no API key required)
+      L.tileLayer(
+        'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+        { subdomains: 'abcd', maxZoom: 19 }
+      ).addTo(map)
 
-        // Trail line — glow + dashed overlay
-        if (coords.length >= 2) {
-          map.addSource('trail', {
-            type: 'geojson',
-            data: { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: coords } },
-          })
-          map.addLayer({ id: 'trail-glow', type: 'line', source: 'trail',
-            paint: { 'line-color': '#818cf8', 'line-width': 8, 'line-opacity': 0.18 } })
-          map.addLayer({ id: 'trail-line', type: 'line', source: 'trail',
-            paint: { 'line-color': '#a5b4fc', 'line-width': 2, 'line-dasharray': [4, 3] } })
-        }
+      // Trail polyline
+      if (latLngs.length >= 2) {
+        // Glow layer
+        L.polyline(latLngs, {
+          color:   '#818cf8',
+          weight:  8,
+          opacity: 0.18,
+          interactive: false,
+        }).addTo(map)
+        // Dashed line
+        L.polyline(latLngs, {
+          color:       '#a5b4fc',
+          weight:      2,
+          opacity:     0.85,
+          dashArray:   '8 6',
+          interactive: false,
+        }).addTo(map)
+      }
 
-        // Numbered markers + popups
-        resolvedPoints.forEach(({ loc, coords: c, index }) => {
-          const el = document.createElement('div')
-          el.style.cssText = `
-            width: 34px; height: 34px; border-radius: 50%;
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
-            border: 2px solid rgba(165,180,252,0.7);
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 13px; color: white;
-            cursor: pointer; position: relative;
-            box-shadow: 0 0 14px rgba(99,102,241,0.7);
-            font-family: system-ui, sans-serif;
-          `
-          el.textContent = String(index + 1)
+      // Pulse-ring keyframes injected once
+      if (!document.getElementById('map-pulse-css')) {
+        const style = document.createElement('style')
+        style.id = 'map-pulse-css'
+        style.textContent = `
+          @keyframes mapPulse {
+            0%   { transform: scale(1);   opacity: 0.6 }
+            100% { transform: scale(2.2); opacity: 0   }
+          }
+          .leaflet-popup-content-wrapper {
+            background: rgba(10,10,30,0.96) !important;
+            border: 1px solid rgba(99,102,241,0.35) !important;
+            border-radius: 10px !important;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6) !important;
+            color: white !important;
+          }
+          .leaflet-popup-tip {
+            background: rgba(10,10,30,0.96) !important;
+          }
+          .leaflet-popup-close-button {
+            color: rgba(165,180,252,0.6) !important;
+            font-size: 16px !important;
+          }
+        `
+        document.head.appendChild(style)
+      }
 
-          // Pulse ring
-          const ring = document.createElement('div')
-          ring.style.cssText = `
-            position: absolute; inset: -6px; border-radius: 50%;
-            border: 2px solid rgba(99,102,241,0.35);
-            animation: mapPulse 2.2s ease-out ${index * 0.3}s infinite;
-            pointer-events: none;
-          `
-          el.appendChild(ring)
+      // Numbered markers + popups
+      resolvedPoints.forEach(({ loc, index }, i) => {
+        const delay = i * 0.3
+        const html = `
+          <div style="
+            width:34px;height:34px;border-radius:50%;
+            background:linear-gradient(135deg,#4f46e5,#7c3aed);
+            border:2px solid rgba(165,180,252,0.7);
+            display:flex;align-items:center;justify-content:center;
+            font-weight:700;font-size:13px;color:white;
+            cursor:pointer;position:relative;
+            box-shadow:0 0 14px rgba(99,102,241,0.7);
+            font-family:system-ui,sans-serif;
+          ">
+            ${index + 1}
+            <div style="
+              position:absolute;inset:-6px;border-radius:50%;
+              border:2px solid rgba(99,102,241,0.35);
+              animation:mapPulse 2.2s ease-out ${delay}s infinite;
+              pointer-events:none;
+            "></div>
+          </div>
+        `
+        const icon = L.divIcon({ html, className: '', iconSize: [34, 34], iconAnchor: [17, 17] })
 
-          new maplibregl.Marker({ element: el })
-            .setLngLat(c)
-            .setPopup(
-              new maplibregl.Popup({ offset: 20 }).setHTML(`
-                <div style="font-family:system-ui,sans-serif;padding:2px">
-                  <div style="font-weight:700;font-size:13px;color:#e0e7ff;margin-bottom:3px">${loc.name}</div>
-                  <div style="font-size:11px;color:rgba(165,180,252,0.8);margin-bottom:4px">${loc.date}</div>
-                  <div style="font-size:11px;color:rgba(255,255,255,0.75);max-width:200px;line-height:1.4">${loc.description}</div>
-                </div>
-              `)
-            )
-            .addTo(map)
-        })
+        const popup = L.popup({ offset: [0, -17] }).setContent(`
+          <div style="font-family:system-ui,sans-serif;padding:2px">
+            <div style="font-weight:700;font-size:13px;color:#e0e7ff;margin-bottom:3px">${loc.name}</div>
+            <div style="font-size:11px;color:rgba(165,180,252,0.8);margin-bottom:4px">${loc.date}</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.75);max-width:200px;line-height:1.4">${loc.description}</div>
+          </div>
+        `)
+
+        L.marker([latLngs[i][0], latLngs[i][1]], { icon }).bindPopup(popup).addTo(map)
       })
+
+      setLoaded(true)
     }
 
     init().catch(err => {
-      console.warn('MapLibre initialization failed (WebGL unavailable):', err)
-      setMapError(true)
+      console.warn('Map initialization failed:', err)
     })
 
     return () => {
@@ -169,40 +205,8 @@ function MapCanvas({ resolvedPoints }: { resolvedPoints: ResolvedPoint[] }) {
     }
   }, [resolvedPoints])
 
-  if (mapError) {
-    return (
-      <div className="rounded-xl border border-white/10 bg-white/5 flex items-center justify-center" style={{ height: 200 }}>
-        <div className="text-center">
-          <MapPinIcon className="h-8 w-8 text-indigo-400/50 mx-auto mb-2" />
-          <p className="text-sm text-white/40">Interactive map unavailable in this browser</p>
-          <p className="text-xs text-white/25 mt-1">WebGL is disabled — see location cards below</p>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="relative rounded-xl overflow-hidden" style={{ height: 500 }}>
-      <style>{`
-        @keyframes mapPulse {
-          0%   { transform: scale(1);   opacity: 0.6 }
-          100% { transform: scale(2.2); opacity: 0   }
-        }
-        .maplibregl-popup-content {
-          background: rgba(10,10,30,0.96) !important;
-          border: 1px solid rgba(99,102,241,0.35) !important;
-          border-radius: 10px !important;
-          padding: 10px 14px !important;
-          box-shadow: 0 8px 32px rgba(0,0,0,0.6) !important;
-          color: white !important;
-        }
-        .maplibregl-popup-close-button {
-          color: rgba(165,180,252,0.6) !important;
-          font-size: 16px !important;
-        }
-        .maplibregl-popup-tip { border-top-color: rgba(10,10,30,0.96) !important }
-      `}</style>
-
       <div ref={containerRef} className="w-full h-full" />
 
       {!loaded && (
@@ -221,7 +225,7 @@ export function LocationMap({ locations }: LocationMapProps) {
   const [mapVisible, setMapVisible] = useState(false)
   const sectionRef = useRef<HTMLElement>(null)
 
-  // Lazy-init — only mount map when section enters viewport (performance spec)
+  // Lazy-init — only mount map when section enters viewport
   useEffect(() => {
     const el = sectionRef.current
     if (!el) return
