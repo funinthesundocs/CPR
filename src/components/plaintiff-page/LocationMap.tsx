@@ -211,7 +211,7 @@ function MapCanvas({ resolvedPoints }: { resolvedPoints: ResolvedPoint[] }) {
   }, [resolvedPoints])
 
   return (
-    <div className="relative rounded-xl overflow-hidden" style={{ height: 500 }}>
+    <div className="relative rounded-xl overflow-hidden h-[400px] md:h-[654px]">
       <div ref={containerRef} className="w-full h-full" />
 
       {!loaded && (
