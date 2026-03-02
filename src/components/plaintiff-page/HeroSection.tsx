@@ -67,7 +67,7 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
           }}
         >
           {/* Dark overlay for text readability */}
-          <div className="absolute inset-0 bg-black/70" />
+          <div className="absolute inset-0 bg-black/80" />
           <div className="relative z-10 flex flex-col items-center justify-center">
             <motion.div
               animate={{
@@ -112,7 +112,7 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
           }}
         >
           {/* Dark overlay for text readability */}
-          <div className="absolute inset-0 bg-black/70" />
+          <div className="absolute inset-0 bg-black/80" />
           <div className="relative z-10 flex flex-col items-center justify-center">
             <motion.div
               animate={{
