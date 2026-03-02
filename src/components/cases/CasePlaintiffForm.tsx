@@ -1051,7 +1051,7 @@ export function CasePlaintiffForm({ editMode }: Props) {
                                       </div>
 
                                       {/* Desktop Layout */}
-                                      <div className="hidden sm:grid gap-3 px-4" style={{ gridTemplateColumns: '22% 12% 54%' }}>
+                                      <div className="hidden sm:grid gap-3" style={{ gridTemplateColumns: '25% 15% 60%' }}>
                                         <div className="space-y-2 min-w-0">
                                           <Input placeholder={t('wizard.evidenceLabel')} value={ev.label} onChange={e => {
                                               const descs = [...form.evidence_descriptions]; descs[idx] = { ...descs[idx], label: e.target.value }; updateForm({ evidence_descriptions: descs })
