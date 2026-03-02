@@ -21,15 +21,7 @@ interface CaseTimelineProps {
   events: TimelineEvent[]
 }
 
-const EVENT_TYPE_COLORS: Record<string, string> = {
-  first_contact: 'bg-blue-500',
-  trust_built: 'bg-green-500',
-  the_act: 'bg-[var(--accent-500)]',
-  escalation: 'bg-orange-500',
-  red_flag: 'bg-red-500',
-  discovery: 'bg-purple-500',
-  aftermath: 'bg-red-700',
-}
+const DOT_CYCLE = ['bg-blue-500', 'bg-white', 'bg-slate-500']
 
 function FlipCard({ event }: { event: TimelineEvent }) {
   const [flipped, setFlipped] = useState(false)
@@ -153,7 +145,7 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
 
             {/* Events */}
             {events.map((event, i) => {
-              const dotColor = EVENT_TYPE_COLORS[event.event_type] || 'bg-[var(--accent-500)]'
+              const dotColor = DOT_CYCLE[i % 3]
               const isAbove = i % 2 === 0
 
               return (
