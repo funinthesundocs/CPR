@@ -4,8 +4,9 @@ import "./globals.css";
 import { ThemeProvider } from "@/lib/theme/theme-provider";
 import { I18nProvider } from "@/i18n";
 import { PermissionsProvider } from "@/components/providers/permissions-provider";
-import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
+import { SmartSidebarProvider } from "@/components/layout/smart-sidebar-provider";
 import { ConditionalFooter } from "@/components/layout/conditional-footer";
 
 const geistSans = Geist({
@@ -62,8 +63,7 @@ export default function RootLayout({
         <ThemeProvider>
           <I18nProvider>
             <PermissionsProvider>
-              <SidebarProvider suppressHydrationWarning>
-                <AppSidebar />
+              <SmartSidebarProvider sidebar={<AppSidebar />}>
                 <SidebarInset suppressHydrationWarning>
                   <header className="flex h-14 items-center gap-2 border-b px-4">
                     <SidebarTrigger className="-ml-2" />
@@ -73,7 +73,7 @@ export default function RootLayout({
                   </main>
                   <ConditionalFooter />
                 </SidebarInset>
-              </SidebarProvider>
+              </SmartSidebarProvider>
             </PermissionsProvider>
           </I18nProvider>
         </ThemeProvider>
