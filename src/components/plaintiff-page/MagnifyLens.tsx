@@ -2,7 +2,7 @@
 
 import React, { useRef, useState, useCallback } from 'react'
 
-const LENS_SIZE  = 200   // diameter of the lens circle (px)
+const LENS_SIZE  = 320   // diameter of the lens circle (px)
 const ZOOM       = 2.8   // magnification factor
 const HANDLE_W   = 12    // handle width (px)
 const HANDLE_H   = 80    // handle length (px)
