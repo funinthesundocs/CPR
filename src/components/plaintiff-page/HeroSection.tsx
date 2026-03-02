@@ -45,16 +45,6 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
           }
         }
 
-        @keyframes emberRise {
-          0% {
-            opacity: 1;
-            transform: translateY(0px) translateX(0px) scale(1);
-          }
-          100% {
-            opacity: 0;
-            transform: translateY(-140px) translateX(var(--ember-x)) scale(0.3);
-          }
-        }
       `}</style>
 
       {/* Parallax background */}
@@ -217,19 +207,6 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
           y: { delay: 0.7, duration: 0.5 },
         }}
       >
-        {/* Rising embers */}
-        {[...Array(8)].map((_, i) => (
-          <div
-            key={`ember-${i}`}
-            className="absolute w-1.5 h-1.5 rounded-full bg-orange-400"
-            style={{
-              left: '50%',
-              top: '50%',
-              '--ember-x': `${Math.cos((i / 8) * Math.PI * 2) * 50}px`,
-              animation: `emberRise 2.5s ease-out ${i * 0.2}s infinite`,
-            } as React.CSSProperties}
-          />
-        ))}
         VS
       </motion.div>
 
