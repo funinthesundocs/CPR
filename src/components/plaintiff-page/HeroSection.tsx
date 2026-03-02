@@ -145,7 +145,7 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
       <motion.div
         className="absolute left-1/2 top-[calc(50%-30px)] -translate-x-1/2 -translate-y-1/2 z-30
                    w-[84px] h-[84px] md:w-24 md:h-24 rounded-full bg-blue-500 flex items-center justify-center
-                   text-white font-black text-2xl md:text-3xl shadow-[0_0_32px_rgb(59,130,246)]"
+                   text-white font-black text-2xl md:text-3xl shadow-[0_0_32px_rgb(59,130,246)] border-2 border-black"
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: [0, 1.2, 1], opacity: [0, 1, 1, 0.2, 1, 0.2, 1] }}
         transition={{ delay: 0.65, duration: 0.5, times: [0, 0.35, 0.5, 0.65, 0.75, 0.88, 1] }}
