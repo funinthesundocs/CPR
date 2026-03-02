@@ -33,51 +33,51 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
         @keyframes orangeGlow {
           0% {
             box-shadow:
-              0 0 20px 5px rgba(255,150,0,0.9),
-              0 0 40px 12px rgba(255,100,0,0.7),
-              0 0 65px 18px rgba(255,50,0,0.5)
+              0 0 20px 3px rgba(255,150,0,0.9),
+              0 0 40px 8px rgba(255,100,0,0.7),
+              0 0 65px 13px rgba(255,50,0,0.5)
           }
           15% {
             box-shadow:
-              0 0 35px 8px rgba(255,180,0,0.98),
-              0 0 65px 18px rgba(255,120,0,0.85),
-              0 0 95px 25px rgba(255,60,0,0.6)
+              0 0 35px 6px rgba(255,180,0,0.98),
+              0 0 65px 13px rgba(255,120,0,0.85),
+              0 0 95px 18px rgba(255,60,0,0.6)
           }
           25% {
             box-shadow:
-              0 0 12px 2px rgba(255,100,0,0.7),
-              0 0 28px 7px rgba(255,70,0,0.5),
-              0 0 45px 12px rgba(255,40,0,0.35)
+              0 0 12px 1px rgba(255,100,0,0.7),
+              0 0 28px 5px rgba(255,70,0,0.5),
+              0 0 45px 8px rgba(255,40,0,0.35)
           }
           40% {
             box-shadow:
-              0 0 32px 7px rgba(255,160,0,0.95),
-              0 0 58px 15px rgba(255,110,0,0.8),
-              0 0 88px 22px rgba(255,55,0,0.55)
+              0 0 32px 5px rgba(255,160,0,0.95),
+              0 0 58px 10px rgba(255,110,0,0.8),
+              0 0 88px 15px rgba(255,55,0,0.55)
           }
           50% {
             box-shadow:
-              0 0 18px 4px rgba(255,130,0,0.85),
-              0 0 40px 10px rgba(255,85,0,0.65),
-              0 0 65px 16px rgba(255,45,0,0.45)
+              0 0 18px 3px rgba(255,130,0,0.85),
+              0 0 40px 7px rgba(255,85,0,0.65),
+              0 0 65px 11px rgba(255,45,0,0.45)
           }
           65% {
             box-shadow:
-              0 0 28px 6px rgba(255,145,0,0.92),
-              0 0 52px 13px rgba(255,95,0,0.75),
-              0 0 80px 20px rgba(255,50,0,0.5)
+              0 0 28px 4px rgba(255,145,0,0.92),
+              0 0 52px 9px rgba(255,95,0,0.75),
+              0 0 80px 14px rgba(255,50,0,0.5)
           }
           75% {
             box-shadow:
-              0 0 15px 3px rgba(255,110,0,0.75),
-              0 0 32px 8px rgba(255,70,0,0.55),
-              0 0 50px 13px rgba(255,35,0,0.3)
+              0 0 15px 2px rgba(255,110,0,0.75),
+              0 0 32px 6px rgba(255,70,0,0.55),
+              0 0 50px 9px rgba(255,35,0,0.3)
           }
           100% {
             box-shadow:
-              0 0 20px 5px rgba(255,120,0,0.8),
-              0 0 38px 11px rgba(255,80,0,0.6),
-              0 0 60px 16px rgba(255,40,0,0.4)
+              0 0 20px 3px rgba(255,120,0,0.8),
+              0 0 38px 8px rgba(255,80,0,0.6),
+              0 0 60px 11px rgba(255,40,0,0.4)
           }
         }
 
