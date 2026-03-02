@@ -23,11 +23,18 @@ export function MagnifyLens({ imageUrl, alt, className, children }: MagnifyLensP
   const containerRef = useRef<HTMLDivElement>(null)
   const [pos, setPos]           = useState<MousePos | null>(null)
   const [isInside, setIsInside] = useState(false)
+  const [isOverButton, setIsOverButton] = useState(false)
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const el = containerRef.current
     if (!el) return
     const rect = el.getBoundingClientRect()
+
+    // Check if hovering over a button
+    const target = e.target as HTMLElement
+    const isButton = target.closest('button') !== null
+    setIsOverButton(isButton)
+
     setPos({
       x: e.clientX - rect.left,
       y: e.clientY - rect.top,
@@ -56,7 +63,7 @@ export function MagnifyLens({ imageUrl, alt, className, children }: MagnifyLensP
     <div
       ref={containerRef}
       className={`relative select-none ${className ?? ''}`}
-      style={{ cursor: isInside ? 'none' : 'default' }}
+      style={{ cursor: isInside && !isOverButton ? 'none' : 'default' }}
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
