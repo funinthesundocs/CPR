@@ -28,26 +28,21 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
 
   return (
     <section className="relative min-h-[44vh] md:min-h-[48vh] overflow-hidden bg-black">
-      {/* Realistic fire animation */}
+      {/* Orange-red pulsing glow */}
       <style>{`
-        @keyframes flameTongue1 {
-          0%, 100% { transform: translateY(0) scaleX(0.85) scaleY(1); opacity: 0.7; }
-          50% { transform: translateY(-35px) scaleX(0.95) scaleY(1.15); opacity: 0.9; }
-        }
-
-        @keyframes flameTongue2 {
-          0%, 100% { transform: translateY(0) scaleX(0.9) scaleY(1) translateX(-8px); opacity: 0.75; }
-          50% { transform: translateY(-40px) scaleX(1) scaleY(1.2) translateX(-5px); opacity: 0.85; }
-        }
-
-        @keyframes flameTongue3 {
-          0%, 100% { transform: translateY(0) scaleX(0.9) scaleY(1) translateX(8px); opacity: 0.75; }
-          50% { transform: translateY(-38px) scaleX(1) scaleY(1.18) translateX(5px); opacity: 0.85; }
-        }
-
-        @keyframes flameCenter {
-          0%, 100% { opacity: 0.6; }
-          50% { opacity: 0.9; }
+        @keyframes orangeGlow {
+          0%, 100% {
+            box-shadow:
+              0 0 15px 4px rgba(255,120,0,0.8),
+              0 0 35px 10px rgba(255,80,0,0.6),
+              0 0 55px 15px rgba(255,40,0,0.4)
+          }
+          50% {
+            box-shadow:
+              0 0 25px 6px rgba(255,140,0,0.95),
+              0 0 50px 14px rgba(255,100,0,0.75),
+              0 0 75px 20px rgba(255,50,0,0.5)
+          }
         }
 
         @keyframes emberRise {
@@ -59,53 +54,6 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
             opacity: 0;
             transform: translateY(-140px) translateX(var(--ember-x)) scale(0.3);
           }
-        }
-
-        .flame {
-          position: absolute;
-          left: 50%;
-          bottom: 50%;
-          transform-origin: center bottom;
-          filter: blur(4px);
-        }
-
-        .flame-center {
-          width: 100%;
-          height: 100%;
-          background: radial-gradient(ellipse at center, rgba(255,255,0,0.9) 0%, rgba(255,200,0,0.7) 30%, rgba(255,100,0,0.4) 60%, transparent 100%);
-          border-radius: 50%;
-          animation: flameCenter 0.4s ease-in-out infinite;
-        }
-
-        .flame-left {
-          width: 45%;
-          height: 90%;
-          background: linear-gradient(to top, rgba(255,100,0,0.8) 0%, rgba(255,150,0,0.6) 40%, rgba(255,200,50,0.4) 100%);
-          clip-path: polygon(0 100%, 50% 0%, 100% 40%, 60% 100%);
-          margin-left: -50%;
-          margin-bottom: -5%;
-          animation: flameTongue2 0.6s ease-in-out infinite;
-        }
-
-        .flame-right {
-          width: 45%;
-          height: 90%;
-          background: linear-gradient(to top, rgba(255,100,0,0.8) 0%, rgba(255,150,0,0.6) 40%, rgba(255,200,50,0.4) 100%);
-          clip-path: polygon(0 40%, 50% 100%, 100% 0%, 100% 100%);
-          margin-left: -25%;
-          margin-bottom: -5%;
-          animation: flameTongue3 0.65s ease-in-out infinite;
-        }
-
-        .flame-inner {
-          position: absolute;
-          width: 55%;
-          height: 80%;
-          left: 22.5%;
-          bottom: 0;
-          background: linear-gradient(to top, rgba(255,80,0,0.7) 0%, rgba(255,150,0,0.5) 50%, rgba(255,220,0,0.3) 100%);
-          clip-path: polygon(20% 100%, 50% 0%, 80% 100%);
-          animation: flameTongue1 0.5s ease-in-out infinite;
         }
       `}</style>
 
@@ -249,9 +197,14 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
         </div>
       </motion.div>
 
-      {/* VS badge — ABLAZE with real fire tongues */}
+      {/* VS badge — orange-red pulsing glow */}
       <motion.div
-        className="absolute left-1/2 top-[calc(50%-30px)] -translate-x-1/2 -translate-y-1/2 z-30"
+        className="absolute left-1/2 top-[calc(50%-30px)] -translate-x-1/2 -translate-y-1/2 z-30
+                   w-[101px] h-[101px] md:w-[115px] md:h-[115px] rounded-full bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600 flex items-center justify-center
+                   text-white font-black text-2xl md:text-3xl border-2 border-black"
+        style={{
+          animation: 'orangeGlow 2s ease-in-out infinite',
+        }}
         initial={{ scale: 0, opacity: 0, y: 0 }}
         animate={{
           scale: [0, 1.5, 1, 1, 1],
@@ -264,34 +217,6 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
           y: { delay: 0.7, duration: 0.5 },
         }}
       >
-        <div className="relative w-[101px] h-[101px] md:w-[115px] md:h-[115px]">
-          {/* Fire flames surrounding the circle */}
-          <div className="flame flame-center" style={{
-            width: '100%',
-            height: '100%',
-            position: 'absolute',
-            left: 0,
-            bottom: 0,
-          }}>
-            <div className="flame-center" />
-          </div>
-
-          {/* Left flame tongue */}
-          <div className="flame flame-left" />
-
-          {/* Right flame tongue */}
-          <div className="flame flame-right" />
-
-          {/* Inner flame */}
-          <div className="flame flame-inner" />
-
-          {/* VS text with dark background */}
-          <div className="absolute inset-0 flex items-center justify-center rounded-full border-2 border-black bg-black/70 z-20
-                          text-white font-black text-2xl md:text-3xl">
-            VS
-          </div>
-        </div>
-
         {/* Rising embers */}
         {[...Array(8)].map((_, i) => (
           <div
@@ -305,6 +230,7 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
             } as React.CSSProperties}
           />
         ))}
+        VS
       </motion.div>
 
       {/* Status badge — emerges from explosion upward */}
