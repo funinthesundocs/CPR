@@ -37,9 +37,22 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: '-80px' }}
-      className="py-16 px-6 -mt-[75px]"
+      className="relative py-16 px-6 -mt-[75px] overflow-hidden"
     >
-      <div className="max-w-[1340px] mx-auto">
+      {/* Vault background image */}
+      <div
+        className="absolute inset-0 z-0"
+        style={{
+          backgroundImage: 'url(/evidence-vault-bg.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      />
+      {/* Dark overlay for readability */}
+      <div className="absolute inset-0 z-0 bg-black/70" />
+
+      <div className="relative z-10 max-w-[1340px] mx-auto">
         <h2 className="text-[38px] font-semibold text-white mb-2">Evidence Vault</h2>
         <p className="text-sm text-white/40 mb-8">
           {hasUploaded
