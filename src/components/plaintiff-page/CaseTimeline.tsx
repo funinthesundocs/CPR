@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react'
 import { motion, useAnimate } from 'framer-motion'
 import { MapPinIcon } from '@heroicons/react/24/outline'
+import { Bars3Icon, ListBulletIcon } from '@heroicons/react/24/outline'
 
 const sectionVariants = {
   hidden: { opacity: 0, y: 24 },
@@ -116,6 +117,7 @@ function FlipCard({ event }: { event: TimelineEvent }) {
 
 export function CaseTimeline({ events }: CaseTimelineProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const [viewMode, setViewMode] = useState<'horizontal' | 'vertical'>('horizontal')
 
   if (!events || events.length === 0) return null
 
@@ -127,60 +129,124 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
       viewport={{ once: true, margin: '-80px' }}
       className="pt-16 pb-[30px]"
     >
-      <h2 className="text-[38px] font-semibold mb-8 px-6 text-white max-w-[1340px] mx-auto">Case Timeline</h2>
+      {/* Header with title and view toggle */}
+      <div className="flex items-center justify-between px-6 mb-8 max-w-[1340px] mx-auto">
+        <h2 className="text-[38px] font-semibold text-white">Case Timeline</h2>
 
-      {/* ISOLATION CONTAINER — no position:sticky, no z-index, no overflow:visible */}
-      <div style={{ overflow: 'hidden' }} className="w-full">
-        <div
-          ref={scrollRef}
-          style={{ overflowX: 'auto', overflowY: 'hidden' }}
-          className="w-full pb-6 mb-[60px] scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20"
-        >
-          <div
-            style={{ minWidth: `${events.length * 288}px` }}
-            className="relative flex items-center px-12 py-72"
+        {/* View toggle buttons */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => setViewMode('horizontal')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+              viewMode === 'horizontal'
+                ? 'bg-[var(--accent-500)] text-white'
+                : 'bg-white/10 text-white/60 hover:bg-white/20 hover:text-white'
+            }`}
           >
-            {/* Timeline spine */}
-            <div className="absolute left-0 right-0 top-1/2 h-0.5 bg-[var(--accent-500)]/50" />
-
-            {/* Events */}
-            {events.map((event, i) => {
-              const dotColor = DOT_CYCLE[i % 3]
-              const isAbove = i % 2 === 0
-
-              return (
-                <div
-                  key={event.id}
-                  className="relative flex flex-col items-center shrink-0"
-                  style={{ width: 264, marginRight: 24 }}
-                >
-                  {/* Numbered dot on spine */}
-                  <div
-                    className={`w-9 h-9 rounded-full ${dotColor} border-2 border-[#0a0a0a] flex items-center justify-center relative z-10`}
-                  >
-                    <span className="text-[16px] font-bold text-black leading-none">{i + 1}</span>
-                  </div>
-
-                  {/* Connector line — starts at dot edge */}
-                  <div
-                    className={`absolute left-1/2 w-px bg-white/20 h-16 ${
-                      isAbove ? 'bottom-[calc(50%+18px)]' : 'top-[calc(50%+18px)]'
-                    }`}
-                    style={{ transform: 'translateX(-50%)' }}
-                  />
-
-                  {/* Event card — clears connector end + gap */}
-                  <div
-                    className={`absolute ${isAbove ? 'bottom-[calc(50%+90px)]' : 'top-[calc(50%+90px)]'}`}
-                  >
-                    <FlipCard event={event} />
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+            <Bars3Icon className="h-4 w-4" />
+            Horizontal
+          </button>
+          <button
+            onClick={() => setViewMode('vertical')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+              viewMode === 'vertical'
+                ? 'bg-[var(--accent-500)] text-white'
+                : 'bg-white/10 text-white/60 hover:bg-white/20 hover:text-white'
+            }`}
+          >
+            <ListBulletIcon className="h-4 w-4" />
+            Vertical
+          </button>
         </div>
       </div>
+
+      {viewMode === 'horizontal' ? (
+        /* HORIZONTAL VIEW — scrollable flip-card timeline */
+        <div style={{ overflow: 'hidden' }} className="w-full">
+          <div
+            ref={scrollRef}
+            style={{ overflowX: 'auto', overflowY: 'hidden' }}
+            className="w-full pb-6 mb-[60px] scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20"
+          >
+            <div
+              style={{ minWidth: `${events.length * 288}px` }}
+              className="relative flex items-center px-12 py-72"
+            >
+              {/* Timeline spine */}
+              <div className="absolute left-0 right-0 top-1/2 h-0.5 bg-[var(--accent-500)]/50" />
+
+              {/* Events */}
+              {events.map((event, i) => {
+                const dotColor = DOT_CYCLE[i % 3]
+                const isAbove = i % 2 === 0
+
+                return (
+                  <div
+                    key={event.id}
+                    className="relative flex flex-col items-center shrink-0"
+                    style={{ width: 264, marginRight: 24 }}
+                  >
+                    {/* Numbered dot on spine */}
+                    <div
+                      className={`w-9 h-9 rounded-full ${dotColor} border-2 border-[#0a0a0a] flex items-center justify-center relative z-10`}
+                    >
+                      <span className="text-[16px] font-bold text-black leading-none">{i + 1}</span>
+                    </div>
+
+                    {/* Connector line — starts at dot edge */}
+                    <div
+                      className={`absolute left-1/2 w-px bg-white/20 h-16 ${
+                        isAbove ? 'bottom-[calc(50%+18px)]' : 'top-[calc(50%+18px)]'
+                      }`}
+                      style={{ transform: 'translateX(-50%)' }}
+                    />
+
+                    {/* Event card — clears connector end + gap */}
+                    <div
+                      className={`absolute ${isAbove ? 'bottom-[calc(50%+90px)]' : 'top-[calc(50%+90px)]'}`}
+                    >
+                      <FlipCard event={event} />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* VERTICAL VIEW — stacked full-size events */
+        <div className="w-full max-w-[1340px] mx-auto px-6 space-y-6 mb-12">
+          {events.map((event, i) => (
+            <motion.div
+              key={event.id}
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.05 }}
+              className="bg-white/5 border border-white/10 rounded-lg p-6"
+            >
+              {/* Event number and date */}
+              <div className="flex items-baseline gap-4 mb-3">
+                <span className="text-[24px] font-bold text-[var(--accent-500)]">#{i + 1}</span>
+                <p className="text-[16px] font-semibold text-white">{event.date_or_year}</p>
+              </div>
+
+              {/* Full description */}
+              <p className="text-[15px] leading-relaxed text-white/80 mb-4">
+                {event.description}
+              </p>
+
+              {/* Location */}
+              {event.city && (
+                <p className="flex items-center gap-2 text-[13px] text-white/50">
+                  <MapPinIcon className="h-4 w-4" />
+                  {event.city}
+                </p>
+              )}
+            </motion.div>
+          ))}
+        </div>
+      )}
     </motion.section>
   )
 }
