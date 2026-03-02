@@ -145,10 +145,22 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
       <motion.div
         className="absolute left-1/2 top-[calc(50%-30px)] -translate-x-1/2 -translate-y-1/2 z-30
                    w-[84px] h-[84px] md:w-24 md:h-24 rounded-full bg-blue-500 flex items-center justify-center
-                   text-white font-black text-2xl md:text-3xl shadow-[0_0_45px_8px_rgb(59,130,246)] border-2 border-black"
+                   text-white font-black text-2xl md:text-3xl border-2 border-black"
         initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: [0, 1.2, 1], opacity: [0, 1, 1, 0.2, 1, 0.2, 1] }}
-        transition={{ delay: 0.65, duration: 0.5, times: [0, 0.35, 0.5, 0.65, 0.75, 0.88, 1] }}
+        animate={{
+          scale: [0, 1.2, 1, 1, 1],
+          opacity: [0, 1, 1, 0.2, 1, 0.2, 1],
+          boxShadow: [
+            '0 0 45px 8px rgb(59, 130, 246)',
+            '0 0 55px 12px rgb(59, 130, 246)',
+            '0 0 45px 8px rgb(59, 130, 246)',
+          ],
+        }}
+        transition={{
+          scale: { delay: 0.65, duration: 0.5, times: [0, 0.35, 0.5, 0.65, 0.75] },
+          opacity: { delay: 0.65, duration: 0.5, times: [0, 0.35, 0.5, 0.65, 0.75, 0.88, 1] },
+          boxShadow: { delay: 1.2, duration: 2.5, repeat: Infinity, ease: 'easeInOut' },
+        }}
       >
         VS
       </motion.div>
