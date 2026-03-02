@@ -52,10 +52,10 @@ function FlipCard({ event }: { event: TimelineEvent }) {
   }
 
   return (
-    <div style={{ perspective: '900px' }} className="w-52">
+    <div style={{ perspective: '900px', width: '250px' }}>
       <div
         ref={scope}
-        style={{ transformStyle: 'preserve-3d', position: 'relative', minHeight: '130px' }}
+        style={{ transformStyle: 'preserve-3d', position: 'relative', minHeight: '169px' }}
       >
         {/* Front face */}
         <div
@@ -77,9 +77,9 @@ function FlipCard({ event }: { event: TimelineEvent }) {
           {needsMore && (
             <button
               onClick={() => flip(true)}
-              className="mt-2 text-[11px] font-semibold text-[var(--accent-300)] hover:text-white transition-colors tracking-wide"
+              className="mt-3 px-3 py-1 text-[11px] font-semibold rounded-md bg-[var(--accent-500)]/20 hover:bg-[var(--accent-500)]/50 border border-[var(--accent-500)]/40 hover:border-[var(--accent-500)]/80 text-[var(--accent-300)] hover:text-white transition-all tracking-wide"
             >
-              — More —
+              More
             </button>
           )}
         </div>
@@ -145,7 +145,7 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
           className="w-full pb-6 mb-[60px] scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20"
         >
           <div
-            style={{ minWidth: `${events.length * 240}px` }}
+            style={{ minWidth: `${events.length * 288}px` }}
             className="relative flex items-center px-12 py-72"
           >
             {/* Timeline spine */}
@@ -160,7 +160,7 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
                 <div
                   key={event.id}
                   className="relative flex flex-col items-center shrink-0"
-                  style={{ width: 220, marginRight: 20 }}
+                  style={{ width: 264, marginRight: 24 }}
                 >
                   {/* Numbered dot on spine */}
                   <div
