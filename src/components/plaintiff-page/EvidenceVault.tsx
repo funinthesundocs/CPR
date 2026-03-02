@@ -37,7 +37,7 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: '-80px' }}
-      className="py-16 px-6"
+      className="py-16 px-6 mt-[25px]"
     >
       <div className="max-w-4xl mx-auto">
         <h2 className="text-[38px] font-semibold mb-2 text-white">Evidence Vault</h2>
