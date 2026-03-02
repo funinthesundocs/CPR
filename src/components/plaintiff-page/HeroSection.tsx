@@ -35,6 +35,34 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
         className="absolute inset-0 bg-black"
       />
 
+      {/* EXPLOSION PARTICLES — radiate from collision point */}
+      {[...Array(8)].map((_, i) => {
+        const angle = (i / 8) * Math.PI * 2
+        const distance = 150
+        const x = Math.cos(angle) * distance
+        const y = Math.sin(angle) * distance
+        return (
+          <motion.div
+            key={`particle-${i}`}
+            className="absolute left-1/2 top-1/2 w-3 h-3 rounded-full bg-blue-400/80"
+            initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+            animate={{ x, y, opacity: 0, scale: 0 }}
+            transition={{ delay: 0.7, duration: 0.6, ease: 'easeOut' }}
+          />
+        )
+      })}
+
+      {/* EXPLOSION FLASH — bright center burst */}
+      <motion.div
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-25 w-32 h-32 rounded-full"
+        style={{
+          background: 'radial-gradient(circle, rgba(59,130,246,0.8) 0%, transparent 70%)',
+        }}
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: [0, 2, 0], opacity: [0, 1, 0] }}
+        transition={{ delay: 0.7, duration: 0.5, ease: 'easeOut' }}
+      />
+
       {/* BLACK STRIPE — static diagonal center divider, always on screen, panels slide behind it */}
       <div
         className="absolute inset-0 z-20 pointer-events-none"
@@ -141,15 +169,16 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
         </div>
       </motion.div>
 
-      {/* VS badge — center, above stripe, pops in after panels arrive */}
+      {/* VS badge — emerges from collision explosion */}
       <motion.div
         className="absolute left-1/2 top-[calc(50%-30px)] -translate-x-1/2 -translate-y-1/2 z-30
                    w-[84px] h-[84px] md:w-24 md:h-24 rounded-full bg-blue-500 flex items-center justify-center
                    text-white font-black text-2xl md:text-3xl border-2 border-black"
-        initial={{ scale: 0, opacity: 0 }}
+        initial={{ scale: 0, opacity: 0, y: 0 }}
         animate={{
-          scale: [0, 1.2, 1, 1, 1],
+          scale: [0, 1.5, 1, 1, 1],
           opacity: [0, 1, 1, 0.2, 1, 0.2, 1],
+          y: [-20, 0, 0],
           boxShadow: [
             '0 0 45px 8px rgb(59, 130, 246)',
             '0 0 55px 12px rgb(59, 130, 246)',
@@ -157,20 +186,21 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
           ],
         }}
         transition={{
-          scale: { delay: 0.65, duration: 0.5, times: [0, 0.35, 0.5, 0.65, 0.75] },
-          opacity: { delay: 0.65, duration: 0.5, times: [0, 0.35, 0.5, 0.65, 0.75, 0.88, 1] },
-          boxShadow: { delay: 1.2, duration: 2.5, repeat: Infinity, ease: 'easeInOut' },
+          scale: { delay: 0.7, duration: 0.6, times: [0, 0.4, 0.7, 0.85, 1] },
+          opacity: { delay: 0.7, duration: 0.6, times: [0, 0.35, 0.5, 0.65, 0.75, 0.88, 1] },
+          y: { delay: 0.7, duration: 0.5 },
+          boxShadow: { delay: 1.4, duration: 2.5, repeat: Infinity, ease: 'easeInOut' },
         }}
       >
         VS
       </motion.div>
 
-      {/* Status badge — fades in last */}
+      {/* Status badge — emerges from explosion upward */}
       <motion.div
         className="absolute left-1/2 top-[calc(68%-30px)] -translate-x-1/2 z-30"
-        initial={{ opacity: 0, y: 6 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.0, duration: 0.4 }}
+        transition={{ delay: 0.75, duration: 0.5, ease: 'easeOut' }}
       >
         <StatusBadge status={status} />
       </motion.div>
