@@ -229,7 +229,7 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
                    w-[101px] h-[101px] md:w-[115px] md:h-[115px] rounded-full bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600 flex items-center justify-center
                    text-white font-black text-2xl md:text-3xl border-2 border-black"
         style={{
-          animation: 'orangeGlow 1.2s cubic-bezier(0.42, 0, 0.58, 1) infinite',
+          animation: 'orangeGlow 1.8s cubic-bezier(0.42, 0, 0.58, 1) infinite',
         }}
         initial={{ scale: 0, opacity: 0, y: 0 }}
         animate={{
