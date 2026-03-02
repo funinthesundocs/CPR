@@ -28,6 +28,61 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
 
   return (
     <section className="relative min-h-[44vh] md:min-h-[48vh] overflow-hidden bg-black">
+      {/* Fire animation keyframes */}
+      <style>{`
+        @keyframes fireBurn {
+          0% {
+            box-shadow:
+              0 0 10px 3px rgba(255,100,0,0.8),
+              0 0 25px 8px rgba(255,60,0,0.6),
+              0 0 40px 12px rgba(255,30,0,0.4),
+              inset 0 0 30px rgba(255,150,0,0.3)
+          }
+          25% {
+            box-shadow:
+              0 0 15px 4px rgba(255,120,0,0.85),
+              0 0 30px 10px rgba(255,80,0,0.65),
+              0 0 50px 15px rgba(255,40,0,0.45),
+              inset 0 0 35px rgba(255,170,0,0.35)
+          }
+          50% {
+            box-shadow:
+              0 0 20px 5px rgba(255,140,0,0.9),
+              0 0 35px 12px rgba(255,100,0,0.7),
+              0 0 60px 18px rgba(255,50,0,0.5),
+              inset 0 0 40px rgba(255,180,0,0.4)
+          }
+          75% {
+            box-shadow:
+              0 0 12px 3px rgba(255,110,0,0.82),
+              0 0 28px 9px rgba(255,70,0,0.62),
+              0 0 45px 14px rgba(255,35,0,0.42),
+              inset 0 0 32px rgba(255,160,0,0.32)
+          }
+          100% {
+            box-shadow:
+              0 0 10px 3px rgba(255,100,0,0.8),
+              0 0 25px 8px rgba(255,60,0,0.6),
+              0 0 40px 12px rgba(255,30,0,0.4),
+              inset 0 0 30px rgba(255,150,0,0.3)
+          }
+        }
+
+        @keyframes emberRise {
+          0% {
+            opacity: 1;
+            transform: translateY(0px) translateX(0px);
+          }
+          100% {
+            opacity: 0;
+            transform: translateY(-120px) translateX(var(--ember-x));
+          }
+        }
+
+        .fire-ember {
+          animation: emberRise 2s ease-out forwards;
+        }
+      `}</style>
 
       {/* Parallax background */}
       <motion.div
@@ -169,29 +224,39 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
         </div>
       </motion.div>
 
-      {/* VS badge — emerges from collision explosion */}
+      {/* VS badge — emerges from collision explosion, set ablaze */}
       <motion.div
         className="absolute left-1/2 top-[calc(50%-30px)] -translate-x-1/2 -translate-y-1/2 z-30
-                   w-[101px] h-[101px] md:w-[115px] md:h-[115px] rounded-full bg-blue-500 flex items-center justify-center
+                   w-[101px] h-[101px] md:w-[115px] md:h-[115px] rounded-full bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600 flex items-center justify-center
                    text-white font-black text-2xl md:text-3xl border-2 border-black"
+        style={{
+          animation: 'fireBurn 0.8s ease-in-out infinite',
+        }}
         initial={{ scale: 0, opacity: 0, y: 0 }}
         animate={{
           scale: [0, 1.5, 1, 1, 1],
           opacity: [0, 1, 1, 0.2, 1, 0.2, 1],
           y: [-20, 0, 0],
-          boxShadow: [
-            '0 0 45px 8px rgb(59, 130, 246)',
-            '0 0 55px 12px rgb(59, 130, 246)',
-            '0 0 45px 8px rgb(59, 130, 246)',
-          ],
         }}
         transition={{
           scale: { delay: 0.7, duration: 0.6, times: [0, 0.4, 0.7, 0.85, 1] },
           opacity: { delay: 0.7, duration: 0.6, times: [0, 0.35, 0.5, 0.65, 0.75, 0.88, 1] },
           y: { delay: 0.7, duration: 0.5 },
-          boxShadow: { delay: 1.4, duration: 2.5, repeat: Infinity, ease: 'easeInOut' },
         }}
       >
+        {/* Rising embers */}
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={`ember-${i}`}
+            className="absolute w-1 h-1 rounded-full bg-orange-400 fire-ember"
+            style={{
+              left: '50%',
+              bottom: '-5px',
+              '--ember-x': `${Math.cos((i / 6) * Math.PI * 2) * 40}px`,
+              animation: `emberRise 2s ease-out ${i * 0.15}s infinite`,
+            } as React.CSSProperties}
+          />
+        ))}
         VS
       </motion.div>
 
