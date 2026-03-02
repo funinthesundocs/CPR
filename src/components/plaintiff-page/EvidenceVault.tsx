@@ -53,8 +53,8 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
       <div className="absolute inset-0 z-0 bg-black/70" />
 
       <div className="relative z-10 max-w-[1340px] mx-auto">
-        <h2 className="text-[38px] font-semibold text-white mb-2">Evidence Vault</h2>
-        <p className="text-white/40 mb-8" style={{ fontSize: '21px' }}>
+        <h2 className="text-[38px] font-semibold text-white mb-2 text-center">Evidence Vault</h2>
+        <p className="text-white/40 mb-8 text-center" style={{ fontSize: '21px' }}>
           {hasUploaded
             ? `${evidence.length} files on record`
             : hasInventory
@@ -78,7 +78,7 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
         {/* Show declared inventory (from case form) even if not uploaded yet */}
         {hasInventory && (
           <div className="space-y-3">
-            <h3 className="font-bold uppercase tracking-widest text-[var(--accent-300)] mb-4" style={{ fontSize: '18px' }}>
+            <h3 className="font-bold uppercase tracking-widest text-[var(--accent-300)] mb-4 text-center" style={{ fontSize: '18px' }}>
               Declared Evidence Inventory
             </h3>
             {evidenceInventory.map((item, i) => {
@@ -86,14 +86,14 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
               return (
                 <div
                   key={i}
-                  className="border border-white/10 rounded-lg p-4 flex gap-4"
+                  className="border border-white/10 rounded-lg p-4 flex flex-col items-center text-center gap-3"
                   style={{ backgroundColor: 'oklch(0.205 0 0 / 0.8)' }}
                 >
-                  <div className="shrink-0 w-10 h-10 rounded-md bg-[var(--accent-700)]/40 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-md bg-[var(--accent-700)]/40 flex items-center justify-center">
                     <ShieldExclamationIcon className="h-5 w-5 text-[var(--accent-300)]" />
                   </div>
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center justify-center gap-2 mb-1 flex-wrap">
                       <p className="text-white font-medium" style={{ fontSize: '18px' }}>{item.label}</p>
                       <span className="px-2 py-0.5 rounded-full bg-white/10 text-white/50" style={{ fontSize: '18px' }}>
                         {category}
