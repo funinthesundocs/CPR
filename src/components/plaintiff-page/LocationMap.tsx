@@ -319,25 +319,6 @@ export function LocationMap({ locations }: LocationMapProps) {
 
         {/* Interactive map */}
         {mapVisible && <MapCanvas resolvedPoints={resolvedPoints} />}
-
-        {/* Location cards */}
-        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {resolvedPoints.map(({ loc, index }) => (
-            <div key={index} className="bg-white/5 border border-white/10 rounded-lg p-4 flex gap-3">
-              <div className="shrink-0 w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/50 flex items-center justify-center">
-                <span className="text-xs font-bold text-indigo-300">{index + 1}</span>
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1 mb-1">
-                  <MapPinIcon className="h-3 w-3 text-indigo-400 shrink-0" />
-                  <span className="text-sm font-semibold text-white truncate">{loc.name}</span>
-                  <span className="text-[10px] text-white/40 ml-auto shrink-0">{loc.date}</span>
-                </div>
-                <p className="text-xs text-white/60 leading-relaxed line-clamp-2">{loc.description}</p>
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
     </motion.section>
   )
