@@ -834,17 +834,27 @@ export function CasePlaintiffForm({ editMode }: Props) {
                         <>
                             <p className="text-base text-muted-foreground">{t('wizard.timelineInstructions')}</p>
                             {form.timeline_events.map((event, idx) => (
-                                <div key={idx} className="space-y-3 p-4 rounded-lg border bg-muted/20">
-                                    <div className="grid grid-cols-1 sm:grid-cols-[15%_1fr_15%] gap-3">
-                                        <Input placeholder={t('wizard.dateOrYear')} value={event.date} onChange={e => {
-                                            const events = [...form.timeline_events]; events[idx] = { ...events[idx], date: e.target.value }; updateForm({ timeline_events: events })
-                                        }} />
-                                        <Input placeholder={t('wizard.whatHappenedShort')} value={event.event} onChange={e => {
-                                            const events = [...form.timeline_events]; events[idx] = { ...events[idx], event: e.target.value }; updateForm({ timeline_events: events })
-                                        }} />
-                                        <Input placeholder={t('wizard.location')} value={event.location} onChange={e => {
-                                            const events = [...form.timeline_events]; events[idx] = { ...events[idx], location: e.target.value }; updateForm({ timeline_events: events })
-                                        }} />
+                                <div key={idx} className="space-y-4 p-4 rounded-lg border bg-muted/20">
+                                    <div className="grid grid-cols-1 sm:grid-cols-[15%_1fr_20%] gap-4">
+                                        <div>
+                                            <label className="text-sm font-medium block mb-1">Date</label>
+                                            <Input placeholder={t('wizard.dateOrYear')} value={event.date} onChange={e => {
+                                                const events = [...form.timeline_events]; events[idx] = { ...events[idx], date: e.target.value }; updateForm({ timeline_events: events })
+                                            }} />
+                                        </div>
+                                        <div>
+                                            <label className="text-sm font-medium block mb-1">Event</label>
+                                            <textarea placeholder={t('wizard.whatHappenedShort')} value={event.event} onChange={e => {
+                                                const events = [...form.timeline_events]; events[idx] = { ...events[idx], event: e.target.value }; updateForm({ timeline_events: events })
+                                            }} rows={2} className="w-full px-3 py-2 border rounded-md bg-background text-foreground text-sm resize-none" />
+                                        </div>
+                                        <div>
+                                            <label className="text-sm font-medium block mb-1">Location</label>
+                                            <Input placeholder="City, lat/long, or map link" value={event.location} onChange={e => {
+                                                const events = [...form.timeline_events]; events[idx] = { ...events[idx], location: e.target.value }; updateForm({ timeline_events: events })
+                                            }} />
+                                            <p className="text-xs text-muted-foreground mt-1">City name, coordinates (13.7,100.5), or Google Maps link</p>
+                                        </div>
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <div className="flex flex-wrap gap-1.5">

@@ -42,10 +42,35 @@ const CITY_COORDS: Record<string, [number, number]> = {
 
 function resolveCoords(name: string, coords?: [number, number]): [number, number] | null {
   if (coords) return coords  // already [lng, lat]
-  const key = name.toLowerCase()
-  for (const [city, c] of Object.entries(CITY_COORDS)) {
-    if (key.includes(city)) return c
+
+  const input = name.toLowerCase().trim()
+  if (!input) return null
+
+  // Try parsing as "lat, lng" or "lat,lng" coordinates
+  const coordMatch = input.match(/^([-\d.]+)\s*,\s*([-\d.]+)$/)
+  if (coordMatch) {
+    const lat = parseFloat(coordMatch[1])
+    const lng = parseFloat(coordMatch[2])
+    if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+      return [lng, lat]  // return as [lng, lat]
+    }
   }
+
+  // Try extracting from Google Maps URL (e.g., maps.google.com/?q=13.7,100.5)
+  const mapsMatch = input.match(/[?&]q=([-\d.]+)[,+]([-\d.]+)/)
+  if (mapsMatch) {
+    const lat = parseFloat(mapsMatch[1])
+    const lng = parseFloat(mapsMatch[2])
+    if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+      return [lng, lat]
+    }
+  }
+
+  // Fall back to city name lookup
+  for (const [city, c] of Object.entries(CITY_COORDS)) {
+    if (input.includes(city)) return c
+  }
+
   return null
 }
 
