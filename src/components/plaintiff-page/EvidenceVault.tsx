@@ -54,7 +54,7 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
 
       <div className="relative z-10 max-w-[1340px] mx-auto">
         <h2 className="text-[38px] font-semibold text-white mb-2">Evidence Vault</h2>
-        <p className="text-white/40 mb-8" style={{ fontSize: '21px' }}>
+        <p className="text-white/40 mb-8" style={{ fontSize: '38px' }}>
           {hasUploaded
             ? `${evidence.length} files on record`
             : hasInventory
@@ -69,7 +69,7 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
             {evidence.map((item: any) => (
               <div key={item.id} className="border border-white/10 rounded-lg p-4" style={{ backgroundColor: 'oklch(0.205 0 0 / 0.8)' }}>
                 <DocumentTextIcon className="h-8 w-8 text-[var(--accent-500)] mb-2" />
-                <p className="text-xs text-white/70 font-medium">{item.title || item.file_name}</p>
+                <p className="text-white/70 font-medium" style={{ fontSize: '38px' }}>{item.title || item.file_name}</p>
               </div>
             ))}
           </div>
@@ -94,12 +94,12 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="text-sm text-white font-medium">{item.label}</p>
+                      <p className="text-white font-medium" style={{ fontSize: '38px' }}>{item.label}</p>
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/50">
                         {category}
                       </span>
                     </div>
-                    <p className="text-xs text-white/50 leading-relaxed">{item.description}</p>
+                    <p className="text-white/50 leading-relaxed" style={{ fontSize: '38px' }}>{item.description}</p>
                   </div>
                 </div>
               )
@@ -111,7 +111,7 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
         {!hasUploaded && !hasInventory && (
           <div className="border border-white/10 rounded-xl p-12 text-center bg-white/5">
             <ShieldExclamationIcon className="h-12 w-12 text-white/20 mx-auto mb-4" />
-            <p className="text-sm text-white/40">
+            <p className="text-white/40" style={{ fontSize: '38px' }}>
               No evidence has been filed for this case yet.
             </p>
           </div>
