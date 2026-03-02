@@ -1,0 +1,446 @@
+'use client'
+
+import { useState } from 'react'
+import { motion } from 'framer-motion'
+import { XMarkIcon } from '@heroicons/react/24/outline'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+
+const sectionVariants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' as const } },
+}
+
+function ReadOnlyField({ label, value, tall }: { label: string; value?: string | null; tall?: boolean }) {
+  if (!value) return null
+  return (
+    <div>
+      <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1.5 font-semibold">{label}</p>
+      {tall ? (
+        <div className="bg-white/5 border border-white/10 rounded-md p-4 text-sm text-white/70 leading-relaxed text-justify min-h-[80px]">
+          {value}
+        </div>
+      ) : (
+        <div className="bg-white/5 border border-white/10 rounded-md px-4 py-2.5 text-sm text-white/70">
+          {value}
+        </div>
+      )}
+    </div>
+  )
+}
+
+interface TestimonyField {
+  label: string
+  value: string
+}
+
+interface CaseSummaryModuleProps {
+  notebookSummary: string
+  briefingDocContent: string
+  testimonyFields: TestimonyField[]
+  financialTotal: number
+  caseNarratives: Record<string, any>
+  timeline: any[]
+  evidenceInventory: { label: string; category: string; description: string }[]
+  evidence: any[]
+}
+
+export function CaseSummaryModule({ notebookSummary, briefingDocContent, testimonyFields, financialTotal, caseNarratives, timeline, evidenceInventory, evidence }: CaseSummaryModuleProps) {
+  const [modalOpen, setModalOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState<'analysis' | 'testimony'>('analysis')
+
+  const formattedAmount = financialTotal.toLocaleString('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  })
+
+  return (
+    <>
+      <motion.section
+        variants={sectionVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: '-80px' }}
+        className="pt-[8px] pb-16 px-6"
+      >
+        <div className="max-w-[1340px] mx-auto bg-white/5 border border-white/10 rounded-lg p-8 pb-0">
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-2xl font-semibold text-white">Case Summary</h2>
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={() => { setActiveTab('analysis'); setModalOpen(true) }}
+                className="bg-[var(--accent-500)] text-white px-6 py-2 rounded-md text-sm font-medium hover:bg-[var(--accent-300)] transition-colors"
+              >
+                View Full Report
+              </button>
+              <button
+                onClick={() => { setActiveTab('testimony'); setModalOpen(true) }}
+                className="bg-white/10 text-white/80 hover:bg-[var(--accent-500)] hover:text-white px-6 py-2 rounded-md text-sm font-medium transition-colors"
+              >
+                Original Testimony
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-0 auto-rows-fr">
+            {/* A1 — Top Left — Text Summary */}
+            <div className="pr-8 border-r border-white/20 pb-8">
+              <div className="prose prose-invert max-w-none space-y-4 text-white/70">
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    h2: ({ children }) => (
+                      <h2 className="text-lg font-bold text-white mt-4 mb-2 pb-2 border-b border-[var(--accent-500)]/30">{children}</h2>
+                    ),
+                    p: ({ children }) => <p className="text-[16px] leading-relaxed text-white/75 mb-3 text-justify">{children}</p>,
+                    strong: ({ children }) => <strong className="text-white/95 font-semibold bg-white/5 px-1 py-0.5 rounded">{children}</strong>,
+                    ul: ({ children }) => <ul className="list-none space-y-1 mb-3 pl-4">{children}</ul>,
+                    li: ({ children }) => <li className="leading-relaxed text-white/75 flex gap-2 before:content-['•'] before:text-[var(--accent-500)] before:font-bold before:flex-shrink-0">{children}</li>,
+                    hr: () => <hr className="border-t border-dashed border-white/20 my-4" />,
+                  }}
+                >
+                  {notebookSummary}
+                </ReactMarkdown>
+              </div>
+            </div>
+
+            {/* B1 — Top Right — Image 1 */}
+            <div className="pl-8 pb-8 flex items-center justify-center">
+              <div className="relative" style={{ perspective: '1000px' }}>
+                <img
+                  src="/KellyCai - Summary 1.png"
+                  alt="Broken Trust"
+                  className="max-w-full h-auto rounded-lg"
+                  style={{
+                    transform: 'rotateZ(-1.5deg) rotateX(0.5deg)',
+                    boxShadow: '0 15px 50px rgba(0,0,0,0.7), -5px 5px 15px rgba(0,0,0,0.3)',
+                    filter: 'drop-shadow(-2px 2px 4px rgba(0,0,0,0.4))'
+                  }}
+                />
+                {/* Left corner tape */}
+                <div className="absolute top-0 left-0 w-[74px] h-[28px] bg-gradient-to-br from-amber-100 to-amber-200" style={{ transform: 'rotateZ(-25deg) translateX(-8px) translateY(-8px)', boxShadow: '0 4px 12px rgba(0,0,0,0.4)', zIndex: 20, opacity: 0.85 }} />
+                {/* Right corner tape */}
+                <div className="absolute top-0 right-0 w-[74px] h-[28px] bg-gradient-to-bl from-amber-100 to-amber-200" style={{ transform: 'rotateZ(25deg) translateX(8px) translateY(-8px)', boxShadow: '0 4px 12px rgba(0,0,0,0.4)', zIndex: 20, opacity: 0.85 }} />
+              </div>
+            </div>
+
+            {/* A2 — Bottom Left — Image 2 */}
+            <div className="pr-8 border-r border-white/20 pt-8 flex items-center justify-center -mt-[120px]">
+              <div className="relative" style={{ perspective: '1000px' }}>
+                <img
+                  src="/KellyCai - Summary 2.png"
+                  alt="International Fraud Trail"
+                  className="max-w-full h-auto rounded-lg"
+                  style={{
+                    transform: 'rotateZ(1.5deg) rotateX(0.5deg)',
+                    boxShadow: '0 15px 50px rgba(0,0,0,0.7), 5px 5px 15px rgba(0,0,0,0.3)',
+                    filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.4))'
+                  }}
+                />
+                {/* Left corner tape */}
+                <div className="absolute top-0 left-0 w-[74px] h-[28px] bg-gradient-to-br from-amber-100 to-amber-200" style={{ transform: 'rotateZ(-25deg) translateX(-8px) translateY(-8px)', boxShadow: '0 4px 12px rgba(0,0,0,0.4)', zIndex: 20, opacity: 0.85 }} />
+                {/* Right corner tape */}
+                <div className="absolute top-0 right-0 w-[74px] h-[28px] bg-gradient-to-bl from-amber-100 to-amber-200" style={{ transform: 'rotateZ(25deg) translateX(8px) translateY(-8px)', boxShadow: '0 4px 12px rgba(0,0,0,0.4)', zIndex: 20, opacity: 0.85 }} />
+              </div>
+            </div>
+
+            {/* B2 — Supporting Documentation & Pattern */}
+            <div className="pl-8 pt-8">
+              <div className="space-y-6">
+                {/* Supporting Documentation */}
+                <div>
+                  <h3 className="text-lg font-bold text-white mb-3 pb-2 border-b border-[var(--accent-500)]/30">Supporting Documentation</h3>
+                  <ul className="space-y-2 text-[16px] text-white/70">
+                    <li className="flex gap-2">
+                      <span className="text-[var(--accent-500)] font-bold flex-shrink-0">•</span>
+                      <span>Bank transaction receipts</span>
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="text-[var(--accent-500)] font-bold flex-shrink-0">•</span>
+                      <span>Screenshots of Bradley's negative account balances</span>
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="text-[var(--accent-500)] font-bold flex-shrink-0">•</span>
+                      <span>Official child support statement indicating significant unpaid debts</span>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Pattern of Deception */}
+                <div>
+                  <h3 className="text-lg font-bold text-white mb-3 pb-2 border-b border-[var(--accent-500)]/30">Pattern of Deception</h3>
+                  <p className="text-[16px] text-white/70 leading-relaxed text-justify">
+                    The materials reveal Bradley's habitual infidelity and his history of leaving a trail of bankrupt companies and defrauded partners in every region he visited.
+                  </p>
+                </div>
+
+                {/* Closing Statement */}
+                <div className="pt-4 border-t border-white/10">
+                  <p className="text-[16px] text-white/60 italic leading-relaxed text-justify">
+                    These files serve as a formal testimony and evidentiary record intended for a "Court of Public Record" to warn future victims.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.section>
+
+      {/* Full-screen modal */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+          <div className="bg-[#111] border border-white/10 rounded-xl w-full max-w-[1340px] max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Tab bar */}
+            <div className="flex border-b border-white/10">
+              <button
+                onClick={() => setActiveTab('analysis')}
+                className={`px-6 py-4 text-sm font-medium transition-colors ${
+                  activeTab === 'analysis'
+                    ? 'border-b-2 border-[var(--accent-500)] text-white'
+                    : 'text-white/50 hover:text-white/80'
+                }`}
+              >
+                Detailed Analysis
+              </button>
+              <button
+                onClick={() => setActiveTab('testimony')}
+                className={`px-6 py-4 text-sm font-medium transition-colors ${
+                  activeTab === 'testimony'
+                    ? 'border-b-2 border-[var(--accent-500)] text-white'
+                    : 'text-white/50 hover:text-white/80'
+                }`}
+              >
+                Original Testimony
+              </button>
+              <button
+                onClick={() => setModalOpen(false)}
+                className="ml-auto px-4 text-white/40 hover:text-white transition-colors"
+                aria-label="Close"
+              >
+                <XMarkIcon className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="overflow-y-auto p-8 flex-1">
+              {activeTab === 'analysis' && (
+                <div className="prose prose-invert max-w-none space-y-6">
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    h1: ({ children }) => (
+                      <div className="bg-gradient-to-r from-[var(--accent-500)]/20 to-transparent border-l-4 border-[var(--accent-500)] pl-4 py-4 rounded-r-lg">
+                        <h1 className="text-3xl font-bold text-white m-0">{children}</h1>
+                      </div>
+                    ),
+                    h2: ({ children }) => (
+                      <h2 className="text-2xl font-bold text-white mt-8 mb-4 pb-3 border-b border-[var(--accent-500)]/30">{children}</h2>
+                    ),
+                    h3: ({ children }) => <h3 className="text-lg font-semibold text-[var(--accent-300)] mt-6 mb-3">{children}</h3>,
+                    h4: ({ children }) => <h4 className="text-base font-semibold text-white/80 mt-4 mb-2">{children}</h4>,
+                    p: ({ children }) => <p className="text-base leading-relaxed text-white/75 mb-4 text-justify">{children}</p>,
+                    strong: ({ children }) => <strong className="text-white/95 font-semibold bg-white/5 px-1 py-0.5 rounded">{children}</strong>,
+                    em: ({ children }) => <em className="text-white/80 italic border-l-2 border-[var(--accent-500)]/50 pl-2">{children}</em>,
+                    ul: ({ children }) => <ul className="list-none space-y-2 mb-4 pl-4">{children}</ul>,
+                    ol: ({ children }) => <ol className="list-none space-y-2 mb-4 pl-4 counter-reset">{children}</ol>,
+                    li: ({ children }) => <li className="leading-relaxed text-white/75 flex gap-3 before:content-['→'] before:text-[var(--accent-500)] before:font-bold before:flex-shrink-0">{children}</li>,
+                    blockquote: ({ children }) => (
+                      <div className="bg-white/5 border-l-4 border-[var(--accent-500)] pl-6 py-4 rounded-r-lg my-6">
+                        <blockquote className="text-white/70 italic font-medium m-0">{children}</blockquote>
+                      </div>
+                    ),
+                    hr: () => <hr className="border-t-2 border-dashed border-white/20 my-8" />,
+                    table: ({ children }) => (
+                      <div className="bg-white/5 rounded-lg overflow-hidden border border-white/10 my-6">
+                        <table className="w-full text-sm">{children}</table>
+                      </div>
+                    ),
+                    th: ({ children }) => <th className="text-left p-3 bg-[var(--accent-500)]/20 text-white font-semibold border-b border-white/10">{children}</th>,
+                    td: ({ children }) => <td className="p-3 border-b border-white/10 text-white/70">{children}</td>,
+                  }}
+                >
+                  {briefingDocContent}
+                </ReactMarkdown>
+                </div>
+              )}
+              {activeTab === 'testimony' && (
+                <div>
+                  <p className="text-xs text-white/40 mb-6 italic">
+                    Sacred record — exact words submitted by the plaintiff. No AI interpretation. Read-only.
+                  </p>
+
+                  {/* Horizontally scrollable step tabs */}
+                  <div className="flex gap-2 overflow-x-auto pb-3 mb-8 border-b border-white/10 no-scrollbar">
+                    {[
+                      { id: 'step1', label: 'Accused' },
+                      { id: 'step2', label: 'Connection' },
+                      { id: 'step3', label: 'Trust' },
+                      { id: 'step4', label: 'Incident' },
+                      { id: 'step5', label: 'Timeline' },
+                      { id: 'step6', label: 'Summary' },
+                      { id: 'step7', label: 'Impact' },
+                      { id: 'step8', label: 'Evidence' },
+                      { id: 'step10', label: 'Legal' },
+                    ].map(s => (
+                      <a key={s.id} href={`#testimony-${s.id}`}
+                        className="shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-white/10 text-white/60 hover:bg-[var(--accent-500)] hover:text-white transition-colors">
+                        {s.label}
+                      </a>
+                    ))}
+                  </div>
+
+                  <div className="space-y-12">
+
+                    {/* Step 1 — Accused */}
+                    <section id="testimony-step1">
+                      <h3 className="text-xs uppercase tracking-widest text-[var(--accent-300)] font-bold mb-4 pb-2 border-b border-white/10">
+                        Step 1 — Identifying the Accused
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <ReadOnlyField label="Full Name" value={caseNarratives.defendant_name} />
+                        <ReadOnlyField label="Known Location" value={caseNarratives.defendant_location} />
+                        <ReadOnlyField label="Known Aliases" value={Array.isArray(caseNarratives.defendant_aliases) ? caseNarratives.defendant_aliases.join(', ') : caseNarratives.defendant_aliases} />
+                      </div>
+                    </section>
+
+                    {/* Step 2 — Connection */}
+                    <section id="testimony-step2">
+                      <h3 className="text-xs uppercase tracking-widest text-[var(--accent-300)] font-bold mb-4 pb-2 border-b border-white/10">
+                        Step 2 — Your Connection
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <ReadOnlyField label="Relationship Type" value={caseNarratives.relationship_type} />
+                        <ReadOnlyField label="Duration" value={caseNarratives.relationship_duration} />
+                      </div>
+                      <div className="space-y-4">
+                        <ReadOnlyField label="How They Met" value={caseNarratives.first_interaction} tall />
+                        <ReadOnlyField label="Early Warning Signs" value={caseNarratives.early_warnings} tall />
+                      </div>
+                    </section>
+
+                    {/* Step 3 — Trust */}
+                    <section id="testimony-step3">
+                      <h3 className="text-xs uppercase tracking-widest text-[var(--accent-300)] font-bold mb-4 pb-2 border-b border-white/10">
+                        Step 3 — Basis of Trust
+                      </h3>
+                      <div className="space-y-4">
+                        <ReadOnlyField label="What Was Promised / Agreement Terms" value={caseNarratives.agreement_terms} tall />
+                        <ReadOnlyField label="Reasonable Expectation" value={caseNarratives.reasonable_expectation} tall />
+                        <ReadOnlyField label="Evidence of Trust" value={caseNarratives.evidence_of_trust} tall />
+                        <ReadOnlyField label="Others Who Can Vouch" value={caseNarratives.others_vouch} tall />
+                      </div>
+                    </section>
+
+                    {/* Step 4 — Incident */}
+                    <section id="testimony-step4">
+                      <h3 className="text-xs uppercase tracking-widest text-[var(--accent-300)] font-bold mb-4 pb-2 border-b border-white/10">
+                        Step 4 — The Incident
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <ReadOnlyField label="When Realized" value={caseNarratives.when_realized} />
+                        <ReadOnlyField label="Is Ongoing" value={caseNarratives.is_ongoing} />
+                      </div>
+                      <div className="space-y-4">
+                        <ReadOnlyField label="What Happened" value={caseNarratives.what_happened} tall />
+                        <ReadOnlyField label="The Turning Point" value={caseNarratives.primary_incident} tall />
+                      </div>
+                    </section>
+
+                    {/* Step 5 — Timeline */}
+                    <section id="testimony-step5">
+                      <h3 className="text-xs uppercase tracking-widest text-[var(--accent-300)] font-bold mb-4 pb-2 border-b border-white/10">
+                        Step 5 — Timeline of Events
+                      </h3>
+                      {timeline.length === 0 ? (
+                        <p className="text-white/30 text-sm italic">No timeline events recorded.</p>
+                      ) : (
+                        <div className="space-y-3">
+                          {timeline.map((event: any, i: number) => (
+                            <div key={i} className="bg-white/5 border border-white/10 rounded-md p-4 grid grid-cols-[80px_1fr] gap-4">
+                              <div>
+                                <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1">Date</p>
+                                <p className="text-sm text-white font-semibold">{event.date_or_year}</p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1">{event.event_type || 'Event'}</p>
+                                <p className="text-sm text-white/70 leading-relaxed">{event.description}</p>
+                                {event.city && <p className="text-xs text-white/40 mt-1">{event.city}</p>}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </section>
+
+                    {/* Step 6 — Summary */}
+                    <section id="testimony-step6">
+                      <h3 className="text-xs uppercase tracking-widest text-[var(--accent-300)] font-bold mb-4 pb-2 border-b border-white/10">
+                        Step 6 — Case Summary
+                      </h3>
+                      <div className="space-y-4">
+                        <ReadOnlyField label="One-Line Summary" value={caseNarratives.one_line_summary} />
+                        <ReadOnlyField label="Full Case Summary" value={caseNarratives.case_summary} tall />
+                      </div>
+                    </section>
+
+                    {/* Step 7 — Impact */}
+                    <section id="testimony-step7">
+                      <h3 className="text-xs uppercase tracking-widest text-[var(--accent-300)] font-bold mb-4 pb-2 border-b border-white/10">
+                        Step 7 — Damages & Impact
+                      </h3>
+                      <div className="space-y-4">
+                        <ReadOnlyField label="Emotional Impact" value={caseNarratives.emotional_impact} tall />
+                        <ReadOnlyField label="Physical Impact" value={caseNarratives.physical_impact} tall />
+                        <ReadOnlyField label="What They Want Understood" value={caseNarratives.wish_understood} tall />
+                      </div>
+                    </section>
+
+                    {/* Step 8 — Evidence */}
+                    <section id="testimony-step8">
+                      <h3 className="text-xs uppercase tracking-widest text-[var(--accent-300)] font-bold mb-4 pb-2 border-b border-white/10">
+                        Step 8 — Evidence Inventory
+                      </h3>
+                      {evidenceInventory.length === 0 ? (
+                        <p className="text-white/30 text-sm italic">No evidence inventory recorded.</p>
+                      ) : (
+                        <div className="space-y-3">
+                          {evidenceInventory.map((item, i) => (
+                            <div key={i} className="bg-white/5 border border-white/10 rounded-md p-4">
+                              <div className="flex items-center gap-3 mb-2">
+                                <span className="text-xs uppercase tracking-widest text-[var(--accent-300)] font-semibold">{item.category}</span>
+                                <span className="text-sm text-white font-medium">{item.label}</span>
+                              </div>
+                              <p className="text-sm text-white/60 leading-relaxed">{item.description}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </section>
+
+                    {/* Step 10 — Legal */}
+                    <section id="testimony-step10">
+                      <h3 className="text-xs uppercase tracking-widest text-[var(--accent-300)] font-bold mb-4 pb-2 border-b border-white/10">
+                        Step 10 — Legal Actions
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <ReadOnlyField label="Police Report Filed" value={caseNarratives.police_report_filed} />
+                        <ReadOnlyField label="Lawyer Consulted" value={caseNarratives.lawyer_consulted} />
+                        <ReadOnlyField label="Court Case Filed" value={caseNarratives.court_case_filed} />
+                        <ReadOnlyField label="Other Victims" value={caseNarratives.other_victims} />
+                      </div>
+                      <div className="space-y-4">
+                        <ReadOnlyField label="Why Filing" value={caseNarratives.why_filing} tall />
+                      </div>
+                    </section>
+
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}

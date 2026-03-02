@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node -e \"const {execSync,spawnSync}=require('child_process');try{const r=execSync('netstat -ano').toString();const m=r.match(/TCP.*:3000.*LISTENING.*?(\\d+)/);if(m)spawnSync('taskkill',['/F','/PID',m[1]],{stdio:'ignore'})}catch{}try{require('fs').rmSync('.next/dev',{recursive:true,force:true})}catch{}\"",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -20,6 +21,8 @@
     "radix-ui": "^1.4.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {

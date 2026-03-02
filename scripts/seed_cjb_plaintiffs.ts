@@ -66,8 +66,8 @@ const PLAINTIFFS = [
   {
     email: 'kellycai600@gmail.com',
     password: 'Changeme123!',
-    full_name: 'Kelly Smith',
-    display_name: 'Kelly Smith',
+    full_name: 'Kelly Cai',
+    display_name: 'Kelly Cai',
   },
   {
     email: 'slorelle02@gmail.com',
@@ -1238,7 +1238,7 @@ async function seed() {
 
   const caseDataFns = [
     { fn: getMattCase, userId: mattId, name: 'Matt Campbell' },
-    { fn: getKellyCase, userId: kellyId, name: 'Kelly Smith' },
+    { fn: getKellyCase, userId: kellyId, name: 'Kelly Cai' },
     { fn: getLorellCase, userId: lorelleId, name: 'Lorelle Smith' },
   ]
 
