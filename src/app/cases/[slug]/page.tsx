@@ -109,19 +109,16 @@ export default async function CaseDetailPage({ params }: PageProps) {
   const minYear = years.length > 0 ? Math.min(...years) : null
   const maxYear = years.length > 0 ? Math.max(...years) : null
 
-  // Extract unique locations from timeline
+  // Extract all locations from timeline — preserve each event location even if same city name
+  // (different coordinates represent different specific locations within that city)
   const locations = sortedTimeline
     .filter((t: any) => t.city)
-    .reduce((acc: any[], t: any) => {
-      if (!acc.find(l => l.name === t.city)) {
-        acc.push({
-          name: t.city,
-          date: t.date_or_year,
-          description: t.description,
-        })
-      }
-      return acc
-    }, [])
+    .map((t: any) => ({
+      name: t.city,
+      date: t.date_or_year,
+      description: t.description,
+      coordinates: t.latitude && t.longitude ? [t.longitude, t.latitude] : undefined,
+    }))
 
   // Build testimony fields for the modal
   const testimonyFields = [
