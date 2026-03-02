@@ -309,7 +309,7 @@ export function LocationMap({ locations }: LocationMapProps) {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: '-80px' }}
-      className="px-6 pt-[8px] pb-[64px]"
+      className="px-6 pt-[8px] pb-[200px]"
     >
       <div className="max-w-[1340px] mx-auto">
         <h2 className="text-[38px] font-semibold mb-2 text-white">Fraud Trail</h2>
