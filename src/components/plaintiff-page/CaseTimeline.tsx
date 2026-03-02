@@ -51,7 +51,7 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
         <div
           ref={scrollRef}
           style={{ overflowX: 'auto', overflowY: 'hidden' }}
-          className="w-full pb-6 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20"
+          className="w-full pb-6 mb-[60px] scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20"
         >
           <div
             style={{ minWidth: `${events.length * 240}px` }}
