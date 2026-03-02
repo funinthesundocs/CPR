@@ -997,13 +997,15 @@ export function CasePlaintiffForm({ editMode }: Props) {
                             <div className="border-t pt-4">
                                 <p className="text-base font-medium mb-6">{t('wizard.evidenceCustomEntries')}</p>
                                 {/* Column Headers */}
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 px-4 mb-2">
+                                <div className="hidden sm:grid gap-3 px-4 mb-2" style={{ gridTemplateColumns: '25% 15% 60%' }}>
                                     <p className="text-sm font-semibold text-muted-foreground">Name / Title</p>
                                     <p className="text-sm font-semibold text-muted-foreground">Type</p>
                                     <p className="text-sm font-semibold text-muted-foreground">Description & Files</p>
                                 </div>
                                 {form.evidence_descriptions.map((ev, idx) => (
-                                    <div key={idx} className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 rounded-lg border bg-muted/20 mb-3">
+                                    <div key={idx} className="p-4 rounded-lg border bg-muted/20 mb-3">
+                                      {/* Mobile Layout */}
+                                      <div className="grid grid-cols-1 gap-3 sm:hidden">
                                         <Input placeholder={t('wizard.evidenceLabel')} value={ev.label} onChange={e => {
                                             const descs = [...form.evidence_descriptions]; descs[idx] = { ...descs[idx], label: e.target.value }; updateForm({ evidence_descriptions: descs })
                                         }} />
@@ -1041,6 +1043,48 @@ export function CasePlaintiffForm({ editMode }: Props) {
                                                 <Button variant="ghost" size="sm" className="text-destructive shrink-0" onClick={() => updateForm({ evidence_descriptions: form.evidence_descriptions.filter((_, i) => i !== idx) })}>X</Button>
                                             </div>
                                         </div>
+                                      </div>
+
+                                      {/* Desktop Layout */}
+                                      <div className="hidden sm:grid gap-3" style={{ gridTemplateColumns: '25% 15% 60%' }}>
+                                        <Input placeholder={t('wizard.evidenceLabel')} value={ev.label} onChange={e => {
+                                            const descs = [...form.evidence_descriptions]; descs[idx] = { ...descs[idx], label: e.target.value }; updateForm({ evidence_descriptions: descs })
+                                        }} />
+                                        <Select value={ev.category} onValueChange={v => {
+                                            const descs = [...form.evidence_descriptions]; descs[idx] = { ...descs[idx], category: v }; updateForm({ evidence_descriptions: descs })
+                                        }}>
+                                            <SelectTrigger className="w-full"><SelectValue placeholder={t('wizard.evidenceCategory')} /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="document">{t('wizard.catDocument')}</SelectItem>
+                                                <SelectItem value="photo">{t('wizard.catPhoto')}</SelectItem>
+                                                <SelectItem value="video">{t('wizard.catVideo')}</SelectItem>
+                                                <SelectItem value="audio">{t('wizard.catAudio')}</SelectItem>
+                                                <SelectItem value="communication">{t('wizard.catCommunication')}</SelectItem>
+                                                <SelectItem value="financial">{t('wizard.catFinancial')}</SelectItem>
+                                                <SelectItem value="other">{t('wizard.catOther')}</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <div className="space-y-2">
+                                            <Input placeholder={t('wizard.evidenceDescription')} value={ev.description} onChange={e => {
+                                                const descs = [...form.evidence_descriptions]; descs[idx] = { ...descs[idx], description: e.target.value }; updateForm({ evidence_descriptions: descs })
+                                            }} />
+                                            <div className="flex gap-2">
+                                                <div className="flex-1">
+                                                    <label className="flex items-center gap-2 px-3 py-2 rounded border border-muted-foreground/30 cursor-pointer hover:bg-muted/30 transition-colors text-sm">
+                                                        <span>📎</span>
+                                                        <span className="text-xs">{ev.file_name ? `✓ ${ev.file_name}` : 'Attach file'}</span>
+                                                        <input type="file" className="hidden" onChange={e => {
+                                                            const file = e.target.files?.[0]
+                                                            if (file) {
+                                                                handleFileUpload(file, idx)
+                                                            }
+                                                        }} accept="*/*" />
+                                                    </label>
+                                                </div>
+                                                <Button variant="ghost" size="sm" className="text-destructive shrink-0" onClick={() => updateForm({ evidence_descriptions: form.evidence_descriptions.filter((_, i) => i !== idx) })}>X</Button>
+                                            </div>
+                                        </div>
+                                      </div>
                                     </div>
                                 ))}
                                 <Button variant="outline" size="sm" onClick={() => updateForm({ evidence_descriptions: [...form.evidence_descriptions, { label: '', description: '', category: '' }] })}>
