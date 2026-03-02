@@ -117,7 +117,7 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
             <span className="mt-3 text-[20px] font-bold tracking-[0.05em] uppercase text-[var(--accent-300)]">
               Plaintiff
             </span>
-            <span className="mt-1 text-[24px] font-bold text-white">
+            <span className="mt-1 text-[28px] font-bold text-white">
               {plaintiffName}
             </span>
           </div>
