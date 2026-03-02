@@ -69,33 +69,68 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
 
         {/* Show declared inventory (from case form) even if not uploaded yet */}
         {hasInventory && (
-          <div className="space-y-3">
-            <h3 className="font-bold uppercase tracking-widest text-[var(--accent-300)] mb-4 text-center" style={{ fontSize: '18px' }}>
+          <div>
+            <h3 className="font-bold uppercase tracking-widest text-[var(--accent-300)] mb-8 text-center" style={{ fontSize: '18px' }}>
               Declared Evidence Inventory
             </h3>
-            {evidenceInventory.map((item, i) => {
-              const category = CATEGORY_LABELS[item.category] || item.category
-              return (
-                <div
-                  key={i}
-                  className="border border-white/10 rounded-lg p-4 flex gap-4"
-                  style={{ backgroundColor: 'oklch(0.205 0 0 / 0.8)' }}
-                >
-                  <div className="shrink-0 w-10 h-10 rounded-md bg-[var(--accent-700)]/40 flex items-center justify-center">
-                    <ShieldExclamationIcon className="h-5 w-5 text-[var(--accent-300)]" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="text-white font-medium" style={{ fontSize: '18px' }}>{item.label}</p>
-                      <span className="px-2 py-0.5 rounded-full bg-white/10 text-white/50" style={{ fontSize: '18px' }}>
-                        {category}
-                      </span>
+            <div className="flex gap-8">
+              {/* Left column */}
+              <div className="flex-1 space-y-3">
+                {evidenceInventory.slice(0, Math.ceil(evidenceInventory.length / 2)).map((item, i) => {
+                  const category = CATEGORY_LABELS[item.category] || item.category
+                  return (
+                    <div
+                      key={i}
+                      className="border border-white/10 rounded-lg p-4 flex gap-4"
+                      style={{ backgroundColor: 'oklch(0.205 0 0 / 0.8)' }}
+                    >
+                      <div className="shrink-0 w-10 h-10 rounded-md bg-[var(--accent-700)]/40 flex items-center justify-center">
+                        <ShieldExclamationIcon className="h-5 w-5 text-[var(--accent-300)]" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="text-white font-medium" style={{ fontSize: '18px' }}>{item.label}</p>
+                          <span className="px-2 py-0.5 rounded-full bg-white/10 text-white/50" style={{ fontSize: '18px' }}>
+                            {category}
+                          </span>
+                        </div>
+                        <p className="text-white/50 leading-relaxed" style={{ fontSize: '18px' }}>{item.description}</p>
+                      </div>
                     </div>
-                    <p className="text-white/50 leading-relaxed" style={{ fontSize: '18px' }}>{item.description}</p>
-                  </div>
-                </div>
-              )
-            })}
+                  )
+                })}
+              </div>
+
+              {/* Vertical divider */}
+              <div className="w-px bg-white" />
+
+              {/* Right column */}
+              <div className="flex-1 space-y-3">
+                {evidenceInventory.slice(Math.ceil(evidenceInventory.length / 2)).map((item, i) => {
+                  const category = CATEGORY_LABELS[item.category] || item.category
+                  return (
+                    <div
+                      key={i}
+                      className="border border-white/10 rounded-lg p-4 flex gap-4"
+                      style={{ backgroundColor: 'oklch(0.205 0 0 / 0.8)' }}
+                    >
+                      <div className="shrink-0 w-10 h-10 rounded-md bg-[var(--accent-700)]/40 flex items-center justify-center">
+                        <ShieldExclamationIcon className="h-5 w-5 text-[var(--accent-300)]" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="text-white font-medium" style={{ fontSize: '18px' }}>{item.label}</p>
+                          <span className="px-2 py-0.5 rounded-full bg-white/10 text-white/50" style={{ fontSize: '18px' }}>
+                            {category}
+                          </span>
+                        </div>
+                        <p className="text-white/50 leading-relaxed" style={{ fontSize: '18px' }}>{item.description}</p>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
           </div>
         )}
 
