@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { VoiceTextInput } from '@/components/voice/VoiceTextInput'
 import { DefendantSearchCombobox } from '@/components/defendant/DefendantSearchCombobox'
@@ -1026,28 +1027,32 @@ export function CasePlaintiffForm({ editMode }: Props) {
                                               <Button variant="ghost" size="sm" className="text-destructive shrink-0" onClick={() => updateForm({ evidence_descriptions: form.evidence_descriptions.filter((_, i) => i !== idx) })}>X</Button>
                                           </div>
                                         </div>
-                                        <Select value={ev.category} onValueChange={v => {
-                                            const descs = [...form.evidence_descriptions]; descs[idx] = { ...descs[idx], category: v }; updateForm({ evidence_descriptions: descs })
-                                        }}>
-                                            <SelectTrigger className="w-full"><SelectValue placeholder={t('wizard.evidenceCategory')} /></SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="document">{t('wizard.catDocument')}</SelectItem>
-                                                <SelectItem value="photo">{t('wizard.catPhoto')}</SelectItem>
-                                                <SelectItem value="video">{t('wizard.catVideo')}</SelectItem>
-                                                <SelectItem value="audio">{t('wizard.catAudio')}</SelectItem>
-                                                <SelectItem value="communication">{t('wizard.catCommunication')}</SelectItem>
-                                                <SelectItem value="financial">{t('wizard.catFinancial')}</SelectItem>
-                                                <SelectItem value="other">{t('wizard.catOther')}</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <Input placeholder={t('wizard.evidenceDescription')} value={ev.description} onChange={e => {
-                                            const descs = [...form.evidence_descriptions]; descs[idx] = { ...descs[idx], description: e.target.value }; updateForm({ evidence_descriptions: descs })
-                                        }} />
+                                        <div className="min-w-0">
+                                          <Select value={ev.category} onValueChange={v => {
+                                              const descs = [...form.evidence_descriptions]; descs[idx] = { ...descs[idx], category: v }; updateForm({ evidence_descriptions: descs })
+                                          }}>
+                                              <SelectTrigger className="w-full"><SelectValue placeholder={t('wizard.evidenceCategory')} /></SelectTrigger>
+                                              <SelectContent>
+                                                  <SelectItem value="document">{t('wizard.catDocument')}</SelectItem>
+                                                  <SelectItem value="photo">{t('wizard.catPhoto')}</SelectItem>
+                                                  <SelectItem value="video">{t('wizard.catVideo')}</SelectItem>
+                                                  <SelectItem value="audio">{t('wizard.catAudio')}</SelectItem>
+                                                  <SelectItem value="communication">{t('wizard.catCommunication')}</SelectItem>
+                                                  <SelectItem value="financial">{t('wizard.catFinancial')}</SelectItem>
+                                                  <SelectItem value="other">{t('wizard.catOther')}</SelectItem>
+                                              </SelectContent>
+                                          </Select>
+                                        </div>
+                                        <div className="min-w-0">
+                                          <Textarea placeholder={t('wizard.evidenceDescription')} value={ev.description} onChange={e => {
+                                              const descs = [...form.evidence_descriptions]; descs[idx] = { ...descs[idx], description: e.target.value }; updateForm({ evidence_descriptions: descs })
+                                          }} className="min-h-[80px] resize-none w-full" />
+                                        </div>
                                       </div>
 
                                       {/* Desktop Layout */}
                                       <div className="hidden sm:grid gap-3" style={{ gridTemplateColumns: '25% 15% 60%' }}>
-                                        <div className="space-y-2">
+                                        <div className="space-y-2 min-w-0">
                                           <Input placeholder={t('wizard.evidenceLabel')} value={ev.label} onChange={e => {
                                               const descs = [...form.evidence_descriptions]; descs[idx] = { ...descs[idx], label: e.target.value }; updateForm({ evidence_descriptions: descs })
                                           }} />
@@ -1067,23 +1072,27 @@ export function CasePlaintiffForm({ editMode }: Props) {
                                               <Button variant="ghost" size="sm" className="text-destructive shrink-0" onClick={() => updateForm({ evidence_descriptions: form.evidence_descriptions.filter((_, i) => i !== idx) })}>X</Button>
                                           </div>
                                         </div>
-                                        <Select value={ev.category} onValueChange={v => {
-                                            const descs = [...form.evidence_descriptions]; descs[idx] = { ...descs[idx], category: v }; updateForm({ evidence_descriptions: descs })
-                                        }}>
-                                            <SelectTrigger className="w-full"><SelectValue placeholder={t('wizard.evidenceCategory')} /></SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="document">{t('wizard.catDocument')}</SelectItem>
-                                                <SelectItem value="photo">{t('wizard.catPhoto')}</SelectItem>
-                                                <SelectItem value="video">{t('wizard.catVideo')}</SelectItem>
-                                                <SelectItem value="audio">{t('wizard.catAudio')}</SelectItem>
-                                                <SelectItem value="communication">{t('wizard.catCommunication')}</SelectItem>
-                                                <SelectItem value="financial">{t('wizard.catFinancial')}</SelectItem>
-                                                <SelectItem value="other">{t('wizard.catOther')}</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <Input placeholder={t('wizard.evidenceDescription')} value={ev.description} onChange={e => {
-                                            const descs = [...form.evidence_descriptions]; descs[idx] = { ...descs[idx], description: e.target.value }; updateForm({ evidence_descriptions: descs })
-                                        }} />
+                                        <div className="min-w-0">
+                                          <Select value={ev.category} onValueChange={v => {
+                                              const descs = [...form.evidence_descriptions]; descs[idx] = { ...descs[idx], category: v }; updateForm({ evidence_descriptions: descs })
+                                          }}>
+                                              <SelectTrigger className="w-full"><SelectValue placeholder={t('wizard.evidenceCategory')} /></SelectTrigger>
+                                              <SelectContent>
+                                                  <SelectItem value="document">{t('wizard.catDocument')}</SelectItem>
+                                                  <SelectItem value="photo">{t('wizard.catPhoto')}</SelectItem>
+                                                  <SelectItem value="video">{t('wizard.catVideo')}</SelectItem>
+                                                  <SelectItem value="audio">{t('wizard.catAudio')}</SelectItem>
+                                                  <SelectItem value="communication">{t('wizard.catCommunication')}</SelectItem>
+                                                  <SelectItem value="financial">{t('wizard.catFinancial')}</SelectItem>
+                                                  <SelectItem value="other">{t('wizard.catOther')}</SelectItem>
+                                              </SelectContent>
+                                          </Select>
+                                        </div>
+                                        <div className="min-w-0">
+                                          <Textarea placeholder={t('wizard.evidenceDescription')} value={ev.description} onChange={e => {
+                                              const descs = [...form.evidence_descriptions]; descs[idx] = { ...descs[idx], description: e.target.value }; updateForm({ evidence_descriptions: descs })
+                                          }} className="min-h-[80px] resize-none w-full" />
+                                        </div>
                                       </div>
                                     </div>
                                 ))}
