@@ -80,8 +80,8 @@ export function MagnifyLens({ imageUrl, alt, className, children }: MagnifyLensP
       {/* Slot for overlays (e.g. audio button) */}
       {children}
 
-      {/* Magnifying glass — only visible while hovering */}
-      {pos && isInside && (
+      {/* Magnifying glass — only visible while hovering (hidden when over button) */}
+      {pos && isInside && !isOverButton && (
         <>
           {/* ── Lens circle (rim + glass) — positioned in container space ── */}
           <div
