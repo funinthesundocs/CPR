@@ -87,14 +87,14 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
                     className={`absolute ${isAbove ? 'bottom-[calc(50%+24px)]' : 'top-[calc(50%+24px)]'} w-52`}
                   >
                     <div className="bg-white/5 border border-white/10 rounded-lg p-3">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--accent-300)] mb-1">
+                      <p className="text-[15px] font-bold uppercase tracking-wider text-[var(--accent-300)] mb-1">
                         {event.date_or_year}
                       </p>
-                      <p className="text-xs text-white/70 leading-relaxed line-clamp-4">
+                      <p className="text-[18px] text-white/70 leading-relaxed line-clamp-4">
                         {event.description}
                       </p>
                       {event.city && (
-                        <p className="flex items-center gap-1 text-[10px] text-white/40 mt-2">
+                        <p className="flex items-center gap-1 text-[15px] text-white/40 mt-2">
                           <MapPinIcon className="h-3 w-3" />
                           {event.city}
                         </p>
