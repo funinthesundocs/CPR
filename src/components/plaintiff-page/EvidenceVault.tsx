@@ -86,14 +86,14 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
               return (
                 <div
                   key={i}
-                  className="border border-white/10 rounded-lg p-4 flex flex-col items-center text-center gap-3"
+                  className="border border-white/10 rounded-lg p-4 flex gap-4"
                   style={{ backgroundColor: 'oklch(0.205 0 0 / 0.8)' }}
                 >
-                  <div className="w-10 h-10 rounded-md bg-[var(--accent-700)]/40 flex items-center justify-center">
+                  <div className="shrink-0 w-10 h-10 rounded-md bg-[var(--accent-700)]/40 flex items-center justify-center">
                     <ShieldExclamationIcon className="h-5 w-5 text-[var(--accent-300)]" />
                   </div>
                   <div className="min-w-0">
-                    <div className="flex items-center justify-center gap-2 mb-1 flex-wrap">
+                    <div className="flex items-center gap-2 mb-1">
                       <p className="text-white font-medium" style={{ fontSize: '18px' }}>{item.label}</p>
                       <span className="px-2 py-0.5 rounded-full bg-white/10 text-white/50" style={{ fontSize: '18px' }}>
                         {category}
