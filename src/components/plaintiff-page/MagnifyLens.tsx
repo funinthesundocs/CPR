@@ -56,12 +56,12 @@ export function MagnifyLens({ imageUrl, alt, className, children }: MagnifyLensP
   const lensLeft = pos ? pos.x - LENS_SIZE / 2 : 0
   const lensTop  = pos ? pos.y - LENS_SIZE / 2 : 0
 
-  // Handle assembly positioning — pivot sits on the outer rim edge at HANDLE_DEG from vertical
-  const rad        = (HANDLE_DEG * Math.PI) / 180
-  const attachX    = LENS_SIZE / 2 + (LENS_SIZE / 2) * Math.sin(rad)   // ~294
-  const attachY    = LENS_SIZE / 2 + (LENS_SIZE / 2) * Math.cos(rad)   // ~307
-  const assemblyLeft = Math.round(attachX - FERRULE_W / 2)              // centres ferrule on attach point
-  const assemblyTop  = Math.round(attachY) - 6                          // 6px overlap into rim for flush join
+  // Handle assembly — positioned in CONTAINER coordinate space so attachment math is unambiguous
+  // Rim edge in container coords = cursor position ± radius along HANDLE_DEG direction
+  const rad          = (HANDLE_DEG * Math.PI) / 180
+  const radius       = LENS_SIZE / 2
+  const handleLeft   = pos ? Math.round(pos.x + radius * Math.sin(rad) - FERRULE_W / 2) : 0
+  const handleTop    = pos ? Math.round(pos.y + radius * Math.cos(rad)) - 6 : 0  // 6px overlap into rim
 
   return (
     <div
@@ -86,111 +86,88 @@ export function MagnifyLens({ imageUrl, alt, className, children }: MagnifyLensP
 
       {/* Magnifying glass — only visible while hovering */}
       {pos && isInside && (
-        <div
-          className="absolute pointer-events-none z-50"
-          style={{ left: lensLeft, top: lensTop, width: LENS_SIZE, height: LENS_SIZE }}
-        >
-          {/* ── Outer rim (metallic ring) ── */}
+        <>
+          {/* ── Lens circle (rim + glass) — positioned in container space ── */}
           <div
-            className="absolute inset-0 rounded-full"
-            style={{
-              background: 'conic-gradient(from 120deg, #e8e8e8, #a0a0a0, #f5f5f5, #888, #e0e0e0, #c0c0c0, #e8e8e8)',
-              padding: 6,
-              boxShadow: '0 10px 40px rgba(0,0,0,0.75), 0 2px 10px rgba(0,0,0,0.5), inset 0 1px 3px rgba(255,255,255,0.3)',
-            }}
+            className="absolute pointer-events-none z-50"
+            style={{ left: lensLeft, top: lensTop, width: LENS_SIZE, height: LENS_SIZE }}
           >
-            {/* ── Lens glass (magnified image) ── */}
+            {/* Outer rim (metallic ring) */}
             <div
-              className="w-full h-full rounded-full overflow-hidden"
+              className="absolute inset-0 rounded-full"
               style={{
-                backgroundImage:    `url(${imageUrl})`,
-                backgroundSize:     `${bgW}px ${bgH}px`,
-                backgroundPosition: `${bgX}px ${bgY}px`,
-                backgroundRepeat:   'no-repeat',
+                background: 'conic-gradient(from 120deg, #e8e8e8, #a0a0a0, #f5f5f5, #888, #e0e0e0, #c0c0c0, #e8e8e8)',
+                padding: 6,
+                boxShadow: '0 10px 40px rgba(0,0,0,0.75), 0 2px 10px rgba(0,0,0,0.5), inset 0 1px 3px rgba(255,255,255,0.3)',
               }}
             >
-              {/* Glass glare overlay */}
+              {/* Lens glass (magnified image) */}
               <div
-                className="absolute inset-0 rounded-full pointer-events-none"
+                className="w-full h-full rounded-full overflow-hidden"
                 style={{
-                  background: 'radial-gradient(ellipse at 32% 28%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.06) 45%, transparent 70%)',
+                  backgroundImage:    `url(${imageUrl})`,
+                  backgroundSize:     `${bgW}px ${bgH}px`,
+                  backgroundPosition: `${bgX}px ${bgY}px`,
+                  backgroundRepeat:   'no-repeat',
                 }}
-              />
-              {/* Subtle edge vignette for depth */}
-              <div
-                className="absolute inset-0 rounded-full pointer-events-none"
-                style={{
-                  boxShadow: 'inset 0 0 20px rgba(0,0,0,0.25)',
-                }}
-              />
+              >
+                {/* Glass glare overlay */}
+                <div
+                  className="absolute inset-0 rounded-full pointer-events-none"
+                  style={{
+                    background: 'radial-gradient(ellipse at 32% 28%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.06) 45%, transparent 70%)',
+                  }}
+                />
+                {/* Subtle edge vignette for depth */}
+                <div
+                  className="absolute inset-0 rounded-full pointer-events-none"
+                  style={{ boxShadow: 'inset 0 0 20px rgba(0,0,0,0.25)' }}
+                />
+              </div>
             </div>
           </div>
 
-          {/* ── Handle assembly (ferrule + grip) ── */}
+          {/* ── Handle assembly — sibling in container space, pivot exactly on rim edge ── */}
           <div
-            className="absolute flex flex-col items-center"
+            className="absolute pointer-events-none z-49 flex flex-col items-center"
             style={{
-              width:  FERRULE_W,
-              top:    assemblyTop,
-              left:   assemblyLeft,
+              width:           FERRULE_W,
+              top:             handleTop,
+              left:            handleLeft,
               transformOrigin: `${FERRULE_W / 2}px 0px`,
-              transform: `rotate(${HANDLE_DEG}deg)`,
+              transform:       `rotate(${HANDLE_DEG}deg)`,
             }}
           >
-            {/* Ferrule — metallic collar connecting handle to rim */}
+            {/* Ferrule — metallic collar */}
             <div
               style={{
-                width:  FERRULE_W,
-                height: FERRULE_H,
-                flexShrink: 0,
+                width:        FERRULE_W,
+                height:       FERRULE_H,
+                flexShrink:   0,
                 borderRadius: '4px 4px 2px 2px',
-                background: 'linear-gradient(to right, #5a5a5a 0%, #d8d8d8 28%, #f2f2f2 50%, #c0c0c0 72%, #5a5a5a 100%)',
-                boxShadow: '0 3px 8px rgba(0,0,0,0.65), inset 0 1px 2px rgba(255,255,255,0.4)',
+                background:   'linear-gradient(to right, #5a5a5a 0%, #d8d8d8 28%, #f2f2f2 50%, #c0c0c0 72%, #5a5a5a 100%)',
+                boxShadow:    '0 3px 8px rgba(0,0,0,0.65), inset 0 1px 2px rgba(255,255,255,0.4)',
               }}
             />
-
             {/* Handle body — dark rubber grip */}
             <div
               style={{
-                width:    HANDLE_W,
-                height:   HANDLE_H,
-                flexShrink: 0,
+                width:        HANDLE_W,
+                height:       HANDLE_H,
+                flexShrink:   0,
                 borderRadius: `2px 2px ${HANDLE_W / 2}px ${HANDLE_W / 2}px`,
-                background: 'linear-gradient(to right, #0a0a0a 0%, #282828 38%, #181818 62%, #0a0a0a 100%)',
-                boxShadow: '3px 6px 20px rgba(0,0,0,0.9)',
-                position: 'relative',
-                overflow: 'hidden',
+                background:   'linear-gradient(to right, #0a0a0a 0%, #282828 38%, #181818 62%, #0a0a0a 100%)',
+                boxShadow:    '3px 6px 20px rgba(0,0,0,0.9)',
+                position:     'relative',
+                overflow:     'hidden',
               }}
             >
-              {/* Rubber grip ridges — fine repeating texture */}
-              <div
-                style={{
-                  position: 'absolute', inset: 0,
-                  background: 'repeating-linear-gradient(0deg, transparent 0px, transparent 5px, rgba(255,255,255,0.04) 5px, rgba(255,255,255,0.04) 7px)',
-                }}
-              />
-              {/* Left highlight edge — gives handle 3D roundness */}
-              <div
-                style={{
-                  position: 'absolute',
-                  left: 2, top: '4%', bottom: '18%', width: 2,
-                  background: 'linear-gradient(to bottom, rgba(255,255,255,0.2), rgba(255,255,255,0.06), transparent)',
-                  borderRadius: 1,
-                }}
-              />
-              {/* Tip taper ring — end of handle */}
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: 8, left: 1, right: 1,
-                  height: 6,
-                  background: 'linear-gradient(to right, #111, #3a3a3a, #111)',
-                  borderRadius: 3,
-                }}
-              />
+              <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(0deg, transparent 0px, transparent 5px, rgba(255,255,255,0.04) 5px, rgba(255,255,255,0.04) 7px)' }} />
+              <div style={{ position: 'absolute', left: 2, top: '4%', bottom: '18%', width: 2, background: 'linear-gradient(to bottom, rgba(255,255,255,0.2), rgba(255,255,255,0.06), transparent)', borderRadius: 1 }} />
+              <div style={{ position: 'absolute', bottom: 8, left: 1, right: 1, height: 6, background: 'linear-gradient(to right, #111, #3a3a3a, #111)', borderRadius: 3 }} />
             </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   )
