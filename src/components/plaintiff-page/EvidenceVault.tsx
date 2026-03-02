@@ -67,7 +67,7 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
         {hasUploaded && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
             {evidence.map((item: any) => (
-              <div key={item.id} className="bg-white/5 border border-white/10 rounded-lg p-4">
+              <div key={item.id} className="bg-white/20 border border-white/10 rounded-lg p-4">
                 <DocumentTextIcon className="h-8 w-8 text-[var(--accent-500)] mb-2" />
                 <p className="text-xs text-white/70 font-medium">{item.title || item.file_name}</p>
               </div>
@@ -86,7 +86,7 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
               return (
                 <div
                   key={i}
-                  className="bg-white/5 border border-white/10 rounded-lg p-4 flex gap-4"
+                  className="bg-white/20 border border-white/10 rounded-lg p-4 flex gap-4"
                 >
                   <div className="shrink-0 w-10 h-10 rounded-md bg-[var(--accent-700)]/40 flex items-center justify-center">
                     <ShieldExclamationIcon className="h-5 w-5 text-[var(--accent-300)]" />
