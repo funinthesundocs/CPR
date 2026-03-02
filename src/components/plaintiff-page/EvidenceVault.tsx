@@ -49,8 +49,8 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
           backgroundRepeat: 'no-repeat',
         }}
       />
-      {/* Sidebar-color overlay */}
-      <div className="absolute inset-0 z-0" style={{ backgroundColor: 'var(--sidebar)', opacity: 0.85 }} />
+      {/* Dark overlay for readability */}
+      <div className="absolute inset-0 z-0 bg-black/70" />
 
       <div className="relative z-10 max-w-[1340px] mx-auto">
         <h2 className="text-[38px] font-semibold text-white mb-2">Evidence Vault</h2>
