@@ -31,28 +31,28 @@ export function StoryInfographic({ infographicUrl, infographic2Url, audioUrl, ca
         viewport={{ once: true, margin: '-80px' }}
         className="pt-0 pb-12 px-8 bg-gradient-to-b from-black to-[var(--accent-900)]"
       >
-        <div className="max-w-[1340px] mx-auto">
+        <div className="max-w-[1340px] mx-auto flex flex-col items-center gap-6">
+          {/* Audio button above infographic */}
+          {audioUrl && (
+            <button
+              onClick={() => setPlayerOpen(true)}
+              className="flex items-center gap-2 px-4 py-2
+                         bg-blue-600 hover:bg-blue-500 text-white rounded-full
+                         text-sm font-medium transition-all backdrop-blur-sm
+                         border border-blue-400 shadow-lg pointer-events-auto cursor-pointer"
+              style={{
+                boxShadow: '0 0 20px 4px rgba(59, 130, 246, 0.6), 0 0 40px 8px rgba(59, 130, 246, 0.3)'
+              }}
+            >
+              <PlayCircleIcon className="h-5 w-5" />
+              Listen to Case Summary
+            </button>
+          )}
+
           <MagnifyLens
             imageUrl={activeImage === 'primary' ? infographicUrl : (infographic2Url || infographicUrl)}
             alt="Case Infographic"
-          >
-            {/* Audio button overlay */}
-            {audioUrl && (
-              <button
-                onClick={() => setPlayerOpen(true)}
-                className="absolute top-4 left-4 flex items-center gap-2 px-4 py-2
-                           bg-blue-600 hover:bg-blue-500 text-white rounded-full
-                           text-sm font-medium transition-all backdrop-blur-sm z-50
-                           border border-blue-400 shadow-lg pointer-events-auto cursor-pointer"
-                style={{
-                  boxShadow: '0 0 20px 4px rgba(59, 130, 246, 0.6), 0 0 40px 8px rgba(59, 130, 246, 0.3)'
-                }}
-              >
-                <PlayCircleIcon className="h-5 w-5" />
-                Listen to Case Summary
-              </button>
-            )}
-          </MagnifyLens>
+          />
         </div>
       </motion.section>
 
