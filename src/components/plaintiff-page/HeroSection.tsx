@@ -59,34 +59,40 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
         transition={slideTransition}
       >
         <div
-          className="w-full h-full flex flex-col items-center justify-center"
+          className="w-full h-full flex flex-col items-center justify-center relative"
           style={{
-            background: `linear-gradient(135deg, var(--accent-700) 0%, var(--accent-900) 100%)`
+            backgroundImage: 'url(/Firefighter1.jpg)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
           }}
         >
-          <motion.div
-            animate={{
-              boxShadow: [
-                '0 0 8px 2px rgb(1,143,46)',
-                '0 0 24px 8px rgb(1,143,46)',
-                '0 0 8px 2px rgb(1,143,46)',
-              ],
-            }}
-            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' as const, delay: 0.8 }}
-            className="w-[140px] h-[140px] md:w-[200px] md:h-[200px] rounded-full overflow-hidden border-2 border-green-500"
-          >
-            {plaintiffPhoto ? (
-              <img src={plaintiffPhoto} alt={plaintiffName} className="w-full h-full object-cover" />
-            ) : (
-              <AvatarPlaceholder label={plaintiffName} className="from-[var(--accent-900)] to-black" />
-            )}
-          </motion.div>
-          <span className="mt-3 text-[20px] font-bold tracking-[0.05em] uppercase text-[var(--accent-300)]">
-            Plaintiff
-          </span>
-          <span className="mt-1 text-[24px] font-bold text-white">
-            {plaintiffName}
-          </span>
+          {/* Dark overlay for text readability */}
+          <div className="absolute inset-0 bg-black/50" />
+          <div className="relative z-10 flex flex-col items-center justify-center">
+            <motion.div
+              animate={{
+                boxShadow: [
+                  '0 0 8px 2px rgb(1,143,46)',
+                  '0 0 24px 8px rgb(1,143,46)',
+                  '0 0 8px 2px rgb(1,143,46)',
+                ],
+              }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' as const, delay: 0.8 }}
+              className="w-[140px] h-[140px] md:w-[200px] md:h-[200px] rounded-full overflow-hidden border-2 border-green-500"
+            >
+              {plaintiffPhoto ? (
+                <img src={plaintiffPhoto} alt={plaintiffName} className="w-full h-full object-cover" />
+              ) : (
+                <AvatarPlaceholder label={plaintiffName} className="from-[var(--accent-900)] to-black" />
+              )}
+            </motion.div>
+            <span className="mt-3 text-[20px] font-bold tracking-[0.05em] uppercase text-[var(--accent-300)]">
+              Plaintiff
+            </span>
+            <span className="mt-1 text-[24px] font-bold text-white">
+              {plaintiffName}
+            </span>
+          </div>
         </div>
       </motion.div>
 
@@ -98,34 +104,40 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
         transition={slideTransition}
       >
         <div
-          className="w-full h-full flex flex-col items-center justify-center"
+          className="w-full h-full flex flex-col items-center justify-center relative"
           style={{
-            background: `linear-gradient(225deg, var(--accent-700) 0%, var(--accent-900) 100%)`
+            backgroundImage: 'url(/Firefighter2.jpg)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
           }}
         >
-          <motion.div
-            animate={{
-              boxShadow: [
-                '0 0 8px 2px rgb(220,38,38)',
-                '0 0 24px 8px rgb(220,38,38)',
-                '0 0 8px 2px rgb(220,38,38)',
-              ],
-            }}
-            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' as const, delay: 0.8 }}
-            className="w-[140px] h-[140px] md:w-[200px] md:h-[200px] rounded-full overflow-hidden border-2 border-red-600"
-          >
-            {defendantPhoto ? (
-              <img src={defendantPhoto} alt={defendantName} className="w-full h-full object-cover" />
-            ) : (
-              <AvatarPlaceholder label={defendantName} className="from-[var(--accent-900)] to-black" />
-            )}
-          </motion.div>
-          <span className="mt-3 text-[20px] font-bold tracking-[0.05em] uppercase text-[var(--accent-300)] opacity-70">
-            Defendant
-          </span>
-          <span className="mt-1 text-[24px] font-bold text-white/70">
-            {defendantName}
-          </span>
+          {/* Dark overlay for text readability */}
+          <div className="absolute inset-0 bg-black/50" />
+          <div className="relative z-10 flex flex-col items-center justify-center">
+            <motion.div
+              animate={{
+                boxShadow: [
+                  '0 0 8px 2px rgb(220,38,38)',
+                  '0 0 24px 8px rgb(220,38,38)',
+                  '0 0 8px 2px rgb(220,38,38)',
+                ],
+              }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' as const, delay: 0.8 }}
+              className="w-[140px] h-[140px] md:w-[200px] md:h-[200px] rounded-full overflow-hidden border-2 border-red-600"
+            >
+              {defendantPhoto ? (
+                <img src={defendantPhoto} alt={defendantName} className="w-full h-full object-cover" />
+              ) : (
+                <AvatarPlaceholder label={defendantName} className="from-[var(--accent-900)] to-black" />
+              )}
+            </motion.div>
+            <span className="mt-3 text-[20px] font-bold tracking-[0.05em] uppercase text-[var(--accent-300)] opacity-70">
+              Defendant
+            </span>
+            <span className="mt-1 text-[24px] font-bold text-white/70">
+              {defendantName}
+            </span>
+          </div>
         </div>
       </motion.div>
 
