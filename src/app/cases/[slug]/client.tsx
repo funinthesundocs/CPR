@@ -130,24 +130,24 @@ export function PlaintiffPageClient(props: PlaintiffPageClientProps) {
         {/* SECTION 07 — Case Timeline */}
         <CaseTimeline events={props.timeline} />
 
-        {/* SECTION 08 — Mind Map / Case Network */}
-        <MindMapSection mindMapData={props.mindMapData} />
-
-        {/* SECTION 09 — Location Map / Fraud Trail */}
+        {/* SECTION 08 — Location Map / Fraud Trail */}
         <LocationMap locations={props.locations} />
 
-        {/* SECTION 10 — Evidence Vault */}
+        {/* SECTION 09 — Evidence Vault */}
         <EvidenceVault
           evidence={props.evidence}
           evidenceInventory={props.evidenceInventory}
         />
 
-        {/* SECTION 11 — Inline Voting */}
+        {/* SECTION 10 — Inline Voting */}
         <InlineVoting
           caseId={props.caseId}
           votingOpen={props.votingOpen}
           status={props.status}
         />
+
+        {/* SECTION 11 — Mind Map / Case Network */}
+        <MindMapSection mindMapData={props.mindMapData} />
 
         {/* Footer spacer */}
         <div className="h-32" />
