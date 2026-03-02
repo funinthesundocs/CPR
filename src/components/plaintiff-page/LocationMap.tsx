@@ -69,7 +69,8 @@ interface LocationMapProps {
 function MapCanvas({ resolvedPoints }: { resolvedPoints: ResolvedPoint[] }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef       = useRef<any>(null)
-  const [loaded, setLoaded] = useState(false)
+  const [loaded, setLoaded]     = useState(false)
+  const [mapError, setMapError] = useState(false)
 
   useEffect(() => {
     if (!containerRef.current || resolvedPoints.length === 0 || mapRef.current) return
@@ -158,12 +159,27 @@ function MapCanvas({ resolvedPoints }: { resolvedPoints: ResolvedPoint[] }) {
       })
     }
 
-    init().catch(console.error)
+    init().catch(err => {
+      console.warn('MapLibre initialization failed (WebGL unavailable):', err)
+      setMapError(true)
+    })
 
     return () => {
       if (mapRef.current) { mapRef.current.remove(); mapRef.current = null }
     }
   }, [resolvedPoints])
+
+  if (mapError) {
+    return (
+      <div className="rounded-xl border border-white/10 bg-white/5 flex items-center justify-center" style={{ height: 200 }}>
+        <div className="text-center">
+          <MapPinIcon className="h-8 w-8 text-indigo-400/50 mx-auto mb-2" />
+          <p className="text-sm text-white/40">Interactive map unavailable in this browser</p>
+          <p className="text-xs text-white/25 mt-1">WebGL is disabled — see location cards below</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="relative rounded-xl overflow-hidden" style={{ height: 500 }}>
