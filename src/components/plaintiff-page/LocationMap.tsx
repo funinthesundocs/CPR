@@ -260,7 +260,7 @@ export function LocationMap({ locations }: LocationMapProps) {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: '-80px' }}
-      className="py-16 px-6 -mt-[200px]"
+      className="py-16 px-6 mt-[50px]"
     >
       <div className="max-w-[1340px] mx-auto">
         <h2 className="text-[38px] font-semibold mb-2 text-white">Fraud Trail</h2>
