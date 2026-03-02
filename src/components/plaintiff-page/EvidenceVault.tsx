@@ -78,7 +78,7 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
         {/* Show declared inventory (from case form) even if not uploaded yet */}
         {hasInventory && (
           <div className="space-y-3">
-            <h3 className="font-bold uppercase tracking-widest text-[var(--accent-300)] mb-4" style={{ fontSize: '20px' }}>
+            <h3 className="font-bold uppercase tracking-widest text-[var(--accent-300)] mb-4" style={{ fontSize: '18px' }}>
               Declared Evidence Inventory
             </h3>
             {evidenceInventory.map((item, i) => {
@@ -94,12 +94,12 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="text-white font-medium" style={{ fontSize: '20px' }}>{item.label}</p>
-                      <span className="px-2 py-0.5 rounded-full bg-white/10 text-white/50" style={{ fontSize: '20px' }}>
+                      <p className="text-white font-medium" style={{ fontSize: '18px' }}>{item.label}</p>
+                      <span className="px-2 py-0.5 rounded-full bg-white/10 text-white/50" style={{ fontSize: '18px' }}>
                         {category}
                       </span>
                     </div>
-                    <p className="text-white/50 leading-relaxed" style={{ fontSize: '20px' }}>{item.description}</p>
+                    <p className="text-white/50 leading-relaxed" style={{ fontSize: '18px' }}>{item.description}</p>
                   </div>
                 </div>
               )
