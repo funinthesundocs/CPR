@@ -846,7 +846,7 @@ export function CasePlaintiffForm({ editMode }: Props) {
                                             <label className="text-sm font-medium block mb-1">Event</label>
                                             <textarea placeholder={t('wizard.whatHappenedShort')} value={event.event} onChange={e => {
                                                 const events = [...form.timeline_events]; events[idx] = { ...events[idx], event: e.target.value }; updateForm({ timeline_events: events })
-                                            }} rows={2} className="w-full px-3 py-2 border rounded-md bg-background text-foreground text-sm resize-none" />
+                                            }} rows={3} className="w-full px-3 py-2 border rounded-md bg-muted text-foreground text-sm resize-none" />
                                         </div>
                                         <div>
                                             <label className="text-sm font-medium block mb-1">Location</label>
