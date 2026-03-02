@@ -58,7 +58,7 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
         >
           <div
             style={{ minWidth: `${events.length * 240}px` }}
-            className="relative flex items-center px-12 py-24"
+            className="relative flex items-center px-12 py-48"
           >
             {/* Timeline spine */}
             <div className="absolute left-0 right-0 top-1/2 h-0.5 bg-[var(--accent-500)]/50" />
