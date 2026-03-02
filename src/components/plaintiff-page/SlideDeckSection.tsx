@@ -44,7 +44,7 @@ export function SlideDeckSection({ pdfUrl }: SlideDeckSectionProps) {
       >
         <div className="max-w-[1340px] mx-auto">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-2xl font-semibold text-white">Case Slide Deck</h2>
+            <h2 className="text-[38px] font-semibold text-white">Case Slide Deck</h2>
             <button
               onClick={() => setFullscreen(true)}
               className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium bg-white/10 text-white/70 hover:bg-white/20 transition-colors"

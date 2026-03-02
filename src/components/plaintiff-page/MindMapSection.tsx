@@ -94,7 +94,7 @@ export function MindMapSection({ mindMapData }: MindMapSectionProps) {
       ref={ref}
     >
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-2xl font-semibold mb-2 text-white">Case Network</h2>
+        <h2 className="text-[38px] font-semibold mb-2 text-white">Case Network</h2>
         <p className="text-sm text-white/40 mb-8">
           {mindMapData.nodes.length} entities, {mindMapData.links.length} connections
         </p>

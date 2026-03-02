@@ -66,7 +66,7 @@ export function CaseSummaryModule({ notebookSummary, briefingDocContent, testimo
       >
         <div className="max-w-[1340px] mx-auto bg-white/5 border border-white/10 rounded-lg p-8 pb-0">
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-semibold text-white">Case Summary</h2>
+            <h2 className="text-[38px] font-semibold text-white">Case Summary</h2>
             <div className="flex flex-wrap gap-3">
               <button
                 onClick={() => { setActiveTab('analysis'); setModalOpen(true) }}

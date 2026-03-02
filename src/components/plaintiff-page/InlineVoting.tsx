@@ -30,7 +30,7 @@ export function InlineVoting({ caseId, votingOpen, status }: InlineVotingProps) 
       >
         <div className="max-w-2xl mx-auto bg-white/5 border border-white/10 rounded-xl p-8 text-center">
           <LockClosedIcon className="h-8 w-8 text-white/30 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-white mb-2">Voting Not Yet Open</h2>
+          <h2 className="text-[38px] font-semibold text-white mb-2">Voting Not Yet Open</h2>
           <p className="text-sm text-white/50">
             Voting will open when this case enters the judgment phase.
             Current status: <span className="text-[var(--accent-300)] font-medium">{status}</span>
@@ -49,7 +49,7 @@ export function InlineVoting({ caseId, votingOpen, status }: InlineVotingProps) 
       className="py-16 px-6"
     >
       <div className="max-w-2xl mx-auto bg-white/5 border border-white/10 rounded-xl p-8">
-        <h2 className="text-2xl font-semibold mb-2 text-white">Your Verdict</h2>
+        <h2 className="text-[38px] font-semibold mb-2 text-white">Your Verdict</h2>
         <p className="text-sm text-white/50 mb-8">
           Your gut instinct is captured once and locked forever.
           You can update your considered verdict at any time.

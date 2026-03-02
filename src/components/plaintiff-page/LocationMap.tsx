@@ -31,7 +31,7 @@ export function LocationMap({ locations }: LocationMapProps) {
       className="py-16 px-6 bg-gradient-to-b from-transparent to-[var(--accent-900)]/30"
     >
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-2xl font-semibold mb-2 text-white">Fraud Trail</h2>
+        <h2 className="text-[38px] font-semibold mb-2 text-white">Fraud Trail</h2>
         <p className="text-sm text-white/40 mb-8">
           Tracking the path of deception across {locations.length} locations
         </p>

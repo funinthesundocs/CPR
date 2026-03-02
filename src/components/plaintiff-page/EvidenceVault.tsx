@@ -40,7 +40,7 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
       className="py-16 px-6"
     >
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-2xl font-semibold mb-2 text-white">Evidence Vault</h2>
+        <h2 className="text-[38px] font-semibold mb-2 text-white">Evidence Vault</h2>
         <p className="text-sm text-white/40 mb-8">
           {hasUploaded
             ? `${evidence.length} files on record`
