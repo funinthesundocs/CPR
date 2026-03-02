@@ -44,10 +44,7 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
       viewport={{ once: true, margin: '-80px' }}
       className="py-16"
     >
-      <h2 className="text-2xl font-semibold mb-2 px-6 text-white max-w-4xl mx-auto">Case Timeline</h2>
-      <p className="text-sm text-white/40 mb-8 px-6 max-w-4xl mx-auto">
-        {events.length} documented events — scroll horizontally to explore
-      </p>
+      <h2 className="text-2xl font-semibold mb-8 px-6 text-white max-w-[1340px] mx-auto">Case Timeline</h2>
 
       {/* ISOLATION CONTAINER — no position:sticky, no z-index, no overflow:visible */}
       <div style={{ overflow: 'hidden' }} className="w-full">
