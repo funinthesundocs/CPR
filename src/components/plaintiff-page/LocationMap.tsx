@@ -105,9 +105,9 @@ function MapCanvas({ resolvedPoints }: { resolvedPoints: ResolvedPoint[] }) {
 
       mapRef.current = map
 
-      // CARTO dark-matter tiles (no API key required)
+      // CARTO Voyager — full color, high detail, no API key required
       L.tileLayer(
-        'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+        'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
         { subdomains: 'abcd', maxZoom: 19 }
       ).addTo(map)
 
