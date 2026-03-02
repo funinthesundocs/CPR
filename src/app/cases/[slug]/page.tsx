@@ -5,7 +5,7 @@ import { PlaintiffPageClient } from './client'
 import { readFile } from 'fs/promises'
 import { join } from 'path'
 
-export const revalidate = 30
+export const revalidate = 0  // Fetch fresh data every time during development
 
 type PageProps = {
   params: Promise<{ slug: string }>

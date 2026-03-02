@@ -241,11 +241,20 @@ function MapCanvas({ resolvedPoints }: { resolvedPoints: ResolvedPoint[] }) {
     })
 
     return () => {
-      if (mapRef.current) { mapRef.current.remove(); mapRef.current = null }
+      try {
+        if (mapRef.current) {
+          mapRef.current.off()
+          mapRef.current.remove()
+          mapRef.current = null
+        }
+      } catch (err) {
+        console.warn('Error cleaning up map:', err)
+      }
       // Leaflet leaves _leaflet_id on the DOM node — clear it so React StrictMode
       // double-invoke doesn't hit "Map container is already initialized"
       if (containerRef.current) {
         delete (containerRef.current as any)._leaflet_id
+        delete (containerRef.current as any)._leaflet_map
       }
     }
   }, [resolvedPoints])
