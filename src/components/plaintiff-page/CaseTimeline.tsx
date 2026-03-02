@@ -1,7 +1,7 @@
 'use client'
 
-import { useRef } from 'react'
-import { motion } from 'framer-motion'
+import { useRef, useState } from 'react'
+import { motion, useAnimate } from 'framer-motion'
 import { MapPinIcon } from '@heroicons/react/24/outline'
 
 const sectionVariants = {
@@ -29,6 +29,97 @@ const EVENT_TYPE_COLORS: Record<string, string> = {
   red_flag: 'bg-red-500',
   discovery: 'bg-purple-500',
   aftermath: 'bg-red-700',
+}
+
+function FlipCard({ event }: { event: TimelineEvent }) {
+  const [flipped, setFlipped] = useState(false)
+  const [animating, setAnimating] = useState(false)
+  const [scope, animateFlip] = useAnimate()
+  const needsMore = event.description.length > 120
+
+  const flip = async (toFlipped: boolean) => {
+    if (animating) return
+    setAnimating(true)
+    await animateFlip(
+      scope.current,
+      toFlipped
+        ? { rotateY: [0, -20, 200, 180], rotateZ: [0, 6, -6, 0] }
+        : { rotateY: [180, 200, -20, 0], rotateZ: [0, -6, 6, 0] },
+      { duration: 0.65, times: [0, 0.25, 0.75, 1], ease: 'easeInOut' as const }
+    )
+    setFlipped(toFlipped)
+    setAnimating(false)
+  }
+
+  return (
+    <div style={{ perspective: '900px' }} className="w-52">
+      <div
+        ref={scope}
+        style={{ transformStyle: 'preserve-3d', position: 'relative', minHeight: '130px' }}
+      >
+        {/* Front face */}
+        <div
+          style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
+          className="bg-white/5 border border-white/10 rounded-lg p-3"
+        >
+          <p className="text-[14px] font-bold uppercase tracking-wider text-[var(--accent-300)] mb-1">
+            {event.date_or_year}
+          </p>
+          <p className="text-[14px] text-white/70 leading-relaxed line-clamp-3">
+            {event.description}
+          </p>
+          {event.city && (
+            <p className="flex items-center gap-1 text-[12px] text-white/40 mt-2">
+              <MapPinIcon className="h-3 w-3" />
+              {event.city}
+            </p>
+          )}
+          {needsMore && (
+            <button
+              onClick={() => flip(true)}
+              className="mt-2 text-[11px] font-semibold text-[var(--accent-300)] hover:text-white transition-colors tracking-wide"
+            >
+              — More —
+            </button>
+          )}
+        </div>
+
+        {/* Back face */}
+        <div
+          style={{
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+            transform: 'rotateY(180deg)',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            minHeight: '100%',
+          }}
+          className="bg-[var(--accent-900)]/50 border border-[var(--accent-500)]/40 rounded-lg p-3"
+        >
+          <p className="text-[14px] font-bold uppercase tracking-wider text-[var(--accent-300)] mb-2">
+            {event.date_or_year}
+          </p>
+          <p className="text-[13px] text-white/80 leading-relaxed">
+            {event.description}
+          </p>
+          {event.city && (
+            <p className="flex items-center gap-1 text-[12px] text-white/40 mt-2">
+              <MapPinIcon className="h-3 w-3" />
+              {event.city}
+            </p>
+          )}
+          <button
+            onClick={() => flip(false)}
+            className="mt-3 text-[11px] font-semibold text-[var(--accent-300)] hover:text-white transition-colors tracking-wide"
+          >
+            ← Back
+          </button>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export function CaseTimeline({ events }: CaseTimelineProps) {
@@ -71,35 +162,26 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
                   className="relative flex flex-col items-center shrink-0"
                   style={{ width: 220, marginRight: 20 }}
                 >
-                  {/* Dot on spine */}
-                  <div className={`w-4 h-4 rounded-full ${dotColor} border-2 border-[#0a0a0a] relative`} />
-
-                  {/* Connector line */}
+                  {/* Numbered dot on spine */}
                   <div
-                    className={`absolute left-1/2 w-px bg-white/20 ${
-                      isAbove ? 'bottom-[50%] h-16' : 'top-[50%] h-16'
+                    className={`w-9 h-9 rounded-full ${dotColor} border-2 border-[#0a0a0a] flex items-center justify-center relative z-10`}
+                  >
+                    <span className="text-[13px] font-bold text-white leading-none">{i + 1}</span>
+                  </div>
+
+                  {/* Connector line — starts at dot edge */}
+                  <div
+                    className={`absolute left-1/2 w-px bg-white/20 h-16 ${
+                      isAbove ? 'bottom-[calc(50%+18px)]' : 'top-[calc(50%+18px)]'
                     }`}
                     style={{ transform: 'translateX(-50%)' }}
                   />
 
-                  {/* Event card */}
+                  {/* Event card — clears connector end + gap */}
                   <div
-                    className={`absolute ${isAbove ? 'bottom-[calc(50%+24px)]' : 'top-[calc(50%+24px)]'} w-52`}
+                    className={`absolute ${isAbove ? 'bottom-[calc(50%+90px)]' : 'top-[calc(50%+90px)]'}`}
                   >
-                    <div className="bg-white/5 border border-white/10 rounded-lg p-3">
-                      <p className="text-[14px] font-bold uppercase tracking-wider text-[var(--accent-300)] mb-1">
-                        {event.date_or_year}
-                      </p>
-                      <p className="text-[14px] text-white/70 leading-relaxed line-clamp-4">
-                        {event.description}
-                      </p>
-                      {event.city && (
-                        <p className="flex items-center gap-1 text-[12px] text-white/40 mt-2">
-                          <MapPinIcon className="h-3 w-3" />
-                          {event.city}
-                        </p>
-                      )}
-                    </div>
+                    <FlipCard event={event} />
                   </div>
                 </div>
               )
