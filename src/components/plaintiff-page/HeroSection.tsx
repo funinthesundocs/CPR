@@ -100,13 +100,13 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
             <motion.div
               animate={{
                 boxShadow: [
-                  '0 0 6px 2px rgb(1,143,46)',
-                  '0 0 19px 6px rgb(1,143,46)',
-                  '0 0 6px 2px rgb(1,143,46)',
+                  '0 0 6px 2px rgb(59,130,246)',
+                  '0 0 19px 6px rgb(59,130,246)',
+                  '0 0 6px 2px rgb(59,130,246)',
                 ],
               }}
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' as const, delay: 0.8 }}
-              className="w-[140px] h-[140px] md:w-[200px] md:h-[200px] rounded-full overflow-hidden border-2 border-green-500"
+              className="w-[140px] h-[140px] md:w-[200px] md:h-[200px] rounded-full overflow-hidden border-2 border-blue-500"
             >
               {plaintiffPhoto ? (
                 <img src={plaintiffPhoto} alt={plaintiffName} className="w-full h-full object-cover" />
