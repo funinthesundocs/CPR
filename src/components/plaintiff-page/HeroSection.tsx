@@ -53,7 +53,7 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
 
       {/* LEFT PANEL — Plaintiff — slides in from fully off-screen left */}
       <motion.div
-        className="absolute left-0 top-0 w-[52%] h-full z-10"
+        className="absolute left-0 top-0 w-[49.5%] h-full z-10"
         initial={{ x: '-100%' }}
         animate={{ x: 0 }}
         transition={slideTransition}
@@ -98,7 +98,7 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
 
       {/* RIGHT PANEL — Defendant — slides in from fully off-screen right */}
       <motion.div
-        className="absolute right-0 top-0 w-[52%] h-full z-10"
+        className="absolute right-0 top-0 w-[49.5%] h-full z-10"
         initial={{ x: '100%' }}
         animate={{ x: 0 }}
         transition={slideTransition}
