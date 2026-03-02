@@ -1,7 +1,8 @@
 'use client'
 
+import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { DocumentTextIcon, ShieldExclamationIcon } from '@heroicons/react/24/outline'
+import { DocumentTextIcon, ShieldExclamationIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
 const sectionVariants = {
   hidden: { opacity: 0, y: 24 },
@@ -30,6 +31,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProps) {
   const hasUploaded = evidence && evidence.length > 0
   const hasInventory = evidenceInventory && evidenceInventory.length > 0
+  const [selectedEvidence, setSelectedEvidence] = useState<any>(null)
 
   return (
     <motion.section
@@ -81,8 +83,9 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
                   return (
                     <div
                       key={i}
-                      className="border border-white/10 rounded-lg p-4 flex gap-4"
+                      className="border border-white/10 rounded-lg p-4 flex gap-4 cursor-pointer hover:border-white/30 transition-colors"
                       style={{ backgroundColor: 'oklch(0.205 0 0 / 0.8)' }}
+                      onClick={() => setSelectedEvidence(item)}
                     >
                       <div className="shrink-0 w-10 h-10 rounded-md bg-[var(--accent-700)]/40 flex items-center justify-center">
                         <ShieldExclamationIcon className="h-5 w-5 text-[var(--accent-300)]" />
@@ -94,7 +97,7 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
                             {category}
                           </span>
                         </div>
-                        <p className="text-white/50 leading-relaxed" style={{ fontSize: '18px' }}>{item.description}</p>
+                        <p className="text-white/50 leading-relaxed line-clamp-2" style={{ fontSize: '18px' }}>{item.description}</p>
                       </div>
                     </div>
                   )
@@ -111,8 +114,9 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
                   return (
                     <div
                       key={i}
-                      className="border border-white/10 rounded-lg p-4 flex gap-4"
+                      className="border border-white/10 rounded-lg p-4 flex gap-4 cursor-pointer hover:border-white/30 transition-colors"
                       style={{ backgroundColor: 'oklch(0.205 0 0 / 0.8)' }}
+                      onClick={() => setSelectedEvidence(item)}
                     >
                       <div className="shrink-0 w-10 h-10 rounded-md bg-[var(--accent-700)]/40 flex items-center justify-center">
                         <ShieldExclamationIcon className="h-5 w-5 text-[var(--accent-300)]" />
@@ -124,7 +128,7 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
                             {category}
                           </span>
                         </div>
-                        <p className="text-white/50 leading-relaxed" style={{ fontSize: '18px' }}>{item.description}</p>
+                        <p className="text-white/50 leading-relaxed line-clamp-2" style={{ fontSize: '18px' }}>{item.description}</p>
                       </div>
                     </div>
                   )
@@ -144,6 +148,55 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
           </div>
         )}
       </div>
+
+      {/* Evidence Detail Modal */}
+      {selectedEvidence && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="bg-[#0a0a0a] border border-white/20 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+          >
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1">
+                  <p style={{ fontSize: '18px' }} className="text-[var(--accent-300)] uppercase tracking-widest mb-2">
+                    {CATEGORY_LABELS[selectedEvidence.category] || selectedEvidence.category}
+                  </p>
+                  <h3 style={{ fontSize: '24px' }} className="text-white font-semibold">
+                    {selectedEvidence.label}
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setSelectedEvidence(null)}
+                  className="text-white/40 hover:text-white transition-colors"
+                >
+                  <XMarkIcon className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="mb-6 pb-6 border-b border-white/10">
+                <p className="text-white/70 leading-relaxed" style={{ fontSize: '16px' }}>
+                  {selectedEvidence.description}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button className="px-4 py-3 bg-[var(--accent-500)] text-white rounded-lg font-medium hover:bg-[var(--accent-600)] transition-colors">
+                  📖 Read
+                </button>
+                <button className="px-4 py-3 bg-[var(--accent-500)] text-white rounded-lg font-medium hover:bg-[var(--accent-600)] transition-colors">
+                  🔊 Listen
+                </button>
+                <button className="px-4 py-3 bg-[var(--accent-500)] text-white rounded-lg font-medium hover:bg-[var(--accent-600)] transition-colors">
+                  👁️ Review
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </motion.section>
   )
 }
