@@ -115,18 +115,33 @@ function MapCanvas({ resolvedPoints }: { resolvedPoints: ResolvedPoint[] }) {
       // Leaflet uses [lat, lng] — flip our [lng, lat] storage
       const latLngs = resolvedPoints.map(p => [p.coords[1], p.coords[0]] as [number, number])
 
-      // Compute bounds
+      // Compute tight bounds around actual points
       const lats = latLngs.map(c => c[0])
       const lngs = latLngs.map(c => c[1])
+      const minLat = Math.min(...lats)
+      const maxLat = Math.max(...lats)
+      const minLng = Math.min(...lngs)
+      const maxLng = Math.max(...lngs)
+
+      // Calculate the spread of points
+      const latSpread = maxLat - minLat
+      const lngSpread = maxLng - minLng
+
+      // Adaptive buffer: if points are very close (same city), use smaller buffer
+      // If points are spread out (worldwide), use proportionally larger buffer
+      const bufferFactor = Math.max(latSpread, lngSpread) < 1 ? 0.15 : 0.05
+      const latBuffer = Math.max(latSpread * bufferFactor, 0.01)
+      const lngBuffer = Math.max(lngSpread * bufferFactor, 0.01)
+
       const bounds: [[number, number], [number, number]] = [
-        [Math.min(...lats) - 5, Math.min(...lngs) - 5],
-        [Math.max(...lats) + 5, Math.max(...lngs) + 5],
+        [minLat - latBuffer, minLng - lngBuffer],
+        [maxLat + latBuffer, maxLng + lngBuffer],
       ]
 
       const map = L.map(containerRef.current!, {
         zoomControl:       true,
         attributionControl: false,
-      }).fitBounds(bounds, { padding: [40, 40] })
+      }).fitBounds(bounds, { padding: [50, 50], maxZoom: 18 })
 
       mapRef.current = map
 
