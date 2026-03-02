@@ -118,9 +118,9 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
             <motion.div
               animate={{
                 boxShadow: [
-                  '0 0 6px 1px rgb(59,130,246)',
-                  '0 0 19px 4px rgb(59,130,246)',
-                  '0 0 6px 1px rgb(59,130,246)',
+                  '0 0 5px 1px rgb(59,130,246)',
+                  '0 0 14px 3px rgb(59,130,246)',
+                  '0 0 5px 1px rgb(59,130,246)',
                 ],
               }}
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' as const, delay: 0.8 }}
@@ -163,9 +163,9 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
             <motion.div
               animate={{
                 boxShadow: [
-                  '0 0 6px 1px rgb(220,38,38)',
-                  '0 0 19px 4px rgb(220,38,38)',
-                  '0 0 6px 1px rgb(220,38,38)',
+                  '0 0 5px 1px rgb(220,38,38)',
+                  '0 0 14px 3px rgb(220,38,38)',
+                  '0 0 5px 1px rgb(220,38,38)',
                 ],
               }}
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' as const, delay: 0.8 }}
