@@ -54,14 +54,6 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
 
       <div className="relative z-10 max-w-[1340px] mx-auto">
         <h2 className="text-[38px] font-semibold text-white mb-2 text-center">Evidence Vault</h2>
-        <p className="text-white/40 mb-8 text-center" style={{ fontSize: '21px' }}>
-          {hasUploaded
-            ? `${evidence.length} files on record`
-            : hasInventory
-              ? `${evidenceInventory.length} items declared — uploads pending`
-              : 'No evidence filed yet'
-          }
-        </p>
 
         {/* Show uploaded evidence if available */}
         {hasUploaded && (
