@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { PlayCircleIcon } from '@heroicons/react/24/outline'
 import { FloatingAudioPlayer } from './FloatingAudioPlayer'
+import { MagnifyLens } from './MagnifyLens'
 
 const sectionVariants = {
   hidden: { opacity: 0, y: 24 },
@@ -31,27 +32,23 @@ export function StoryInfographic({ infographicUrl, infographic2Url, audioUrl, ca
         className="pt-0 pb-12 px-8 bg-gradient-to-b from-black to-[var(--accent-900)]"
       >
         <div className="max-w-[1340px] mx-auto">
-          <div className="relative inline-block w-full">
-            <img
-              src={activeImage === 'primary' ? infographicUrl : (infographic2Url || infographicUrl)}
-              alt="Case Infographic"
-              className="w-full rounded-lg shadow-2xl"
-              loading="lazy"
-            />
-
+          <MagnifyLens
+            imageUrl={activeImage === 'primary' ? infographicUrl : (infographic2Url || infographicUrl)}
+            alt="Case Infographic"
+          >
             {/* Audio button overlay */}
             {audioUrl && (
               <button
                 onClick={() => setPlayerOpen(true)}
                 className="absolute top-4 right-4 flex items-center gap-2 px-4 py-2
                            bg-black/70 hover:bg-[var(--accent-500)] text-white rounded-full
-                           text-sm font-medium transition-colors backdrop-blur-sm"
+                           text-sm font-medium transition-colors backdrop-blur-sm z-10"
               >
                 <PlayCircleIcon className="h-5 w-5" />
                 Listen to Case Summary
               </button>
             )}
-          </div>
+          </MagnifyLens>
         </div>
       </motion.section>
 
