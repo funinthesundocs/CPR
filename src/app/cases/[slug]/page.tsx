@@ -237,6 +237,13 @@ export default async function CaseDetailPage({ params }: PageProps) {
   }
 
   // Pass everything to the client layout
+  // Format defendant name — first and last only (no middle names in hero section)
+  const getDisplayName = (fullName: string) => {
+    const parts = fullName.trim().split(/\s+/).filter(Boolean)
+    if (parts.length <= 2) return fullName
+    return `${parts[0]} ${parts[parts.length - 1]}`
+  }
+
   return (
     <PlaintiffPageClient
       caseNumber={caseData.case_number}
@@ -244,7 +251,7 @@ export default async function CaseDetailPage({ params }: PageProps) {
       filedAt={caseData.created_at}
       plaintiffName={plaintiffName}
       plaintiffPhoto={plaintiffProfile?.avatar_url || null}
-      defendantName={defendant.full_name}
+      defendantName={getDisplayName(defendant.full_name)}
       defendantPhoto={defendant.photo_url || null}
       tagline={tagline}
       notebookSummary={notebookSummary}
