@@ -54,9 +54,11 @@ Prune in this order — lowest score = first to go:
 
 | Pearl | Rule | Maturity | Added | Uses |
 |-------|------|----------|-------|------|
+| Answer questions directly before working | When a user asks a direct question, answer it completely before starting any work or implementation — skipping to work wastes context and user patience | Seed | 2026-03-02 | 0 |
 | Recursive self-critique with a target | Set a numeric satisfaction threshold (e.g., 93%) and iterate until you reach it — open-ended "make it better" loops never converge | Established | 2026-02-19 | 0 |
 | Additive enhancement only | After each test or iteration, add what you learned to the documentation — never remove existing rules, only add new ones | Established | 2026-02-19 | 0 |
 | Consistency grep after every change | After modifying any code or documentation, grep the entire file for stale references to the old approach — one contradictory line wastes more debugging time than no documentation | Established | 2026-02-19 | 0 |
+| Trace data through full pipeline | Before assuming data is missing or a feature broken, trace a single record through the complete pipeline (input → storage → retrieval → display) — the actual failure is often in a different layer than suspected | Seed | 2026-03-02 | 0 |
 
 ## General Engineering
 
@@ -89,3 +91,4 @@ Prune in this order — lowest score = first to go:
 | RLS-disabled can be intentional for catalog tables | RBAC configuration tables (roles, permissions, mappings) legitimately disable RLS because all users need read access — flag disabled-RLS as a finding but verify intent before treating it as a vulnerability | Seed | 2026-02-20 | 0 |
 | Read code before writing migrations | Before writing a SQL migration or query that references columns in an existing table, read the codebase code that already queries that table to confirm actual column names — spec documents drift from reality silently and cause failed migrations | Seed | 2026-03-01 | 0 |
 | PostgREST joins require explicit FK in schema | Supabase's nested query JOIN syntax (e.g. table(columns)) only works when the foreign key is explicitly declared in the database schema — PostgREST cannot infer relationships from matching column names alone | Seed | 2026-03-01 | 0 |
+| Service-role key required for storage operations | Supabase anon keys cannot create buckets or modify storage settings — always use service-role key for any storage admin operations (bucket creation, bucket config, file metadata) | Seed | 2026-03-02 | 0 |
