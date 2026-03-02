@@ -9,7 +9,6 @@ interface MagnifyLensProps {
   imageUrl: string
   alt: string
   className?: string
-  children?: React.ReactNode
 }
 
 interface MousePos {
@@ -19,7 +18,7 @@ interface MousePos {
   containerH: number
 }
 
-export function MagnifyLens({ imageUrl, alt, className, children }: MagnifyLensProps) {
+export function MagnifyLens({ imageUrl, alt, className }: MagnifyLensProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [pos, setPos]           = useState<MousePos | null>(null)
   const [isInside, setIsInside] = useState(false)
@@ -77,9 +76,6 @@ export function MagnifyLens({ imageUrl, alt, className, children }: MagnifyLensP
         loading="lazy"
       />
 
-      {/* Slot for overlays (e.g. audio button) */}
-      {children}
-
       {/* Magnifying glass — only visible while hovering (hidden when over button) */}
       {pos && isInside && !isOverButton && (
         <>
@@ -88,20 +84,6 @@ export function MagnifyLens({ imageUrl, alt, className, children }: MagnifyLensP
             className="absolute pointer-events-none z-50"
             style={{ left: lensLeft, top: lensTop, width: LENS_SIZE, height: LENS_SIZE }}
           >
-            {/* Button overlay inside lens (magnified view) */}
-            {children && (
-              <div
-                className="absolute inset-0 flex items-start justify-start p-2 pointer-events-none overflow-hidden"
-                style={{
-                  transform: `scale(${1 / ZOOM})`,
-                  transformOrigin: 'top left',
-                }}
-              >
-                <div style={{ transform: `scale(${ZOOM})`, transformOrigin: 'top left' }}>
-                  {children}
-                </div>
-              </div>
-            )}
             {/* Outer rim (metallic ring) */}
             <div
               className="absolute inset-0 rounded-full"
