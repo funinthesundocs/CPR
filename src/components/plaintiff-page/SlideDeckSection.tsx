@@ -39,11 +39,11 @@ export function SlideDeckSection({ pdfUrl }: SlideDeckSectionProps) {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: '-80px' }}
-        className="py-16 px-6 bg-[var(--accent-900)]/50"
+        className="pt-12 pb-0 px-6 bg-[var(--accent-900)]/50"
         ref={ref}
       >
         <div className="max-w-[1340px] mx-auto">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-3">
             <h2 className="text-2xl font-semibold text-white">Case Slide Deck</h2>
             <button
               onClick={() => setFullscreen(true)}
@@ -55,13 +55,11 @@ export function SlideDeckSection({ pdfUrl }: SlideDeckSectionProps) {
           </div>
 
           {visible && (
-            <div className="relative w-full rounded-lg overflow-hidden bg-black border border-white/10">
-              <iframe
-                src={`${pdfUrl}#toolbar=0&navpanes=0`}
-                className="w-full aspect-[16/9]"
-                title="Case Slide Deck"
-              />
-            </div>
+            <iframe
+              src={`${pdfUrl}#toolbar=0&navpanes=0`}
+              className="w-full aspect-[16/9] block"
+              title="Case Slide Deck"
+            />
           )}
         </div>
       </motion.section>
