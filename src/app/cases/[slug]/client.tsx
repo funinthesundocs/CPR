@@ -119,7 +119,6 @@ export function PlaintiffPageClient(props: PlaintiffPageClientProps) {
           testimonyFields={props.testimonyFields}
           financialTotal={props.financialTotal}
           caseNarratives={props.caseNarratives}
-          timeline={props.timeline}
           evidenceInventory={props.evidenceInventory}
           evidence={props.evidence}
         />

@@ -40,12 +40,11 @@ interface CaseSummaryModuleProps {
   testimonyFields: TestimonyField[]
   financialTotal: number
   caseNarratives: Record<string, any>
-  timeline: any[]
   evidenceInventory: { label: string; category: string; description: string }[]
   evidence: any[]
 }
 
-export function CaseSummaryModule({ notebookSummary, briefingDocContent, testimonyFields, financialTotal, caseNarratives, timeline, evidenceInventory, evidence }: CaseSummaryModuleProps) {
+export function CaseSummaryModule({ notebookSummary, briefingDocContent, testimonyFields, financialTotal, caseNarratives, evidenceInventory, evidence }: CaseSummaryModuleProps) {
   const [modalOpen, setModalOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'analysis' | 'testimony'>('analysis')
 
@@ -347,33 +346,7 @@ export function CaseSummaryModule({ notebookSummary, briefingDocContent, testimo
                       </div>
                     </section>
 
-                    {/* Step 5 — Timeline */}
-                    <section id="testimony-step5">
-                      <h3 className="text-xs uppercase tracking-widest text-[var(--accent-300)] font-bold mb-4 pb-2 border-b border-white/10">
-                        Step 5 — Timeline of Events
-                      </h3>
-                      {timeline.length === 0 ? (
-                        <p className="text-white/30 text-sm italic">No timeline events recorded.</p>
-                      ) : (
-                        <div className="space-y-3">
-                          {timeline.map((event: any, i: number) => (
-                            <div key={i} className="bg-white/5 border border-white/10 rounded-md p-4 grid grid-cols-[80px_1fr] gap-4">
-                              <div>
-                                <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1">Date</p>
-                                <p className="text-sm text-white font-semibold">{event.date_or_year}</p>
-                              </div>
-                              <div>
-                                <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1">{event.event_type || 'Event'}</p>
-                                <p className="text-sm text-white/70 leading-relaxed">{event.description}</p>
-                                {event.city && <p className="text-xs text-white/40 mt-1">{event.city}</p>}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </section>
-
-                    {/* Step 6 — Summary */}
+                    {/* Step 5 — Summary (moved from Step 6, timeline now has dedicated section with H/V toggle) */}
                     <section id="testimony-step6">
                       <h3 className="text-xs uppercase tracking-widest text-[var(--accent-300)] font-bold mb-4 pb-2 border-b border-white/10">
                         Step 6 — Case Summary
