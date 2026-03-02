@@ -125,7 +125,7 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: '-80px' }}
-      className="py-16"
+      className="pt-16 pb-[30px]"
     >
       <h2 className="text-[38px] font-semibold mb-8 px-6 text-white max-w-[1340px] mx-auto">Case Timeline</h2>
 
