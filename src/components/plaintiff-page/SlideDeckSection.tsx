@@ -42,7 +42,7 @@ export function SlideDeckSection({ pdfUrl }: SlideDeckSectionProps) {
         className="py-16 px-6 bg-[var(--accent-900)]/50"
         ref={ref}
       >
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-[1340px] mx-auto">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-semibold text-white">Case Slide Deck</h2>
             <button
@@ -58,7 +58,7 @@ export function SlideDeckSection({ pdfUrl }: SlideDeckSectionProps) {
             <div className="relative w-full rounded-lg overflow-hidden bg-black border border-white/10">
               <iframe
                 src={`${pdfUrl}#toolbar=0&navpanes=0`}
-                className="w-full h-[500px] md:h-[600px]"
+                className="w-full aspect-[16/9]"
                 title="Case Slide Deck"
               />
             </div>
