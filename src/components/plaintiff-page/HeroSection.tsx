@@ -61,7 +61,7 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
         <div
           className="w-full h-full flex flex-col items-center justify-center relative"
           style={{
-            backgroundImage: 'url(/Firefighter1.jpg)',
+            backgroundImage: 'url(/firefighter1.jpg)',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
@@ -106,7 +106,7 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
         <div
           className="w-full h-full flex flex-col items-center justify-center relative"
           style={{
-            backgroundImage: 'url(/Firefighter2.jpg)',
+            backgroundImage: 'url(/firefighter2.png)',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
