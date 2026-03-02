@@ -117,7 +117,7 @@ type FormData = {
     physical_impact: string
     wish_understood: string
     evidence_checklist: string[]
-    evidence_descriptions: { label: string; description: string; category: string }[]
+    evidence_descriptions: { label: string; description: string; category: string; file_name?: string; file_size?: number; file_type?: string; file_url?: string }[]
     witnesses: { fullName: string; type: string; contact: string; canVerify: string }[]
     police_report_filed: string
     lawyer_consulted: string
@@ -358,6 +358,42 @@ export function CasePlaintiffForm({ editMode }: Props) {
     }, [])
 
     const progress = Math.round((step / STEPS.length) * 100)
+
+    // ── File upload handler ────────────────────────────────────────────────────
+    const handleFileUpload = async (file: File, evidenceIdx: number, caseIdForBucket?: string) => {
+        try {
+            // Create a form data for multipart upload
+            const formData = new FormData()
+            formData.append('file', file)
+            formData.append('case_id', caseIdForBucket || `temp-${Date.now().toString(36)}`)
+
+            const response = await fetch('/api/cases/upload-evidence', {
+                method: 'POST',
+                body: formData,
+            })
+
+            if (!response.ok) {
+                const error = await response.json()
+                throw new Error(error.error || 'Upload failed')
+            }
+
+            const result = await response.json()
+
+            // Update form with file metadata
+            const descs = [...form.evidence_descriptions]
+            descs[evidenceIdx] = {
+                ...descs[evidenceIdx],
+                file_name: result.file_name,
+                file_size: result.file_size,
+                file_type: result.file_type,
+                file_url: result.file_path,
+            }
+            updateForm({ evidence_descriptions: descs })
+        } catch (err) {
+            console.error('File upload error:', err)
+            // Show error to user (can add toast notification here)
+        }
+    }
 
     // ── Create submit handler ─────────────────────────────────────────────────────
     const handleSubmit = async () => {
@@ -959,7 +995,13 @@ export function CasePlaintiffForm({ editMode }: Props) {
                                 ))}
                             </div>
                             <div className="border-t pt-4">
-                                <p className="text-base font-medium mb-3">{t('wizard.evidenceCustomEntries')}</p>
+                                <p className="text-base font-medium mb-6">{t('wizard.evidenceCustomEntries')}</p>
+                                {/* Column Headers */}
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 px-4 mb-2">
+                                    <p className="text-sm font-semibold text-muted-foreground">Name / Title</p>
+                                    <p className="text-sm font-semibold text-muted-foreground">Type</p>
+                                    <p className="text-sm font-semibold text-muted-foreground">Description & Files</p>
+                                </div>
                                 {form.evidence_descriptions.map((ev, idx) => (
                                     <div key={idx} className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 rounded-lg border bg-muted/20 mb-3">
                                         <Input placeholder={t('wizard.evidenceLabel')} value={ev.label} onChange={e => {
@@ -979,11 +1021,25 @@ export function CasePlaintiffForm({ editMode }: Props) {
                                                 <SelectItem value="other">{t('wizard.catOther')}</SelectItem>
                                             </SelectContent>
                                         </Select>
-                                        <div className="flex gap-2">
+                                        <div className="space-y-2">
                                             <Input placeholder={t('wizard.evidenceDescription')} value={ev.description} onChange={e => {
                                                 const descs = [...form.evidence_descriptions]; descs[idx] = { ...descs[idx], description: e.target.value }; updateForm({ evidence_descriptions: descs })
                                             }} />
-                                            <Button variant="ghost" size="sm" className="text-destructive shrink-0" onClick={() => updateForm({ evidence_descriptions: form.evidence_descriptions.filter((_, i) => i !== idx) })}>X</Button>
+                                            <div className="flex gap-2">
+                                                <div className="flex-1">
+                                                    <label className="flex items-center gap-2 px-3 py-2 rounded border border-muted-foreground/30 cursor-pointer hover:bg-muted/30 transition-colors text-sm">
+                                                        <span>📎</span>
+                                                        <span className="text-xs">{ev.file_name ? `✓ ${ev.file_name}` : 'Attach file'}</span>
+                                                        <input type="file" className="hidden" onChange={e => {
+                                                            const file = e.target.files?.[0]
+                                                            if (file) {
+                                                                handleFileUpload(file, idx)
+                                                            }
+                                                        }} accept="*/*" />
+                                                    </label>
+                                                </div>
+                                                <Button variant="ghost" size="sm" className="text-destructive shrink-0" onClick={() => updateForm({ evidence_descriptions: form.evidence_descriptions.filter((_, i) => i !== idx) })}>X</Button>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
