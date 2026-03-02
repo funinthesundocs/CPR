@@ -26,7 +26,7 @@ export function SmartSidebarProvider({
 
   const [open, setOpen] = useState(() => !isDetail)
   const openRef  = useRef(open)
-  const timerRef = useRef<ReturnType<typeof setTimeout>>()
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   // Keep ref in sync — updated in render body so mousemove handler is never stale
   openRef.current = open
