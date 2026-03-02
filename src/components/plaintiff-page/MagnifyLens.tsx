@@ -56,10 +56,12 @@ export function MagnifyLens({ imageUrl, alt, className, children }: MagnifyLensP
   const lensLeft = pos ? pos.x - LENS_SIZE / 2 : 0
   const lensTop  = pos ? pos.y - LENS_SIZE / 2 : 0
 
-  // Handle assembly positioning — attaches at ~4-5 o'clock on the rim
-  const totalHandleH = FERRULE_H + HANDLE_H
-  const assemblyBottom = -(totalHandleH - LENS_SIZE / 2 + 10)
-  const assemblyRight  = -(FERRULE_W / 2 + 8)
+  // Handle assembly positioning — pivot sits on the outer rim edge at HANDLE_DEG from vertical
+  const rad        = (HANDLE_DEG * Math.PI) / 180
+  const attachX    = LENS_SIZE / 2 + (LENS_SIZE / 2) * Math.sin(rad)   // ~294
+  const attachY    = LENS_SIZE / 2 + (LENS_SIZE / 2) * Math.cos(rad)   // ~307
+  const assemblyLeft = Math.round(attachX - FERRULE_W / 2)              // centres ferrule on attach point
+  const assemblyTop  = Math.round(attachY) - 6                          // 6px overlap into rim for flush join
 
   return (
     <div
@@ -129,8 +131,8 @@ export function MagnifyLens({ imageUrl, alt, className, children }: MagnifyLensP
             className="absolute flex flex-col items-center"
             style={{
               width:  FERRULE_W,
-              bottom: assemblyBottom,
-              right:  assemblyRight,
+              top:    assemblyTop,
+              left:   assemblyLeft,
               transformOrigin: `${FERRULE_W / 2}px 0px`,
               transform: `rotate(${HANDLE_DEG}deg)`,
             }}
