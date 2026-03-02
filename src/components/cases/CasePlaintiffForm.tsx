@@ -1006,9 +1006,26 @@ export function CasePlaintiffForm({ editMode }: Props) {
                                     <div key={idx} className="p-4 rounded-lg border bg-muted/20 mb-3">
                                       {/* Mobile Layout */}
                                       <div className="grid grid-cols-1 gap-3 sm:hidden">
-                                        <Input placeholder={t('wizard.evidenceLabel')} value={ev.label} onChange={e => {
-                                            const descs = [...form.evidence_descriptions]; descs[idx] = { ...descs[idx], label: e.target.value }; updateForm({ evidence_descriptions: descs })
-                                        }} />
+                                        <div className="space-y-2">
+                                          <Input placeholder={t('wizard.evidenceLabel')} value={ev.label} onChange={e => {
+                                              const descs = [...form.evidence_descriptions]; descs[idx] = { ...descs[idx], label: e.target.value }; updateForm({ evidence_descriptions: descs })
+                                          }} />
+                                          <div className="flex gap-2">
+                                              <div className="flex-1">
+                                                  <label className="flex items-center gap-2 px-3 py-2 rounded border border-muted-foreground/30 cursor-pointer hover:bg-muted/30 transition-colors text-sm">
+                                                      <span>📎</span>
+                                                      <span className="text-xs">{ev.file_name ? `✓ ${ev.file_name}` : 'Attach file'}</span>
+                                                      <input type="file" className="hidden" onChange={e => {
+                                                          const file = e.target.files?.[0]
+                                                          if (file) {
+                                                              handleFileUpload(file, idx)
+                                                          }
+                                                      }} accept="*/*" />
+                                                  </label>
+                                              </div>
+                                              <Button variant="ghost" size="sm" className="text-destructive shrink-0" onClick={() => updateForm({ evidence_descriptions: form.evidence_descriptions.filter((_, i) => i !== idx) })}>X</Button>
+                                          </div>
+                                        </div>
                                         <Select value={ev.category} onValueChange={v => {
                                             const descs = [...form.evidence_descriptions]; descs[idx] = { ...descs[idx], category: v }; updateForm({ evidence_descriptions: descs })
                                         }}>
@@ -1023,33 +1040,33 @@ export function CasePlaintiffForm({ editMode }: Props) {
                                                 <SelectItem value="other">{t('wizard.catOther')}</SelectItem>
                                             </SelectContent>
                                         </Select>
-                                        <div className="space-y-2">
-                                            <Input placeholder={t('wizard.evidenceDescription')} value={ev.description} onChange={e => {
-                                                const descs = [...form.evidence_descriptions]; descs[idx] = { ...descs[idx], description: e.target.value }; updateForm({ evidence_descriptions: descs })
-                                            }} />
-                                            <div className="flex gap-2">
-                                                <div className="flex-1">
-                                                    <label className="flex items-center gap-2 px-3 py-2 rounded border border-muted-foreground/30 cursor-pointer hover:bg-muted/30 transition-colors text-sm">
-                                                        <span>📎</span>
-                                                        <span className="text-xs">{ev.file_name ? `✓ ${ev.file_name}` : 'Attach file'}</span>
-                                                        <input type="file" className="hidden" onChange={e => {
-                                                            const file = e.target.files?.[0]
-                                                            if (file) {
-                                                                handleFileUpload(file, idx)
-                                                            }
-                                                        }} accept="*/*" />
-                                                    </label>
-                                                </div>
-                                                <Button variant="ghost" size="sm" className="text-destructive shrink-0" onClick={() => updateForm({ evidence_descriptions: form.evidence_descriptions.filter((_, i) => i !== idx) })}>X</Button>
-                                            </div>
-                                        </div>
+                                        <Input placeholder={t('wizard.evidenceDescription')} value={ev.description} onChange={e => {
+                                            const descs = [...form.evidence_descriptions]; descs[idx] = { ...descs[idx], description: e.target.value }; updateForm({ evidence_descriptions: descs })
+                                        }} />
                                       </div>
 
                                       {/* Desktop Layout */}
                                       <div className="hidden sm:grid gap-3" style={{ gridTemplateColumns: '25% 15% 60%' }}>
-                                        <Input placeholder={t('wizard.evidenceLabel')} value={ev.label} onChange={e => {
-                                            const descs = [...form.evidence_descriptions]; descs[idx] = { ...descs[idx], label: e.target.value }; updateForm({ evidence_descriptions: descs })
-                                        }} />
+                                        <div className="space-y-2">
+                                          <Input placeholder={t('wizard.evidenceLabel')} value={ev.label} onChange={e => {
+                                              const descs = [...form.evidence_descriptions]; descs[idx] = { ...descs[idx], label: e.target.value }; updateForm({ evidence_descriptions: descs })
+                                          }} />
+                                          <div className="flex gap-2">
+                                              <div className="flex-1">
+                                                  <label className="flex items-center gap-2 px-3 py-2 rounded border border-muted-foreground/30 cursor-pointer hover:bg-muted/30 transition-colors text-sm">
+                                                      <span>📎</span>
+                                                      <span className="text-xs">{ev.file_name ? `✓ ${ev.file_name}` : 'Attach file'}</span>
+                                                      <input type="file" className="hidden" onChange={e => {
+                                                          const file = e.target.files?.[0]
+                                                          if (file) {
+                                                              handleFileUpload(file, idx)
+                                                          }
+                                                      }} accept="*/*" />
+                                                  </label>
+                                              </div>
+                                              <Button variant="ghost" size="sm" className="text-destructive shrink-0" onClick={() => updateForm({ evidence_descriptions: form.evidence_descriptions.filter((_, i) => i !== idx) })}>X</Button>
+                                          </div>
+                                        </div>
                                         <Select value={ev.category} onValueChange={v => {
                                             const descs = [...form.evidence_descriptions]; descs[idx] = { ...descs[idx], category: v }; updateForm({ evidence_descriptions: descs })
                                         }}>
@@ -1064,26 +1081,9 @@ export function CasePlaintiffForm({ editMode }: Props) {
                                                 <SelectItem value="other">{t('wizard.catOther')}</SelectItem>
                                             </SelectContent>
                                         </Select>
-                                        <div className="space-y-2">
-                                            <Input placeholder={t('wizard.evidenceDescription')} value={ev.description} onChange={e => {
-                                                const descs = [...form.evidence_descriptions]; descs[idx] = { ...descs[idx], description: e.target.value }; updateForm({ evidence_descriptions: descs })
-                                            }} />
-                                            <div className="flex gap-2">
-                                                <div className="flex-1">
-                                                    <label className="flex items-center gap-2 px-3 py-2 rounded border border-muted-foreground/30 cursor-pointer hover:bg-muted/30 transition-colors text-sm">
-                                                        <span>📎</span>
-                                                        <span className="text-xs">{ev.file_name ? `✓ ${ev.file_name}` : 'Attach file'}</span>
-                                                        <input type="file" className="hidden" onChange={e => {
-                                                            const file = e.target.files?.[0]
-                                                            if (file) {
-                                                                handleFileUpload(file, idx)
-                                                            }
-                                                        }} accept="*/*" />
-                                                    </label>
-                                                </div>
-                                                <Button variant="ghost" size="sm" className="text-destructive shrink-0" onClick={() => updateForm({ evidence_descriptions: form.evidence_descriptions.filter((_, i) => i !== idx) })}>X</Button>
-                                            </div>
-                                        </div>
+                                        <Input placeholder={t('wizard.evidenceDescription')} value={ev.description} onChange={e => {
+                                            const descs = [...form.evidence_descriptions]; descs[idx] = { ...descs[idx], description: e.target.value }; updateForm({ evidence_descriptions: descs })
+                                        }} />
                                       </div>
                                     </div>
                                 ))}
