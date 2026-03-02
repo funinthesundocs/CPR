@@ -39,8 +39,8 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
       viewport={{ once: true, margin: '-80px' }}
       className="py-16 px-6 -mt-[75px]"
     >
-      <div className="max-w-4xl mx-auto">
-        <h2 className="text-[38px] font-semibold mb-2 text-white">Evidence Vault</h2>
+      <div className="max-w-[1340px] mx-auto">
+        <h2 className="text-[38px] font-semibold text-white mb-2">Evidence Vault</h2>
         <p className="text-sm text-white/40 mb-8">
           {hasUploaded
             ? `${evidence.length} files on record`
