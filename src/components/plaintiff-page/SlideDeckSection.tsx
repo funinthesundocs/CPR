@@ -39,7 +39,7 @@ export function SlideDeckSection({ pdfUrl }: SlideDeckSectionProps) {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: '-80px' }}
-        className="pt-12 pb-0 px-6 bg-[var(--accent-900)]/50"
+        className="pt-12 pb-[100px] px-6 bg-[var(--accent-900)]/50"
         ref={ref}
       >
         <div className="max-w-[1340px] mx-auto">
@@ -57,7 +57,7 @@ export function SlideDeckSection({ pdfUrl }: SlideDeckSectionProps) {
           {visible && (
             <iframe
               src={`${pdfUrl}#toolbar=0&navpanes=0`}
-              className="w-full aspect-[16/9] block"
+              className="w-full h-[400px] md:h-[654px] block"
               title="Case Slide Deck"
             />
           )}
