@@ -4,6 +4,7 @@ import { useRef, useState } from 'react'
 import { motion, useAnimate } from 'framer-motion'
 import { MapPinIcon } from '@heroicons/react/24/outline'
 import { Bars3Icon, ListBulletIcon } from '@heroicons/react/24/outline'
+import { Flag } from 'country-flag-icons/react/3x2'
 
 const sectionVariants = {
   hidden: { opacity: 0, y: 24 },
@@ -65,46 +66,64 @@ const parseDate = (dateStr: string): number => {
   return 0
 }
 
-// Get country flag emoji from location string
-const getCountryFlag = (location: string | null): string => {
-  if (!location) return '🌍'
+// Get country code from location string for flag rendering
+const getCountryCode = (location: string | null): string | null => {
+  if (!location) return null
 
   const locationLower = location.toLowerCase()
 
-  // Country/region mappings to flag emojis
-  const countryFlags: Record<string, string> = {
-    'australia': '🇦🇺',
-    'au': '🇦🇺',
-    'thailand': '🇹🇭',
-    'th': '🇹🇭',
-    'dubai': '🇦🇪',
-    'uae': '🇦🇪',
-    'vietnam': '🇻🇳',
-    'vn': '🇻🇳',
-    'china': '🇨🇳',
-    'cn': '🇨🇳',
-    'usa': '🇺🇸',
-    'us': '🇺🇸',
-    'uk': '🇬🇧',
-    'united kingdom': '🇬🇧',
-    'europe': '🇪🇺',
-    'european': '🇪🇺',
-    'melbourne': '🇦🇺',
-    'brisbane': '🇦🇺',
-    'gold coast': '🇦🇺',
-    'queensland': '🇦🇺',
-    'bangkok': '🇹🇭',
-    'da nang': '🇻🇳',
+  // Location/city to country code mapping (ISO 3166-1 alpha-2)
+  const locationToCountry: Record<string, string> = {
+    'australia': 'AU',
+    'au': 'AU',
+    'melbourne': 'AU',
+    'brisbane': 'AU',
+    'gold coast': 'AU',
+    'queensland': 'AU',
+    'sydney': 'AU',
+    'perth': 'AU',
+
+    'thailand': 'TH',
+    'th': 'TH',
+    'bangkok': 'TH',
+
+    'dubai': 'AE',
+    'uae': 'AE',
+    'united arab emirates': 'AE',
+
+    'vietnam': 'VN',
+    'vn': 'VN',
+    'da nang': 'VN',
+    'hanoi': 'VN',
+    'ho chi minh': 'VN',
+
+    'china': 'CN',
+    'cn': 'CN',
+    'beijing': 'CN',
+    'shanghai': 'CN',
+
+    'usa': 'US',
+    'us': 'US',
+    'united states': 'US',
+    'america': 'US',
+
+    'uk': 'GB',
+    'united kingdom': 'GB',
+    'england': 'GB',
+    'london': 'GB',
+
+    'europe': 'EU',
+    'european': 'EU',
   }
 
-  // Check for exact matches or partial matches
-  for (const [key, flag] of Object.entries(countryFlags)) {
+  // Check for matches
+  for (const [key, code] of Object.entries(locationToCountry)) {
     if (locationLower.includes(key)) {
-      return flag
+      return code
     }
   }
 
-  return '📍'
+  return null
 }
 
 // Format date as "Month Day Year" (e.g., "September 9 2025") or "Month Year" for partial dates
@@ -369,8 +388,14 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
               className="flex gap-4 bg-white/5 border border-white/10 rounded-lg overflow-hidden"
             >
               {/* LEFT COLUMN — 20% — Flag */}
-              <div className="w-1/5 bg-white/10 flex items-center justify-center p-6 shrink-0">
-                <span className="text-6xl">{getCountryFlag(event.city)}</span>
+              <div className="w-1/5 bg-white/10 flex items-center justify-center p-4 shrink-0">
+                {getCountryCode(event.city) ? (
+                  <Flag countryCode={getCountryCode(event.city)!} className="h-24 w-32 object-cover rounded-md" />
+                ) : (
+                  <div className="h-24 w-32 bg-white/20 rounded-md flex items-center justify-center text-white/40 text-sm">
+                    Unknown
+                  </div>
+                )}
               </div>
 
               {/* RIGHT COLUMN — 80% — Content */}
