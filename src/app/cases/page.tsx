@@ -7,6 +7,40 @@ import { Card, CardContent } from '@/components/ui/card'
 import { ScaleIcon } from '@heroicons/react/24/outline'
 import { createClient } from '@/lib/supabase/client'
 import { useTranslation } from '@/i18n'
+import { FlagIcon } from '@/components/plaintiff-page/FlagIcon'
+
+// Same country mapping as CaseTimeline
+type CountryCode = 'AU' | 'TH' | 'AE' | 'VN' | 'CN' | 'US' | 'GB' | 'EU'
+
+const locationToCountry: Record<string, CountryCode> = {
+    'australia': 'AU', 'au': 'AU', 'melbourne': 'AU', 'brisbane': 'AU',
+    'gold coast': 'AU', 'queensland': 'AU', 'sydney': 'AU', 'perth': 'AU',
+    'thailand': 'TH', 'th': 'TH', 'bangkok': 'TH',
+    'dubai': 'AE', 'uae': 'AE', 'united arab emirates': 'AE',
+    'vietnam': 'VN', 'vn': 'VN', 'da nang': 'VN', 'hanoi': 'VN', 'ho chi minh': 'VN',
+    'china': 'CN', 'cn': 'CN', 'beijing': 'CN', 'shanghai': 'CN',
+    'usa': 'US', 'us': 'US', 'united states': 'US', 'america': 'US',
+    'uk': 'GB', 'united kingdom': 'GB', 'england': 'GB', 'london': 'GB',
+    'europe': 'EU', 'european': 'EU',
+}
+
+function getCountryCode(location: string | null): CountryCode | null {
+    if (!location) return null
+    const lower = location.toLowerCase()
+    for (const [key, code] of Object.entries(locationToCountry)) {
+        if (lower.includes(key)) return code
+    }
+    return null
+}
+
+function getCaseFlags(c: any): CountryCode[] {
+    const codes = new Set<CountryCode>()
+    for (const city of (c.timeline_cities || [])) {
+        const code = getCountryCode(city)
+        if (code) codes.add(code)
+    }
+    return Array.from(codes)
+}
 
 export default function CasesPage() {
     const { t } = useTranslation()
@@ -27,6 +61,7 @@ export default function CasesPage() {
                     nominal_damages_claimed,
                     created_at,
                     verdict_at,
+                    plaintiff_id,
                     defendants (
                         id,
                         full_name,
@@ -41,15 +76,56 @@ export default function CasesPage() {
 
             if (error) {
                 setError(error.message)
-            } else {
-                setCases(data)
+                setLoading(false)
+                return
             }
+
+            const caseIds = (data || []).map((c: any) => c.id)
+
+            // Fetch plaintiff profiles and timeline events in parallel
+            const [profileRes, timelineRes] = await Promise.all([
+                (async () => {
+                    const plaintiffIds = [...new Set((data || []).map((c: any) => c.plaintiff_id).filter(Boolean))]
+                    if (plaintiffIds.length === 0) return {}
+                    const { data: userProfiles } = await supabase
+                        .from('user_profiles')
+                        .select('id, display_name, avatar_url')
+                        .in('id', plaintiffIds)
+                    const map: Record<string, { full_name: string | null; avatar_url: string | null }> = {}
+                    userProfiles?.forEach((p: any) => { map[p.id] = { full_name: p.display_name, avatar_url: p.avatar_url } })
+                    return map
+                })(),
+                (async () => {
+                    // No FK registered so nested select fails — fetch separately and merge
+                    if (caseIds.length === 0) return {}
+                    const { data: events } = await supabase
+                        .from('timeline_events')
+                        .select('case_id, city')
+                        .in('case_id', caseIds)
+                    const map: Record<string, string[]> = {}
+                    events?.forEach((e: any) => {
+                        if (!map[e.case_id]) map[e.case_id] = []
+                        if (e.city) map[e.case_id].push(e.city)
+                    })
+                    return map
+                })(),
+            ])
+
+            const profileMap = profileRes as Record<string, { full_name: string | null; avatar_url: string | null }>
+            const timelineMap = timelineRes as Record<string, string[]>
+
+            setCases((data || []).map((c: any) => ({
+                ...c,
+                plaintiff: profileMap[c.plaintiff_id] || null,
+                timeline_cities: timelineMap[c.id] || [],
+            })))
             setLoading(false)
         }
         fetchCases()
     }, [])
 
     const statusColors: Record<string, string> = {
+        pending: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20',
         pending_convergence: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20',
         admin_review: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
         investigation: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
@@ -100,35 +176,38 @@ export default function CasesPage() {
                 </div>
             ) : (
                 <div className="grid gap-4">
-                    {cases.map((c: any) => (
-                        <Link key={c.id} href={`/cases/${c.case_number}`}>
-                            <Card className="hover:shadow-md transition-all hover:border-primary/30 cursor-pointer">
-                                <CardContent className="p-0">
-                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-0">
-                                        <div className="flex items-center gap-4 flex-1">
-                                            {/* Defendant avatar */}
-                                            {c.defendants?.photo_url ? (
-                                                <img src={c.defendants.photo_url} alt="" className="h-48 w-48 rounded-lg object-cover ring-2 ring-border shrink-0" />
+                    {cases.map((c: any) => {
+                        const flags = getCaseFlags(c)
+                        return (
+                            <Link key={c.id} href={`/cases/${c.case_number}`}>
+                                <Card className="hover:shadow-md transition-all hover:border-primary/30 cursor-pointer py-0">
+                                    <CardContent className="p-0 pr-[1%]">
+                                        {/* 5-col grid: plaintiff(fixed) | case-info(fixed) | defendant(fixed) | spacer(fills) | right-panel(auto) */}
+                                        <div className="grid items-center" style={{ gridTemplateColumns: '9.6rem 22rem 9.6rem 1fr auto' }}>
+                                            {/* Col 1 — Plaintiff avatar */}
+                                            {c.plaintiff?.avatar_url ? (
+                                                <img src={c.plaintiff.avatar_url} alt="" className="h-[9.6rem] w-[9.6rem] rounded-lg object-cover ring-2 ring-border" />
                                             ) : (
-                                                <div className="h-48 w-48 rounded-lg bg-muted flex items-center justify-center text-4xl font-bold text-muted-foreground shrink-0">
-                                                    {c.defendants?.full_name?.charAt(0)?.toUpperCase() || '?'}
+                                                <div className="h-[9.6rem] w-[9.6rem] rounded-lg bg-muted flex items-center justify-center text-4xl font-bold text-muted-foreground">
+                                                    {c.plaintiff?.full_name?.charAt(0)?.toUpperCase() || '?'}
                                                 </div>
                                             )}
 
-                                            <div className="space-y-1 flex-1 min-w-0">
+                                            {/* Col 2 — Case info (fixed width; longer titles truncate) */}
+                                            <div className="space-y-1 overflow-hidden px-4">
                                                 <div className="flex items-center gap-2 flex-wrap">
                                                     <span className="font-mono text-sm font-bold">{c.case_number}</span>
                                                     <Badge variant="outline" className={`text-xs capitalize ${statusColors[c.status] || ''}`}>
                                                         {c.status.replace(/_/g, ' ')}
                                                     </Badge>
                                                 </div>
-                                                {c.defendants && (
+                                                {(c.plaintiff || c.defendants) && (
                                                     <p className="text-base font-semibold truncate">
-                                                        vs. {c.defendants.full_name}
+                                                        {c.plaintiff?.full_name || 'Unknown'} vs. {c.defendants?.full_name || 'Unknown'}
                                                     </p>
                                                 )}
                                                 {c.case_types && c.case_types.length > 0 && (
-                                                    <div className="flex flex-wrap gap-1">
+                                                    <div className="flex flex-wrap gap-1 overflow-hidden" style={{ maxHeight: '1.75rem' }}>
                                                         {c.case_types.slice(0, 3).map((type: string, i: number) => (
                                                             <Badge key={i} variant="secondary" className="text-xs capitalize">
                                                                 {type.replace(/_/g, ' ')}
@@ -140,27 +219,49 @@ export default function CasesPage() {
                                                     </div>
                                                 )}
                                             </div>
-                                        </div>
 
-                                        <div className="flex gap-6 text-right shrink-0">
-                                            {c.nominal_damages_claimed > 0 && (
-                                                <div>
-                                                    <p className="text-xl font-bold">${c.nominal_damages_claimed.toLocaleString()}</p>
-                                                    <p className="text-sm text-muted-foreground">{t('cases.damages')}</p>
+                                            {/* Col 3 — Defendant avatar (always at fixed position) */}
+                                            {c.defendants?.photo_url ? (
+                                                <img src={c.defendants.photo_url} alt="" className="h-[9.6rem] w-[9.6rem] rounded-lg object-cover ring-2 ring-border" />
+                                            ) : (
+                                                <div className="h-[9.6rem] w-[9.6rem] rounded-lg bg-muted flex items-center justify-center text-4xl font-bold text-muted-foreground">
+                                                    {c.defendants?.full_name?.charAt(0)?.toUpperCase() || '?'}
                                                 </div>
                                             )}
-                                            <div>
-                                                <p className="text-xl font-medium">
-                                                    {new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                                                </p>
-                                                <p className="text-sm text-muted-foreground">{t('cases.filed')}</p>
+
+                                            {/* Col 4 — Spacer */}
+                                            <div />
+
+                                            {/* Col 5 — Right panel: flags top, damages/date bottom */}
+                                            <div className="flex flex-col justify-center gap-3 h-[9.6rem] pl-4 pr-2 items-end">
+                                                {/* Top: damages + date */}
+                                                <div className="flex gap-6 text-right">
+                                                    {c.nominal_damages_claimed > 0 && (
+                                                        <div>
+                                                            <p className="text-xl font-bold">${c.nominal_damages_claimed.toLocaleString()}</p>
+                                                            <p className="text-sm text-muted-foreground">{t('cases.damages')}</p>
+                                                        </div>
+                                                    )}
+                                                    <div>
+                                                        <p className="text-xl font-medium">
+                                                            {new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                        </p>
+                                                        <p className="text-sm text-muted-foreground">{t('cases.filed')}</p>
+                                                    </div>
+                                                </div>
+                                                {/* Bottom: country flags */}
+                                                <div className="flex gap-2 items-center justify-end">
+                                                    {flags.length > 0 ? flags.map(code => (
+                                                        <FlagIcon key={code} countryCode={code} className="h-9 w-14 rounded shadow-sm" />
+                                                    )) : <div className="h-9" />}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </Link>
-                    ))}
+                                    </CardContent>
+                                </Card>
+                            </Link>
+                        )
+                    })}
                 </div>
             )}
 

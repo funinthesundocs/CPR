@@ -223,12 +223,15 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
         </div>
       </motion.div>
 
-      {/* VS badge — orange-red pulsing glow */}
+      {/* VS badge — glossy black with orange glow */}
       <motion.div
         className="absolute left-1/2 top-[calc(50%-30px)] -translate-x-1/2 -translate-y-1/2 z-30
-                   w-[91px] h-[91px] md:w-[104px] md:h-[104px] rounded-full bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600 flex items-center justify-center
-                   text-white font-black text-2xl md:text-3xl border-2 border-black"
+                   w-[91px] h-[91px] md:w-[104px] md:h-[104px] rounded-full flex items-center justify-center
+                   text-white font-black text-2xl md:text-3xl"
         style={{
+          background: 'linear-gradient(160deg, #3f3f46 0%, #09090b 55%, #18181b 100%)',
+          border: '2px solid rgba(249,115,22,0.5)',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.13)',
           animation: 'orangeGlow 3.5s cubic-bezier(0.42, 0, 0.58, 1) infinite',
         }}
         initial={{ scale: 0, opacity: 0, y: 0 }}
@@ -248,7 +251,7 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
 
       {/* Status badge — emerges from explosion upward */}
       <motion.div
-        className="absolute left-1/2 top-[calc(68%-30px)] -translate-x-1/2 z-30"
+        className="absolute left-1/2 top-[calc(68%-20px)] -translate-x-1/2 z-30"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.75, duration: 0.5, ease: 'easeOut' }}

@@ -24,7 +24,9 @@ import {
     ChevronDownIcon,
     ChevronUpDownIcon,
     FunnelIcon,
-    XMarkIcon
+    XMarkIcon,
+    CameraIcon,
+    ArrowPathIcon,
 } from '@heroicons/react/24/outline'
 import { Button } from '@/components/ui/button'
 import {
@@ -56,6 +58,7 @@ type User = {
     id: string
     email: string
     full_name: string | null
+    avatar_url: string | null
     role: string | null
     created_at: string
     last_sign_in_at: string | null
@@ -73,6 +76,9 @@ export default function AllUsersPage() {
     const [modalOpen, setModalOpen] = useState(false)
     const [saving, setSaving] = useState(false)
     const [editingUser, setEditingUser] = useState<User | null>(null)
+    const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+    const [avatarUploading, setAvatarUploading] = useState(false)
+    const [avatarError, setAvatarError] = useState<string | null>(null)
 
     // Sort & filter state
     const [search, setSearch] = useState('')
@@ -180,10 +186,12 @@ export default function AllUsersPage() {
     // Open modal for editing user
     const handleEditUser = (user: User) => {
         setEditingUser(user)
+        setAvatarPreview(user.avatar_url || null)
+        setAvatarError(null)
         setFormData({
             email: user.email,
             fullName: user.full_name || '',
-            password: '', // Don't pre-fill password for security
+            password: '',
             selectedRoles: user.roles.map(role => role.id)
         })
         setModalOpen(true)
@@ -192,8 +200,44 @@ export default function AllUsersPage() {
     // Open modal for adding new user
     const handleAddUser = () => {
         setEditingUser(null)
+        setAvatarPreview(null)
+        setAvatarError(null)
         setFormData({ email: '', fullName: '', password: '', selectedRoles: [] })
         setModalOpen(true)
+    }
+
+    // Handle avatar file selection — upload immediately
+    const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file || !editingUser) return
+
+        setAvatarError(null)
+        setAvatarUploading(true)
+
+        // Optimistic local preview
+        const localUrl = URL.createObjectURL(file)
+        setAvatarPreview(localUrl)
+
+        try {
+            const fd = new FormData()
+            fd.append('file', file)
+            fd.append('userId', editingUser.id)
+
+            const res = await fetch('/api/admin/users/avatar', { method: 'POST', body: fd })
+            const data = await res.json()
+
+            if (!res.ok) throw new Error(data.error || 'Upload failed')
+
+            setAvatarPreview(data.avatar_url)
+            // Update in-place so the table reflects the change without a full refetch
+            setUsers(prev => prev.map(u => u.id === editingUser.id ? { ...u, avatar_url: data.avatar_url } : u))
+        } catch (err) {
+            setAvatarError(err instanceof Error ? err.message : 'Upload failed')
+            setAvatarPreview(editingUser.avatar_url || null)
+        } finally {
+            setAvatarUploading(false)
+            e.target.value = ''
+        }
     }
 
     // Handle form submit
@@ -204,17 +248,27 @@ export default function AllUsersPage() {
 
         try {
             if (editingUser) {
-                // TODO: Implement user update API
-                console.log('Updating user:', editingUser.id, formData)
+                const res = await fetch('/api/admin/users', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: editingUser.id,
+                        fullName: formData.fullName,
+                        roles: formData.selectedRoles,
+                    }),
+                })
+                if (!res.ok) {
+                    const data = await res.json()
+                    throw new Error(data.error || 'Failed to update user')
+                }
             } else {
                 // TODO: Implement user creation API
-                console.log('Creating user:', formData)
+                throw new Error('User creation not yet implemented')
             }
-            await new Promise(resolve => setTimeout(resolve, 1000)) // Placeholder
 
-            // Reset form and close modal
             setFormData({ email: '', fullName: '', password: '', selectedRoles: [] })
             setEditingUser(null)
+            setAvatarPreview(null)
             setModalOpen(false)
             fetchUsers()
         } catch (err) {
@@ -434,7 +488,16 @@ export default function AllUsersPage() {
                                 users.map((user, idx) => (
                                     <tr key={user.id} className={idx % 2 === 0 ? 'bg-card' : 'bg-secondary'}>
                                         <td className="p-3 border-b">
-                                            <span className="font-medium text-sm">{user.full_name || '—'}</span>
+                                            <div className="flex items-center gap-2">
+                                                {user.avatar_url ? (
+                                                    <img src={user.avatar_url} alt="" className="h-7 w-7 rounded-full object-cover flex-shrink-0" />
+                                                ) : (
+                                                    <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                                                        <UserIcon className="h-4 w-4 text-muted-foreground" />
+                                                    </div>
+                                                )}
+                                                <span className="font-medium text-sm">{user.full_name || '—'}</span>
+                                            </div>
                                         </td>
                                         <td className="p-3 border-b">
                                             <span className="text-sm">{user.email}</span>
@@ -534,6 +597,47 @@ export default function AllUsersPage() {
                     </DialogHeader>
                     <form onSubmit={handleSubmit}>
                         <div className="space-y-4 py-4">
+                            {/* Avatar Upload (edit mode only) */}
+                            {editingUser && (
+                                <div className="flex flex-col items-center gap-2 pb-2">
+                                    <div className="relative group">
+                                        <label htmlFor="avatar-upload" className="cursor-pointer block">
+                                            {avatarPreview ? (
+                                                <img
+                                                    src={avatarPreview}
+                                                    alt="User avatar"
+                                                    className="h-20 w-20 rounded-full object-cover ring-2 ring-border group-hover:ring-primary transition-all"
+                                                />
+                                            ) : (
+                                                <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center ring-2 ring-border group-hover:ring-primary transition-all">
+                                                    <UserIcon className="h-9 w-9 text-muted-foreground" />
+                                                </div>
+                                            )}
+                                            <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                {avatarUploading
+                                                    ? <ArrowPathIcon className="h-6 w-6 text-white animate-spin" />
+                                                    : <CameraIcon className="h-6 w-6 text-white" />
+                                                }
+                                            </div>
+                                        </label>
+                                        <input
+                                            id="avatar-upload"
+                                            type="file"
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={handleAvatarChange}
+                                            disabled={avatarUploading}
+                                        />
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {avatarUploading ? 'Uploading...' : 'Click photo to change'}
+                                    </p>
+                                    {avatarError && (
+                                        <p className="text-xs text-destructive">{avatarError}</p>
+                                    )}
+                                </div>
+                            )}
+
                             {/* Email */}
                             <div className="space-y-2">
                                 <Label htmlFor="email">Email</Label>
