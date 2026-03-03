@@ -97,9 +97,16 @@ function MapCanvas({ resolvedPoints }: { resolvedPoints: ResolvedPoint[] }) {
   const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
-    if (!containerRef.current || resolvedPoints.length === 0 || mapRef.current) return
+    if (!containerRef.current || resolvedPoints.length === 0) return
+
+    // Only initialize if map doesn't exist
+    if (mapRef.current) {
+      console.log(`[Map] Already initialized with ${resolvedPoints.length} points — skipping reinit`)
+      return
+    }
 
     const init = async () => {
+      console.log(`[Map] Initializing with ${resolvedPoints.length} locations`)
       // Dynamic import — keeps Leaflet out of SSR bundle
       const L = (await import('leaflet')).default
 
@@ -198,8 +205,10 @@ function MapCanvas({ resolvedPoints }: { resolvedPoints: ResolvedPoint[] }) {
       }
 
       // Numbered markers + popups
+      console.log(`[Map] Adding ${resolvedPoints.length} markers to map`)
       resolvedPoints.forEach(({ loc, index }, i) => {
         const delay = i * 0.3
+        console.log(`[Map] Marker ${i + 1}: "${loc.name}" at ${loc.coords || 'no coords'}`)
         const html = `
           <div style="
             width:34px;height:34px;border-radius:50%;
@@ -241,20 +250,28 @@ function MapCanvas({ resolvedPoints }: { resolvedPoints: ResolvedPoint[] }) {
     })
 
     return () => {
-      try {
-        if (mapRef.current) {
+      // Aggressive cleanup: destroy map completely before React re-mounts
+      if (mapRef.current) {
+        try {
+          // Remove all event listeners
           mapRef.current.off()
+          // Unlink from container
           mapRef.current.remove()
-          mapRef.current = null
+        } catch (err) {
+          // Ignore cleanup errors
         }
-      } catch (err) {
-        console.warn('Error cleaning up map:', err)
+        mapRef.current = null
       }
-      // Leaflet leaves _leaflet_id on the DOM node — clear it so React StrictMode
-      // double-invoke doesn't hit "Map container is already initialized"
+
+      // Clear ALL Leaflet properties from container
       if (containerRef.current) {
-        delete (containerRef.current as any)._leaflet_id
-        delete (containerRef.current as any)._leaflet_map
+        const el = containerRef.current as any
+        // Delete all _leaflet* properties
+        Object.keys(el).forEach(key => {
+          if (key.startsWith('_leaflet')) delete el[key]
+        })
+        // Clear innerHTML to fully reset container
+        el.innerHTML = ''
       }
     }
   }, [resolvedPoints])
