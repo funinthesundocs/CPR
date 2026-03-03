@@ -435,6 +435,13 @@ export function CasePlaintiffForm({ editMode }: Props) {
 
             if (defendantMode === 'existing' && selectedDefendant) {
                 defendantId = selectedDefendant.id
+                // Update photo if one was uploaded for an existing defendant
+                if (form.defendant_photo_url) {
+                    await supabase
+                        .from('defendants')
+                        .update({ photo_url: form.defendant_photo_url })
+                        .eq('id', defendantId)
+                }
             } else {
                 const builtFullName = [form.defendant_first_name, form.defendant_middle_name, form.defendant_last_name]
                     .filter(Boolean).join(' ').trim() || 'Unknown'

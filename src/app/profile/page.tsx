@@ -105,19 +105,20 @@ export default function ProfilePage() {
         try {
             let avatarUrl = profile.avatar_url
 
-            // Upload new avatar
+            // Upload new avatar via API (service role bypasses storage RLS)
             if (avatarFile) {
-                const ext = avatarFile.name.split('.').pop()
-                const path = `${user.id}/avatar.${ext}`
-                const { error: uploadError } = await supabase.storage
-                    .from('avatars')
-                    .upload(path, avatarFile, { upsert: true })
-
-                if (!uploadError) {
-                    const { data: publicUrl } = supabase.storage
-                        .from('avatars')
-                        .getPublicUrl(path)
-                    avatarUrl = publicUrl.publicUrl
+                const uploadForm = new FormData()
+                uploadForm.append('file', avatarFile)
+                const res = await fetch('/api/profile/upload-avatar', {
+                    method: 'POST',
+                    body: uploadForm,
+                })
+                if (res.ok) {
+                    const data = await res.json()
+                    avatarUrl = data.avatar_url
+                } else {
+                    const err = await res.json()
+                    throw new Error(err.error || 'Avatar upload failed')
                 }
             }
 

@@ -160,7 +160,7 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
                 ],
               }}
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' as const, delay: 0.8 }}
-              className="w-[140px] h-[140px] md:w-[200px] md:h-[200px] rounded-full overflow-hidden border-2 border-blue-500"
+              className="w-[168px] h-[168px] md:w-[240px] md:h-[240px] rounded-full overflow-hidden border-2 border-blue-500"
             >
               {plaintiffPhoto ? (
                 <img src={plaintiffPhoto} alt={plaintiffName} className="w-full h-full object-cover" />
@@ -205,7 +205,7 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
                 ],
               }}
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' as const, delay: 0.8 }}
-              className="w-[140px] h-[140px] md:w-[200px] md:h-[200px] rounded-full overflow-hidden border-2 border-red-600"
+              className="w-[168px] h-[168px] md:w-[240px] md:h-[240px] rounded-full overflow-hidden border-2 border-red-600"
             >
               {defendantPhoto ? (
                 <img src={defendantPhoto} alt={defendantName} className="w-full h-full object-cover" />
@@ -226,7 +226,7 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
       {/* VS badge — orange-red pulsing glow */}
       <motion.div
         className="absolute left-1/2 top-[calc(50%-30px)] -translate-x-1/2 -translate-y-1/2 z-30
-                   w-[101px] h-[101px] md:w-[115px] md:h-[115px] rounded-full bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600 flex items-center justify-center
+                   w-[91px] h-[91px] md:w-[104px] md:h-[104px] rounded-full bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600 flex items-center justify-center
                    text-white font-black text-2xl md:text-3xl border-2 border-black"
         style={{
           animation: 'orangeGlow 3.5s cubic-bezier(0.42, 0, 0.58, 1) infinite',

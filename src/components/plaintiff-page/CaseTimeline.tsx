@@ -4,7 +4,7 @@ import { useRef, useState } from 'react'
 import { motion, useAnimate } from 'framer-motion'
 import { MapPinIcon } from '@heroicons/react/24/outline'
 import { Bars3Icon, ListBulletIcon } from '@heroicons/react/24/outline'
-import { Flag } from 'country-flag-icons/react/3x2'
+import { FlagIcon } from './FlagIcon'
 
 const sectionVariants = {
   hidden: { opacity: 0, y: 24 },
@@ -67,13 +67,15 @@ const parseDate = (dateStr: string): number => {
 }
 
 // Get country code from location string for flag rendering
-const getCountryCode = (location: string | null): string | null => {
+type CountryCode = 'AU' | 'TH' | 'AE' | 'VN' | 'CN' | 'US' | 'GB' | 'EU'
+
+const getCountryCode = (location: string | null): CountryCode | null => {
   if (!location) return null
 
   const locationLower = location.toLowerCase()
 
   // Location/city to country code mapping (ISO 3166-1 alpha-2)
-  const locationToCountry: Record<string, string> = {
+  const locationToCountry: Record<string, CountryCode> = {
     'australia': 'AU',
     'au': 'AU',
     'melbourne': 'AU',
@@ -378,7 +380,9 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
       ) : (
         /* VERTICAL VIEW — two-column layout with flag and content */
         <div className="w-full max-w-[1340px] mx-auto px-6 space-y-6 mb-12">
-          {sortedEvents.map((event, i) => (
+          {sortedEvents.map((event, i) => {
+            const countryCode = getCountryCode(event.city)
+            return (
             <motion.div
               key={event.id}
               initial={{ opacity: 0, y: 12 }}
@@ -389,8 +393,8 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
             >
               {/* LEFT COLUMN — 20% — Flag */}
               <div className="w-1/5 bg-white/10 flex items-center justify-center p-4 shrink-0">
-                {getCountryCode(event.city) ? (
-                  <Flag countryCode={getCountryCode(event.city)!} className="h-24 w-32 object-cover rounded-md" />
+                {countryCode ? (
+                  <FlagIcon countryCode={countryCode} className="h-24 w-32 rounded-md" />
                 ) : (
                   <div className="h-24 w-32 bg-white/20 rounded-md flex items-center justify-center text-white/40 text-sm">
                     Unknown
@@ -420,7 +424,8 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
                 )}
               </div>
             </motion.div>
-          ))}
+            )
+          })}
         </div>
       )}
     </motion.section>

@@ -103,14 +103,14 @@ export default function CasesPage() {
                     {cases.map((c: any) => (
                         <Link key={c.id} href={`/cases/${c.case_number}`}>
                             <Card className="hover:shadow-md transition-all hover:border-primary/30 cursor-pointer">
-                                <CardContent className="p-5">
-                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <CardContent className="p-0">
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-0">
                                         <div className="flex items-center gap-4 flex-1">
                                             {/* Defendant avatar */}
                                             {c.defendants?.photo_url ? (
-                                                <img src={c.defendants.photo_url} alt="" className="h-12 w-12 rounded-lg object-cover ring-2 ring-border" />
+                                                <img src={c.defendants.photo_url} alt="" className="h-48 w-48 rounded-lg object-cover ring-2 ring-border shrink-0" />
                                             ) : (
-                                                <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center text-lg font-bold text-muted-foreground">
+                                                <div className="h-48 w-48 rounded-lg bg-muted flex items-center justify-center text-4xl font-bold text-muted-foreground shrink-0">
                                                     {c.defendants?.full_name?.charAt(0)?.toUpperCase() || '?'}
                                                 </div>
                                             )}
@@ -145,15 +145,15 @@ export default function CasesPage() {
                                         <div className="flex gap-6 text-right shrink-0">
                                             {c.nominal_damages_claimed > 0 && (
                                                 <div>
-                                                    <p className="text-lg font-bold">${c.nominal_damages_claimed.toLocaleString()}</p>
-                                                    <p className="text-xs text-muted-foreground">{t('cases.damages')}</p>
+                                                    <p className="text-xl font-bold">${c.nominal_damages_claimed.toLocaleString()}</p>
+                                                    <p className="text-sm text-muted-foreground">{t('cases.damages')}</p>
                                                 </div>
                                             )}
                                             <div>
-                                                <p className="text-sm font-medium">
+                                                <p className="text-xl font-medium">
                                                     {new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                                 </p>
-                                                <p className="text-xs text-muted-foreground">{t('cases.filed')}</p>
+                                                <p className="text-sm text-muted-foreground">{t('cases.filed')}</p>
                                             </div>
                                         </div>
                                     </div>
