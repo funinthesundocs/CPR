@@ -22,7 +22,7 @@ export function HeroText({ plaintiffName, defendantName, tagline, caseNumber, fi
         <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-white mb-4">
           {plaintiffName} <span className="text-[var(--accent-500)]">vs.</span> {defendantName}
         </h1>
-        <p className="text-lg md:text-xl font-normal text-white/60 italic whitespace-nowrap mb-6">
+        <p className="text-lg md:text-xl font-normal text-white/60 italic capitalize text-center mb-6">
           {tagline}
         </p>
         <p className="text-sm text-white/40">

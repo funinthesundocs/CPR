@@ -93,7 +93,7 @@ export function CaseSummaryModule({ notebookSummary, briefingDocContent, testimo
                   components={{
                     h2: ({ children }) => <h2 className="text-lg font-bold text-white mt-4 mb-2 pb-2 border-b border-[var(--accent-500)]/30">{children}</h2>,
                     p: ({ children }) => <p className="text-[16px] leading-relaxed text-white/75 mb-3 text-justify">{children}</p>,
-                    strong: ({ children }) => <strong className="text-white/95 font-semibold bg-white/5 px-1 py-0.5 rounded">{children}</strong>,
+                    strong: ({ children }) => <strong className="text-white font-semibold">{children}</strong>,
                     ul: ({ children }) => <ul className="list-none space-y-1 mb-3 pl-4">{children}</ul>,
                     li: ({ children }) => <li className="leading-relaxed text-white/75 flex gap-2 before:content-['•'] before:text-[var(--accent-500)] before:font-bold before:flex-shrink-0">{children}</li>,
                     hr: () => <hr className="border-t border-dashed border-white/20 my-4" />,
@@ -201,39 +201,17 @@ export function CaseSummaryModule({ notebookSummary, briefingDocContent, testimo
             {/* Content */}
             <div className="overflow-y-auto p-8 flex-1">
               {activeTab === 'analysis' && (
-                <div className="prose prose-invert max-w-none space-y-6">
+                <div className="space-y-4">
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   components={{
-                    h1: ({ children }) => (
-                      <div className="bg-gradient-to-r from-[var(--accent-500)]/20 to-transparent border-l-4 border-[var(--accent-500)] pl-4 py-4 rounded-r-lg">
-                        <h1 className="text-3xl font-bold text-white m-0">{children}</h1>
-                      </div>
-                    ),
-                    h2: ({ children }) => (
-                      <h2 className="text-2xl font-bold text-white mt-8 mb-4 pb-3 border-b border-[var(--accent-500)]/30">{children}</h2>
-                    ),
-                    h3: ({ children }) => <h3 className="text-lg font-semibold text-[var(--accent-300)] mt-6 mb-3">{children}</h3>,
-                    h4: ({ children }) => <h4 className="text-base font-semibold text-white/80 mt-4 mb-2">{children}</h4>,
-                    p: ({ children }) => <p className="text-base leading-relaxed text-white/75 mb-4 text-justify">{children}</p>,
-                    strong: ({ children }) => <strong className="text-white/95 font-semibold bg-white/5 px-1 py-0.5 rounded">{children}</strong>,
-                    em: ({ children }) => <em className="text-white/80 italic border-l-2 border-[var(--accent-500)]/50 pl-2">{children}</em>,
-                    ul: ({ children }) => <ul className="list-none space-y-2 mb-4 pl-4">{children}</ul>,
-                    ol: ({ children }) => <ol className="list-none space-y-2 mb-4 pl-4 counter-reset">{children}</ol>,
-                    li: ({ children }) => <li className="leading-relaxed text-white/75 flex gap-3 before:content-['→'] before:text-[var(--accent-500)] before:font-bold before:flex-shrink-0">{children}</li>,
-                    blockquote: ({ children }) => (
-                      <div className="bg-white/5 border-l-4 border-[var(--accent-500)] pl-6 py-4 rounded-r-lg my-6">
-                        <blockquote className="text-white/70 italic font-medium m-0">{children}</blockquote>
-                      </div>
-                    ),
-                    hr: () => <hr className="border-t-2 border-dashed border-white/20 my-8" />,
-                    table: ({ children }) => (
-                      <div className="bg-white/5 rounded-lg overflow-hidden border border-white/10 my-6">
-                        <table className="w-full text-sm">{children}</table>
-                      </div>
-                    ),
-                    th: ({ children }) => <th className="text-left p-3 bg-[var(--accent-500)]/20 text-white font-semibold border-b border-white/10">{children}</th>,
-                    td: ({ children }) => <td className="p-3 border-b border-white/10 text-white/70">{children}</td>,
+                    h2: ({ children }) => <h2 className="text-lg font-bold text-white mt-6 mb-3 pb-2 border-b border-[var(--accent-500)]/30">{children}</h2>,
+                    p: ({ children }) => <p className="text-[16px] leading-relaxed text-white/75 mb-3 text-justify">{children}</p>,
+                    strong: ({ children }) => <strong className="text-white font-semibold">{children}</strong>,
+                    ul: ({ children }) => <ul className="list-none space-y-1 mb-3 pl-4">{children}</ul>,
+                    ol: ({ children }) => <ol className="list-none space-y-1 mb-3 pl-4">{children}</ol>,
+                    li: ({ children }) => <li className="leading-relaxed text-white/75 flex gap-2 before:content-['•'] before:text-[var(--accent-500)] before:font-bold before:flex-shrink-0">{children}</li>,
+                    hr: () => <hr className="border-t border-dashed border-white/20 my-4" />,
                   }}
                 >
                   {briefingDocContent}

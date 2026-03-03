@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NotebookLM-py — Complete Reference Guide</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface2: #1c2128;
+      --border: #30363d;
+      --accent: #58a6ff;
+      --accent2: #3fb950;
+      --warn: #d29922;
+      --danger: #f85149;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --code-bg: #0d1117;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    /* ───── NAV ───── */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13,17,23,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      height: 56px;
+    }
+    .nav-brand { font-weight: 700; font-size: 1rem; color: var(--accent); letter-spacing: -0.02em; }
+    .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.85rem; transition: color 0.15s; }
+    .nav-links a:hover { color: var(--text); }
+
+    /* ───── HERO ───── */
+    .hero {
+      background: linear-gradient(135deg, #0d1117 0%, #1a1f2e 50%, #0d1117 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 5rem 2rem 4rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(88,166,255,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(248,81,73,0.15);
+      border: 1px solid rgba(248,81,73,0.4);
+      color: #f85149;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #e6edf3 0%, #58a6ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      font-size: 1.1rem;
+      color: var(--muted);
+      max-width: 640px;
+      margin: 0 auto 2rem;
+    }
+    .hero-meta {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .hero-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot-green { background: var(--accent2); box-shadow: 0 0 6px var(--accent2); }
+    .dot-yellow { background: var(--warn); }
+    .dot-red { background: var(--danger); }
+
+    /* ───── LAYOUT ───── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 3rem 2rem; }
+
+    /* ───── SECTIONS ───── */
+    .section { margin-bottom: 4rem; }
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .section-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    /* ───── ALERT BOXES ───── */
+    .alert {
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin: 1.25rem 0;
+      border-left: 4px solid;
+      font-size: 0.9rem;
+    }
+    .alert-critical { background: rgba(248,81,73,0.08); border-color: var(--danger); }
+    .alert-warn { background: rgba(210,153,34,0.08); border-color: var(--warn); }
+    .alert-info { background: rgba(88,166,255,0.08); border-color: var(--accent); }
+    .alert-success { background: rgba(63,185,80,0.08); border-color: var(--accent2); }
+    .alert strong { display: block; margin-bottom: 0.25rem; }
+
+    /* ───── CODE ───── */
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      overflow-x: auto;
+      font-size: 0.82rem;
+      line-height: 1.6;
+      margin: 1rem 0;
+    }
+    code {
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    :not(pre) > code {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.15em 0.4em;
+      font-size: 0.82em;
+      color: #f47067;
+    }
+
+    /* ───── TABLES ───── */
+    .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); margin: 1rem 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th {
+      background: var(--surface);
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(88,166,255,0.04); }
+
+    /* ───── CARDS ───── */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; margin: 1.25rem 0; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem;
+      transition: border-color 0.15s, transform 0.15s;
+    }
+    .card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .card-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+    .card h4 { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.4rem; }
+    .card p { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+
+    /* ───── TAG PILLS ───── */
+    .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.75rem 0; }
+    .tag {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid;
+    }
+    .tag-green { background: rgba(63,185,80,0.12); border-color: rgba(63,185,80,0.4); color: var(--accent2); }
+    .tag-blue { background: rgba(88,166,255,0.12); border-color: rgba(88,166,255,0.4); color: var(--accent); }
+    .tag-orange { background: rgba(210,153,34,0.12); border-color: rgba(210,153,34,0.4); color: var(--warn); }
+    .tag-red { background: rgba(248,81,73,0.12); border-color: rgba(248,81,73,0.4); color: var(--danger); }
+
+    /* ───── STEP LIST ───── */
+    .steps { list-style: none; counter-reset: steps; }
+    .steps li {
+      counter-increment: steps;
+      padding: 0.6rem 0 0.6rem 3rem;
+      position: relative;
+      border-left: 1px solid var(--border);
+      margin-left: 0.75rem;
+    }
+    .steps li::before {
+      content: counter(steps);
+      position: absolute;
+      left: -0.85rem;
+      top: 0.6rem;
+      width: 1.7rem;
+      height: 1.7rem;
+      background: var(--surface2);
+      border: 1px solid var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .steps li:last-child { border-left-color: transparent; }
+
+    /* ───── TWO-COL ───── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+    /* ───── COMPARISON ───── */
+    .compare-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.87rem;
+    }
+    .compare-item:last-child { border-bottom: none; }
+    .check { color: var(--accent2); font-weight: 700; flex-shrink: 0; }
+    .cross { color: var(--danger); font-weight: 700; flex-shrink: 0; }
+
+    h2 { font-size: 1.1rem; font-weight: 600; margin: 1.5rem 0 0.75rem; }
+    h3 { font-size: 0.95rem; font-weight: 600; color: var(--accent); margin: 1.25rem 0 0.5rem; }
+    p { margin-bottom: 0.75rem; }
+    ul { padding-left: 1.5rem; margin-bottom: 0.75rem; }
+    li { margin-bottom: 0.25rem; }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+    footer a { color: var(--accent); }
+
+    .version-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.25rem 0.75rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-brand">notebooklm-py</div>
+  <ul class="nav-links">
+    <li><a href="#what-is-it">Overview</a></li>
+    <li><a href="#auth">Authentication</a></li>
+    <li><a href="#install">Installation</a></li>
+    <li><a href="#cli">CLI Commands</a></li>
+    <li><a href="#python-api">Python API</a></li>
+    <li><a href="#agent-skills">Agent Skills</a></li>
+    <li><a href="#limits">Limitations</a></li>
+    <li><a href="#vs-ui">API vs UI</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">Unofficial — Undocumented Google APIs</div>
+  <h1>notebooklm-py</h1>
+  <p>Complete programmatic control over Google NotebookLM — from Python scripts, the command line, and AI agent skills.</p>
+  <div class="hero-meta">
+    <div class="hero-meta-item">
+      <span class="dot dot-green"></span>
+      <span>No Google API key needed</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="dot dot-green"></span>
+      <span>Runs on your Google account</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="dot dot-yellow"></span>
+      <span>Unofficial — may break</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="dot dot-red"></span>
+      <span>Research / prototypes only</span>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+
+  <!-- SECTION 1 — WHAT IS IT -->
+  <div class="section" id="what-is-it">
+    <div class="section-title">
+      <div class="section-icon" style="background:rgba(88,166,255,0.1)">📖</div>
+      What Is It?
+    </div>
+    <p>
+      <strong>notebooklm-py</strong> is an <em>unofficial</em> Python library and CLI tool that reverse-engineers
+      Google NotebookLM's internal RPC API. It gives you full programmatic access to every NotebookLM feature —
+      and even exposes capabilities that the web UI doesn't offer.
+    </p>
+
+    <div class="alert alert-critical">
+      <strong>Not affiliated with Google.</strong>
+      This uses undocumented internal endpoints. Google can change or break these at any time without notice.
+      Best used for prototypes, research tools, and personal automation — not production services at scale.
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🤖</div>
+        <h4>AI Agent Tools</h4>
+        <p>Full Claude Code skill integration — control NotebookLM with natural language from AI agents.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📚</div>
+        <h4>Research Automation</h4>
+        <p>Bulk import URLs, PDFs, YouTube, Google Drive. AI-powered web research with auto-indexing.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎙️</div>
+        <h4>Content Generation</h4>
+        <p>Podcasts, videos, slide decks, quizzes, flashcards, infographics, mind maps, data tables.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📥</div>
+        <h4>Downloads & Export</h4>
+        <p>Batch download MP3, MP4, PDF, PNG, CSV, JSON. Features the web UI can't offer.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2 — AUTHENTICATION -->
+  <div class="section" id="auth">
+    <div class="section-title">
+      <div class="section-icon" style="background:rgba(210,153,34,0.1)">🔑</div>
+      Authentication — The Big Question
+    </div>
+
+    <div class="alert alert-success">
+      <strong>You do NOT pay separately. It runs under your Google account.</strong>
+      notebooklm-py authenticates as YOU — it uses real Google session cookies from a browser login,
+      so all generation costs, rate limits, and quotas are tied to your personal Google (or Google Workspace) account.
+      There is no API key, no credit system, and no billing beyond your existing Google plan.
+    </div>
+
+    <h2>How Authentication Actually Works</h2>
+    <p>
+      When you run <code>notebooklm login</code>, the library opens a real Chromium browser window.
+      You sign in normally to your Google account. When complete, it saves your session cookies to a local file —
+      <code>~/.notebooklm/storage_state.json</code>. Every subsequent command re-uses those cookies to act as you.
+    </p>
+
+    <ol class="steps" style="margin-top:1rem;">
+      <li>Run <code>notebooklm login</code> → a Chromium browser opens</li>
+      <li>Log in to your Google account normally in that browser</li>
+      <li>Press Enter in the terminal when done</li>
+      <li>Session cookies are saved to disk at <code>~/.notebooklm/storage_state.json</code></li>
+      <li>All future commands silently reuse these cookies</li>
+      <li>If cookies expire, run <code>notebooklm login</code> again</li>
+    </ol>
+
+    <h2>Auth Storage Locations (Priority Order)</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Priority</th><th>Source</th><th>Best For</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1 (highest)</td><td>Explicit path arg: <code>from_storage("/path/file.json")</code></td><td>Multi-account setups</td></tr>
+          <tr><td>2</td><td>Environment variable: <code>NOTEBOOKLM_AUTH_JSON</code></td><td>CI/CD pipelines, GitHub Actions</td></tr>
+          <tr><td>3</td><td><code>$NOTEBOOKLM_HOME/storage_state.json</code></td><td>Custom home directory</td></tr>
+          <tr><td>4 (default)</td><td><code>~/.notebooklm/storage_state.json</code></td><td>Normal local development</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Token Refresh</h2>
+    <p>
+      CSRF tokens auto-refresh transparently on 401/403 errors. However, if your <em>session cookies</em> expire
+      (typically days to weeks), you must re-run <code>notebooklm login</code>. For CI/CD, export your
+      <code>storage_state.json</code> content as a secret and set it in <code>NOTEBOOKLM_AUTH_JSON</code>.
+    </p>
+
+    <div class="alert alert-warn">
+      <strong>Your Google account is the billing layer.</strong>
+      Free Google accounts have NotebookLM limits (50 notebooks, 50 sources each, ~50 queries/day).
+      Google AI Pro/Ultra subscribers get significantly higher quotas. The library has no way to bypass these limits.
+    </div>
+  </div>
+
+  <!-- SECTION 3 — INSTALL -->
+  <div class="section" id="install">
+    <div class="section-title">
+      <div class="section-icon" style="background:rgba(63,185,80,0.1)">⚙️</div>
+      Installation
+    </div>
+
+    <div class="two-col">
+      <div>
+        <h3>Standard Install</h3>
+        <pre><code># Basic install
+pip install notebooklm-py
+
+# With browser login support (required for first run)
+pip install "notebooklm-py[browser]"
+playwright install chromium</code></pre>
+        <p style="font-size:0.85rem;color:var(--muted)">
+          The <code>[browser]</code> extra is only needed for <code>notebooklm login</code>.
+          If you already have cookies saved and just want to run scripts, the base install is fine.
+        </p>
+      </div>
+      <div>
+        <h3>Development Install</h3>
+        <pre><code>git clone https://github.com/teng-lin/notebooklm-py
+cd notebooklm-py
+pip install -e ".[browser,dev]"
+playwright install chromium</code></pre>
+      </div>
+    </div>
+
+    <h2>First-Time Setup</h2>
+    <pre><code># 1. Authenticate (opens browser window)
+notebooklm login
+
+# 2. Verify it worked
+notebooklm auth check --test
+
+# 3. Check current status
+notebooklm status</code></pre>
+  </div>
+
+  <!-- SECTION 4 — CLI -->
+  <div class="section" id="cli">
+    <div class="section-title">
+      <div class="section-icon" style="background:rgba(88,166,255,0.1)">💻</div>
+      CLI Reference
+    </div>
+
+    <p>The CLI is organized into command groups. The active notebook is tracked in a context file so you don't need to pass IDs every time.</p>
+
+    <h2>Session & Auth Commands</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>notebooklm login</code></td><td>Open browser, login to Google, save session cookies</td></tr>
+          <tr><td><code>notebooklm status</code></td><td>Show currently active notebook and conversation context</td></tr>
+          <tr><td><code>notebooklm status --paths</code></td><td>Show where config files are stored on disk</td></tr>
+          <tr><td><code>notebooklm use &lt;id&gt;</code></td><td>Set the active notebook (supports partial IDs)</td></tr>
+          <tr><td><code>notebooklm auth check</code></td><td>Validate local cookie file without network call</td></tr>
+          <tr><td><code>notebooklm auth check --test</code></td><td>Full auth validation with live network test</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Notebook Commands</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>notebooklm list</code></td><td>List all your notebooks</td></tr>
+          <tr><td><code>notebooklm create "Title"</code></td><td>Create a new notebook</td></tr>
+          <tr><td><code>notebooklm delete &lt;id&gt;</code></td><td>Delete a notebook</td></tr>
+          <tr><td><code>notebooklm rename "New Title"</code></td><td>Rename the active notebook</td></tr>
+          <tr><td><code>notebooklm summary</code></td><td>Get an AI-generated summary of the active notebook</td></tr>
+          <tr><td><code>notebooklm share</code></td><td>Toggle public link sharing on/off</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Source Commands</h2>
+    <div class="alert alert-info">
+      <strong>Auto-detection:</strong> <code>source add</code> auto-detects the content type.
+      URLs → web page. YouTube links → video transcript. File paths → file upload (PDF, text, Word, Markdown, audio, video, images).
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>source list</code></td><td>List all sources in active notebook</td></tr>
+          <tr><td><code>source add "https://..."</code></td><td>Add a URL, YouTube video, or file as a source</td></tr>
+          <tr><td><code>source add-drive &lt;id&gt; "Title"</code></td><td>Add a Google Drive document by ID</td></tr>
+          <tr><td><code>source add-research "query"</code></td><td>AI-powered web/Drive research with auto-import</td></tr>
+          <tr><td><code>source fulltext &lt;id&gt;</code></td><td>Retrieve the full indexed text of a source (API-only feature)</td></tr>
+          <tr><td><code>source delete &lt;id&gt;</code></td><td>Remove a source from the notebook</td></tr>
+          <tr><td><code>source refresh &lt;id&gt;</code></td><td>Re-index a source</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Chat Commands</h2>
+    <pre><code>notebooklm ask "What are the key themes?"
+notebooklm ask "Summarize chapter 3" -s source_id_1 -s source_id_2
+notebooklm ask "Explain X" --json          # Returns answer + source citations
+notebooklm configure --mode learning-guide # Set AI persona
+notebooklm history --clear                 # Clear conversation history</code></pre>
+
+    <h2>Generate Commands</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Type</th><th>Command</th><th>Key Options</th></tr></thead>
+        <tbody>
+          <tr><td>🎙️ Podcast</td><td><code>generate audio "description"</code></td><td><code>--format deep-dive|brief|critique|debate</code> &nbsp; <code>--length short|default|long</code></td></tr>
+          <tr><td>🎬 Video</td><td><code>generate video "description"</code></td><td><code>--style classic|whiteboard|kawaii|anime|watercolor|retro|heritage|paper-craft</code></td></tr>
+          <tr><td>📊 Slides</td><td><code>generate slide-deck</code></td><td><code>--format detailed|presenter</code> &nbsp; <code>--length default|short</code></td></tr>
+          <tr><td>❓ Quiz</td><td><code>generate quiz</code></td><td><code>--difficulty easy|medium|hard</code> &nbsp; <code>--quantity fewer|standard|more</code></td></tr>
+          <tr><td>🃏 Flashcards</td><td><code>generate flashcards</code></td><td><code>--difficulty</code> &nbsp; <code>--quantity</code></td></tr>
+          <tr><td>🖼️ Infographic</td><td><code>generate infographic</code></td><td><code>--orientation landscape|portrait|square</code> &nbsp; <code>--detail concise|standard|detailed</code></td></tr>
+          <tr><td>🧠 Mind Map</td><td><code>generate mind-map</code></td><td>Synchronous — no <code>--wait</code> needed</td></tr>
+          <tr><td>📋 Data Table</td><td><code>generate data-table "compare X vs Y"</code></td><td><code>--wait</code></td></tr>
+          <tr><td>📄 Report</td><td><code>generate report</code></td><td><code>--format briefing-doc|study-guide|blog-post|custom</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warn">
+      <strong>Generation is async by default</strong> (except mind-map). Without <code>--wait</code>, the command returns immediately with a task_id.
+      Full generation can take <strong>2 to 30+ minutes</strong> depending on type and load.
+      For agent workflows, use <code>--no-wait</code> and handle polling separately.
+    </div>
+
+    <h2>Download Commands</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Command</th><th>Output Format</th><th>Key Options</th></tr></thead>
+        <tbody>
+          <tr><td><code>download audio ./podcast.mp3</code></td><td>MP4 container</td><td><code>--all</code> &nbsp; <code>--latest</code></td></tr>
+          <tr><td><code>download video ./video.mp4</code></td><td>MP4</td><td><code>--all</code> &nbsp; <code>--latest</code></td></tr>
+          <tr><td><code>download slide-deck ./slides/</code></td><td>PDF</td><td><code>--all</code> &nbsp; <code>--name "Title"</code></td></tr>
+          <tr><td><code>download infographic ./img.png</code></td><td>PNG</td><td><code>--all</code></td></tr>
+          <tr><td><code>download report ./report.md</code></td><td>Markdown</td><td><code>--all</code></td></tr>
+          <tr><td><code>download mind-map ./map.json</code></td><td>JSON hierarchy</td><td><code>--all</code></td></tr>
+          <tr><td><code>download data-table ./data.csv</code></td><td>CSV</td><td><code>--all</code></td></tr>
+          <tr><td><code>download quiz quiz.md</code></td><td>JSON, Markdown, or HTML</td><td><code>--format json|markdown|html</code></td></tr>
+          <tr><td><code>download flashcards cards.json</code></td><td>JSON, Markdown, or HTML</td><td><code>--format json|markdown|html</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Language & Sharing Commands</h2>
+    <pre><code># Language is GLOBAL — affects all notebooks
+notebooklm language list              # List all 80+ language codes
+notebooklm language set zh_Hans       # Switch to Simplified Chinese
+notebooklm language set en            # Back to English
+
+# Sharing
+notebooklm share status               # View sharing settings
+notebooklm share public --enable      # Enable public link
+notebooklm share add user@email.com   # Add specific user as viewer
+notebooklm share add user@email.com --permission editor</code></pre>
+  </div>
+
+  <!-- SECTION 5 — PYTHON API -->
+  <div class="section" id="python-api">
+    <div class="section-title">
+      <div class="section-icon" style="background:rgba(63,185,80,0.1)">🐍</div>
+      Python API
+    </div>
+    <p>
+      The Python API is <strong>fully async</strong> using <code>asyncio</code> and the <code>async with</code>
+      context manager pattern. Always wrap the client in <code>async with</code> to properly manage HTTP connections.
+    </p>
+
+    <h2>Core Pattern</h2>
+    <pre><code>import asyncio
+from notebooklm import NotebookLMClient
+
+async def main():
+    # Auth from saved cookie file (run `notebooklm login` first)
+    async with await NotebookLMClient.from_storage() as client:
+
+        # Create notebook + add sources
+        nb = await client.notebooks.create("My Research")
+        await client.sources.add_url(nb.id, "https://example.com", wait=True)
+
+        # Chat
+        result = await client.chat.ask(nb.id, "Summarize this")
+        print(result.answer)
+
+        # Generate podcast, wait for it
+        status = await client.artifacts.generate_audio(nb.id, instructions="make it engaging")
+        await client.artifacts.wait_for_completion(nb.id, status.task_id)
+        await client.artifacts.download_audio(nb.id, "podcast.mp3")
+
+        # Generate mind map (synchronous — returns immediately)
+        await client.artifacts.generate_mind_map(nb.id)
+        await client.artifacts.download_mind_map(nb.id, "mindmap.json")
+
+asyncio.run(main())</code></pre>
+
+    <h2>API Namespaces</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Namespace</th><th>Key Methods</th></tr></thead>
+        <tbody>
+          <tr><td><code>client.notebooks</code></td><td><code>list()</code> &nbsp; <code>create(title)</code> &nbsp; <code>delete(id)</code> &nbsp; <code>rename(id, title)</code></td></tr>
+          <tr><td><code>client.sources</code></td><td><code>add_url(nb, url)</code> &nbsp; <code>add_file(nb, path)</code> &nbsp; <code>add_drive(nb, id, title)</code> &nbsp; <code>list(nb)</code> &nbsp; <code>fulltext(nb, src)</code></td></tr>
+          <tr><td><code>client.artifacts</code></td><td><code>generate_audio/video/quiz/flashcards/infographic/slide_deck/mind_map/data_table/report()</code></td></tr>
+          <tr><td><code>client.chat</code></td><td><code>ask(nb, question)</code> &nbsp; streaming support</td></tr>
+          <tr><td><code>client.research</code></td><td><code>status(nb)</code> &nbsp; <code>wait(nb, import_all=True)</code></td></tr>
+          <tr><td><code>client.notes</code></td><td><code>create(nb, content)</code> &nbsp; <code>list(nb)</code> &nbsp; <code>delete(nb, id)</code></td></tr>
+          <tr><td><code>client.settings</code></td><td><code>get_language()</code> &nbsp; <code>set_language(code)</code></td></tr>
+          <tr><td><code>client.sharing</code></td><td><code>get_status(nb)</code> &nbsp; <code>set_public(nb, enable)</code> &nbsp; <code>add_user(nb, email)</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>CI/CD Usage (No Browser)</h2>
+    <pre><code>import os
+from notebooklm import NotebookLMClient
+
+# Store your storage_state.json content as a secret in GitHub Actions / CI
+# Then set it at runtime:
+os.environ["NOTEBOOKLM_AUTH_JSON"] = '{"cookies": [{"name":"SID","value":"..."}]}'
+
+async with await NotebookLMClient.from_storage() as client:
+    notebooks = await client.notebooks.list()
+    print(notebooks)</code></pre>
+
+    <h2>Error Handling</h2>
+    <pre><code>from notebooklm import RPCError
+
+try:
+    result = await client.notebooks.create("Test")
+except RPCError as e:
+    print(f"RPC failed: {e}")
+    # Common causes:
+    # - Session expired → re-run `notebooklm login`
+    # - Rate limited → wait and retry
+    # - Invalid parameters</code></pre>
+  </div>
+
+  <!-- SECTION 6 — AGENT SKILLS -->
+  <div class="section" id="agent-skills">
+    <div class="section-title">
+      <div class="section-icon" style="background:rgba(248,81,73,0.1)">🤖</div>
+      Agent Skills (Claude Code / Antigravity)
+    </div>
+
+    <p>
+      notebooklm-py ships with a first-class Claude Code agent skill. After installation, your AI agent can 
+      control NotebookLM with natural language or slash commands — without you writing any Python.
+    </p>
+
+    <h2>Install the Skill</h2>
+    <pre><code># Install via CLI (copies skill to ~/.claude/skills/)
+notebooklm skill install
+
+# Or ask Claude/Antigravity:
+# "Install the notebooklm skill"</code></pre>
+
+    <h2>Using the Skill in Conversations</h2>
+    <div class="two-col">
+      <div>
+        <h3>Natural Language</h3>
+        <pre><code># These all work:
+"Create a podcast about quantum computing"
+"Download the quiz as markdown"
+"Search the web for AI safety papers and add them to my notebook"
+"Generate a mind map and download it as JSON"
+"Summarize the active notebook"</code></pre>
+      </div>
+      <div>
+        <h3>Slash Commands</h3>
+        <pre><code>/notebooklm generate audio
+/notebooklm generate video --style whiteboard
+/notebooklm source add "https://..."
+/notebooklm download quiz --format markdown
+/notebooklm status</code></pre>
+      </div>
+    </div>
+
+    <h2>Skill Management</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>notebooklm skill install</code></td><td>Install/update skill to <code>~/.claude/skills/</code></td></tr>
+          <tr><td><code>notebooklm skill status</code></td><td>Check installation and version</td></tr>
+          <tr><td><code>notebooklm skill show</code></td><td>Print the skill content (inspect what the agent sees)</td></tr>
+          <tr><td><code>notebooklm skill uninstall</code></td><td>Remove skill</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-info">
+      <strong>How this integrates with CPR's existing NotebookLM MCP server:</strong>
+      The Antigravity MCP server you already have configured (<code>notebooklm-mcp</code>) is a separate integration
+      that also controls NotebookLM. The <strong>notebooklm-py</strong> library is the underlying Python engine —
+      the MCP server is built on top of it (or a similar approach). They both authenticate via the same Google
+      session cookies. You can use either — the MCP server for in-conversation agent use, and notebooklm-py CLI
+      for scripted batch operations or advanced pipeline automation.
+    </div>
+  </div>
+
+  <!-- SECTION 7 — LIMITATIONS -->
+  <div class="section" id="limits">
+    <div class="section-title">
+      <div class="section-icon" style="background:rgba(248,81,73,0.1)">⚠️</div>
+      Known Limitations & Risks
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon" style="font-size:1.2rem">💥</div>
+        <h4>Can Break Without Warning</h4>
+        <p>Google changes internal RPC endpoints at will. A UI update can silently break the library overnight.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="font-size:1.2rem">🐢</div>
+        <h4>Slow Generation</h4>
+        <p>Audio, video, and slide decks may take 2–30+ minutes. There's no way to speed this up — it's Google's infrastructure generating content.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="font-size:1.2rem">🚧</div>
+        <h4>Rate Limits</h4>
+        <p>Heavy usage will get throttled. The library has <code>--retry N</code> with exponential backoff, but can't bypass Google's hard limits.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="font-size:1.2rem">🔐</div>
+        <h4>Cookie Expiry</h4>
+        <p>Google session cookies expire. When they do, you must re-run <code>notebooklm login</code> interactively — no way to automate this without a browser.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="font-size:1.2rem">📬</div>
+        <h4>No Official Support</h4>
+        <p>This is a community project. If Google changes something, you're waiting on the open-source maintainers to fix it.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="font-size:1.2rem">🌐</div>
+        <h4>Language is Global</h4>
+        <p>The language setting affects <em>all</em> notebooks in your account simultaneously. No per-notebook language configuration.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 8 — API vs UI -->
+  <div class="section" id="vs-ui">
+    <div class="section-title">
+      <div class="section-icon" style="background:rgba(63,185,80,0.1)">🆚</div>
+      What the API Can Do vs. the Web UI
+    </div>
+
+    <div class="two-col">
+      <div>
+        <h3 style="color:var(--accent2)">API-Only Features (not in web UI)</h3>
+        <div class="compare-item">
+          <span class="check">✓</span>
+          <span><strong>Batch downloads</strong> — download all artifacts of a type at once with <code>--all</code></span>
+        </div>
+        <div class="compare-item">
+          <span class="check">✓</span>
+          <span><strong>Quiz/Flashcard export</strong> — structured JSON, Markdown, or HTML (UI only shows interactive view)</span>
+        </div>
+        <div class="compare-item">
+          <span class="check">✓</span>
+          <span><strong>Mind map JSON extraction</strong> — hierarchical JSON for use in visualization tools like React Flow</span>
+        </div>
+        <div class="compare-item">
+          <span class="check">✓</span>
+          <span><strong>Data table CSV export</strong> — download as spreadsheet-ready CSV</span>
+        </div>
+        <div class="compare-item">
+          <span class="check">✓</span>
+          <span><strong>Source fulltext access</strong> — retrieve the indexed text content of any source</span>
+        </div>
+        <div class="compare-item">
+          <span class="check">✓</span>
+          <span><strong>Programmatic sharing</strong> — add/remove users, set permissions without clicking through UI</span>
+        </div>
+        <div class="compare-item">
+          <span class="check">✓</span>
+          <span><strong>AI-powered research auto-import</strong> — web/Drive search with bulk source import</span>
+        </div>
+        <div class="compare-item">
+          <span class="check">✓</span>
+          <span><strong>Scripted pipelines</strong> — fully automatable, schedule with cron, trigger from CI/CD</span>
+        </div>
+      </div>
+
+      <div>
+        <h3 style="color:var(--danger)">Features the API Can't Do</h3>
+        <div class="compare-item">
+          <span class="cross">✗</span>
+          <span>Interactive quiz/flashcard UI — API gets the raw data but not the browser-based quiz experience</span>
+        </div>
+        <div class="compare-item">
+          <span class="cross">✗</span>
+          <span>Real-time audio streaming — podcasts must finish generating before download</span>
+        </div>
+        <div class="compare-item">
+          <span class="cross">✗</span>
+          <span>Bypassing rate limits — throttling is enforced server-side by Google</span>
+        </div>
+        <div class="compare-item">
+          <span class="cross">✗</span>
+          <span>Unattended re-authentication — cookie refresh requires browser interaction if session expires</span>
+        </div>
+        <div class="compare-item">
+          <span class="cross">✗</span>
+          <span>Reliable long-term automation — Google can break endpoints at any time</span>
+        </div>
+        <div class="compare-item">
+          <span class="cross">✗</span>
+          <span>Concurrent multi-account control — library manages one Google account at a time per instance</span>
+        </div>
+      </div>
+    </div>
+
+    <h2>Artifact Format Reference</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Artifact Type</th><th>Download Format</th><th>Generation Time</th><th>Sync?</th></tr></thead>
+        <tbody>
+          <tr><td>Audio Podcast</td><td>MP4 container (contain MP3 stream)</td><td>5–15 min</td><td>No — async</td></tr>
+          <tr><td>Video Overview</td><td>MP4</td><td>10–30 min</td><td>No — async</td></tr>
+          <tr><td>Slide Deck</td><td>PDF</td><td>3–10 min</td><td>No — async</td></tr>
+          <tr><td>Infographic</td><td>PNG</td><td>2–5 min</td><td>No — async</td></tr>
+          <tr><td>Report / Briefing</td><td>Markdown (.md)</td><td>1–3 min</td><td>No — async</td></tr>
+          <tr><td>Mind Map</td><td>JSON hierarchy</td><td>Seconds</td><td><strong>Yes — sync</strong></td></tr>
+          <tr><td>Data Table</td><td>CSV</td><td>1–3 min</td><td>No — async</td></tr>
+          <tr><td>Quiz</td><td>JSON / Markdown / HTML</td><td>1–3 min</td><td>No — async</td></tr>
+          <tr><td>Flashcards</td><td>JSON / Markdown / HTML</td><td>1–3 min</td><td>No — async</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SECTION 9 — QUICK RECIPES FOR CPR -->
+  <div class="section">
+    <div class="section-title">
+      <div class="section-icon" style="background:rgba(88,166,255,0.1)">⚡</div>
+      Quick Recipes for CPR Workflows
+    </div>
+
+    <h2>Generate All Artifacts for a New Case</h2>
+    <pre><code>notebooklm login
+
+# Set the Kelly Cai notebook as active
+notebooklm use 86438ec8-ec42-4f4e-8331-fda2ed649053
+
+# Generate everything (all async — run one then wait)
+notebooklm generate audio "deep dive on financial fraud" --format deep-dive --wait
+notebooklm generate slide-deck --format detailed --wait
+notebooklm generate report --format briefing-doc --wait
+notebooklm generate infographic --orientation portrait --wait
+notebooklm generate mind-map   # sync — instant
+
+# Download all artifacts at once
+notebooklm download audio ./public/artifacts/kelly-cai/podcast.mp3
+notebooklm download slide-deck ./public/artifacts/kelly-cai/slides.pdf
+notebooklm download report ./.agent/artifacts/kelly-cai/briefing.md
+notebooklm download infographic ./public/artifacts/kelly-cai/infographic.png
+notebooklm download mind-map ./.agent/artifacts/kelly-cai/mindmap.json</code></pre>
+
+    <h2>Python Script — Batch Generate for All Cases</h2>
+    <pre><code>import asyncio
+from notebooklm import NotebookLMClient
+
+NOTEBOOKS = {
+    "kelly-cai": "86438ec8-ec42-4f4e-8331-fda2ed649053",
+    # add more case notebooks here
+}
+
+async def generate_for_case(client, name, nb_id):
+    print(f"Generating artifacts for {name}...")
+
+    # Mind map (sync)
+    await client.artifacts.generate_mind_map(nb_id)
+    await client.artifacts.download_mind_map(nb_id, f".agent/artifacts/{name}/mindmap.json")
+
+    # Audio (async)
+    status = await client.artifacts.generate_audio(nb_id)
+    await client.artifacts.wait_for_completion(nb_id, status.task_id)
+    await client.artifacts.download_audio(nb_id, f"public/artifacts/{name}/podcast.mp4")
+
+    print(f"Done: {name}")
+
+async def main():
+    async with await NotebookLMClient.from_storage() as client:
+        for name, nb_id in NOTEBOOKS.items():
+            await generate_for_case(client, name, nb_id)
+
+asyncio.run(main())</code></pre>
+  </div>
+
+</div>
+
+<footer>
+  <p>
+    <strong>notebooklm-py</strong> is an unofficial community project — 
+    <a href="https://github.com/teng-lin/notebooklm-py" target="_blank">github.com/teng-lin/notebooklm-py</a>.
+    Not affiliated with Google. Use at your own risk.
+    This reference was compiled for the Court of Public Record (CPR) project.
+  </p>
+</footer>
+
+</body>
+</html>

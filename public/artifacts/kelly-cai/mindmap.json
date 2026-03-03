@@ -1,0 +1,236 @@
+{
+    "nodes": [
+        {
+            "id": "colin",
+            "label": "Colin (Cole) Bradley",
+            "type": "defendant"
+        },
+        {
+            "id": "kelly",
+            "label": "Kelly (Wenying) Cai",
+            "type": "plaintiff"
+        },
+        {
+            "id": "matt",
+            "label": "Matt Campbell",
+            "type": "investigator"
+        },
+        {
+            "id": "john",
+            "label": "John Cooper",
+            "type": "investigator"
+        },
+        {
+            "id": "sissy",
+            "label": "Sissy",
+            "type": "victim"
+        },
+        {
+            "id": "ahn",
+            "label": "Ahn / Ana",
+            "type": "victim"
+        },
+        {
+            "id": "lolly",
+            "label": "Lolly",
+            "type": "victim"
+        },
+        {
+            "id": "laurelle",
+            "label": "Laurelle",
+            "type": "ex-wife"
+        },
+        {
+            "id": "sean",
+            "label": "Sean Byer",
+            "type": "victim"
+        },
+        {
+            "id": "aron",
+            "label": "Aron Lee",
+            "type": "witness"
+        },
+        {
+            "id": "kelly_sister",
+            "label": "Kelly's Sister",
+            "type": "victim"
+        },
+        {
+            "id": "kelly_friends",
+            "label": "Kelly's Friends",
+            "type": "victim"
+        },
+        {
+            "id": "cleaner",
+            "label": "Room Cleaner",
+            "type": "victim"
+        },
+        {
+            "id": "australia",
+            "label": "Australia",
+            "type": "location"
+        },
+        {
+            "id": "thailand",
+            "label": "Thailand",
+            "type": "location"
+        },
+        {
+            "id": "dubai",
+            "label": "Dubai, UAE",
+            "type": "location"
+        },
+        {
+            "id": "vietnam",
+            "label": "Vietnam",
+            "type": "location"
+        },
+        {
+            "id": "china",
+            "label": "China",
+            "type": "location"
+        },
+        {
+            "id": "austyle",
+            "label": "Austyle Building Pty Ltd",
+            "type": "company"
+        },
+        {
+            "id": "fake_trust",
+            "label": "150M Euro Family Trust",
+            "type": "deception"
+        },
+        {
+            "id": "loss_300k",
+            "label": "$300k Offset Account Loss",
+            "type": "financial_impact"
+        },
+        {
+            "id": "loss_200k",
+            "label": "$200k House Refinance Loss",
+            "type": "financial_impact"
+        },
+        {
+            "id": "loss_35k",
+            "label": "$35k Loan from Sister",
+            "type": "financial_impact"
+        },
+        {
+            "id": "loss_30k",
+            "label": "$30k Loan from Friends",
+            "type": "financial_impact"
+        },
+        {
+            "id": "total_loss",
+            "label": ">$500k Total Loss",
+            "type": "financial_impact"
+        }
+    ],
+    "links": [
+        {
+            "source": "colin",
+            "target": "kelly",
+            "label": "defrauded and emotionally abused"
+        },
+        {
+            "source": "colin",
+            "target": "fake_trust",
+            "label": "used as primary manipulation tool"
+        },
+        {
+            "source": "kelly",
+            "target": "loss_300k",
+            "label": "invested and lost"
+        },
+        {
+            "source": "kelly",
+            "target": "loss_200k",
+            "label": "refinanced and lost"
+        },
+        {
+            "source": "kelly",
+            "target": "total_loss",
+            "label": "suffered"
+        },
+        {
+            "source": "kelly_sister",
+            "target": "loss_35k",
+            "label": "loaned to Kelly for Colin"
+        },
+        {
+            "source": "kelly_friends",
+            "target": "loss_30k",
+            "label": "loaned to Kelly for Colin"
+        },
+        {
+            "source": "colin",
+            "target": "austyle",
+            "label": "bankrupted"
+        },
+        {
+            "source": "kelly",
+            "target": "austyle",
+            "label": "manipulated into registering as director"
+        },
+        {
+            "source": "colin",
+            "target": "australia",
+            "label": "operated in and fled"
+        },
+        {
+            "source": "colin",
+            "target": "thailand",
+            "label": "relocated (March 2024)"
+        },
+        {
+            "source": "colin",
+            "target": "dubai",
+            "label": "relocated (November 2024)"
+        },
+        {
+            "source": "colin",
+            "target": "vietnam",
+            "label": "relocated (July 2025)"
+        },
+        {
+            "source": "kelly",
+            "target": "china",
+            "label": "stranded with family"
+        },
+        {
+            "source": "colin",
+            "target": "sissy",
+            "label": "attempted to defraud / offered fake shares"
+        },
+        {
+            "source": "colin",
+            "target": "ahn",
+            "label": "dated/manipulated"
+        },
+        {
+            "source": "colin",
+            "target": "lolly",
+            "label": "defrauded"
+        },
+        {
+            "source": "colin",
+            "target": "sean",
+            "label": "defrauded"
+        },
+        {
+            "source": "colin",
+            "target": "cleaner",
+            "label": "sexually assaulted"
+        },
+        {
+            "source": "matt",
+            "target": "colin",
+            "label": "investigating for Court of Public Record"
+        },
+        {
+            "source": "john",
+            "target": "colin",
+            "label": "investigating/defrauded"
+        }
+    ]
+}
