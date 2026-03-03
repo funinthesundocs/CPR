@@ -293,12 +293,27 @@ export function LocationMap({ locations }: LocationMapProps) {
 
   if (!locations || locations.length === 0) return null
 
-  const resolvedPoints: ResolvedPoint[] = locations
+  // PERMANENT FIX: Preserve ALL locations with their actual coordinates
+  // - Multiple events in same city = multiple markers (if they have different lat/long)
+  // - Same city, same coordinates = one marker (deduplicated)
+  // - Different coordinates = always shown separately with their unique index number
+  const allResolvedPoints: ResolvedPoint[] = locations
     .map((loc, index) => {
       const coords = resolveCoords(loc.name, loc.coordinates)
       return coords ? { loc, coords, index } : null
     })
     .filter(Boolean) as ResolvedPoint[]
+
+  // Deduplicate: if multiple events have EXACT same coordinates, keep only first
+  // This prevents marker stacking at same spot
+  const coordKey = (coords: [number, number]) => `${coords[0].toFixed(4)},${coords[1].toFixed(4)}`
+  const seenCoords = new Set<string>()
+  const resolvedPoints: ResolvedPoint[] = allResolvedPoints.filter(point => {
+    const key = coordKey(point.coords)
+    if (seenCoords.has(key)) return false
+    seenCoords.add(key)
+    return true
+  })
 
   if (resolvedPoints.length === 0) return null
 

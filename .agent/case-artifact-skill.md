@@ -313,6 +313,47 @@ These rules are PERMANENT and apply to ALL case timelines:
 
 ---
 
+## Step 10: Location Map Permanent Fix (LOCKED)
+
+**File:** `src/components/plaintiff-page/LocationMap.tsx`
+
+### Required Behavior
+- **All timeline events must be shown on the map**, even if in the same city
+- If multiple events occurred in the **same location** (identical lat/long), show only 1 marker
+- If multiple events occurred in the **same city** but **different lat/long points**, show all markers separately
+- Timeline event index numbering must match location marker numbering
+
+### How Timeline Events Become Map Markers
+1. **Page generation** (`page.tsx`): Extract locations from `timeline_events` table
+   ```tsx
+   const locations = sortedTimeline
+     .filter((t: any) => t.city)
+     .map((t: any) => ({
+       name: t.city,
+       date: t.date_or_year,
+       description: t.description,
+       coordinates: t.latitude && t.longitude ? [t.longitude, t.latitude] : undefined,
+     }))
+   ```
+2. **LocationMap component**: Resolve coordinates and deduplicate
+   - If `coordinates` provided in timeline event → use those exact lat/long
+   - Else → fall back to city name lookup (CITY_COORDS dictionary)
+   - Deduplicate only if coordinates are IDENTICAL (4 decimal places)
+   - Preserve all unique coordinate points
+
+### Database Requirements
+- `timeline_events` table MUST have `latitude` and `longitude` columns (nullable)
+- If `latitude` and `longitude` are NULL, the map falls back to city name lookup
+- To show multiple markers in the same city: **provide explicit latitude/longitude for each event**
+
+### What This Fixes
+- ✅ Multiple events in same city with different coordinates: all shown
+- ✅ Multiple events at exact same spot: deduplicated (1 marker)
+- ✅ Events with only city name (no coords): falls back to city center
+- ✅ All locations shown on map, no missing markers
+
+---
+
 ## Validation Checklist
 
 Before considering the case "done":
