@@ -292,7 +292,6 @@ export default async function CaseDetailPage({ params }: PageProps) {
       briefingContent={briefingContent}
       testimonyFields={testimonyFields}
       infographicUrl={`${artifactBase}/infographic-landscape.jpg`}
-      infographic2Url={`${artifactBase}/infographic-landscape-2.jpg`}
       audioUrl={`${artifactBase}/podcast.mp3`}
       pdfUrl={`${artifactBase}/slides.pdf`}
       summaryImage1Url={summaryImage1Url}

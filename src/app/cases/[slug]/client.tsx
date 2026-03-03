@@ -27,7 +27,6 @@ interface PlaintiffPageClientProps {
   briefingContent: string
   testimonyFields: { label: string; value: string }[]
   infographicUrl: string
-  infographic2Url?: string
   audioUrl?: string
   pdfUrl: string | null
   summaryImage1Url: string
@@ -104,7 +103,6 @@ export function PlaintiffPageClient(props: PlaintiffPageClientProps) {
         {/* SECTION 03 — Story Infographic */}
         <StoryInfographic
           infographicUrl={props.infographicUrl}
-          infographic2Url={props.infographic2Url}
           audioUrl={props.audioUrl}
           caseTitle={caseTitle}
         />

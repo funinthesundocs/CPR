@@ -13,14 +13,12 @@ const sectionVariants = {
 
 interface StoryInfographicProps {
   infographicUrl: string
-  infographic2Url?: string
   audioUrl?: string
   caseTitle: string
 }
 
-export function StoryInfographic({ infographicUrl, infographic2Url, audioUrl, caseTitle }: StoryInfographicProps) {
+export function StoryInfographic({ infographicUrl, audioUrl, caseTitle }: StoryInfographicProps) {
   const [playerOpen, setPlayerOpen] = useState(false)
-  const [activeImage, setActiveImage] = useState<'primary' | 'secondary'>('primary')
 
   return (
     <>
@@ -50,7 +48,7 @@ export function StoryInfographic({ infographicUrl, infographic2Url, audioUrl, ca
           )}
 
           <MagnifyLens
-            imageUrl={activeImage === 'primary' ? infographicUrl : (infographic2Url || infographicUrl)}
+            imageUrl={infographicUrl}
             alt="Case Infographic"
           />
         </div>
