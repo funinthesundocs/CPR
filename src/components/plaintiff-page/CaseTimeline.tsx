@@ -65,6 +65,48 @@ const parseDate = (dateStr: string): number => {
   return 0
 }
 
+// Get country flag emoji from location string
+const getCountryFlag = (location: string | null): string => {
+  if (!location) return '🌍'
+
+  const locationLower = location.toLowerCase()
+
+  // Country/region mappings to flag emojis
+  const countryFlags: Record<string, string> = {
+    'australia': '🇦🇺',
+    'au': '🇦🇺',
+    'thailand': '🇹🇭',
+    'th': '🇹🇭',
+    'dubai': '🇦🇪',
+    'uae': '🇦🇪',
+    'vietnam': '🇻🇳',
+    'vn': '🇻🇳',
+    'china': '🇨🇳',
+    'cn': '🇨🇳',
+    'usa': '🇺🇸',
+    'us': '🇺🇸',
+    'uk': '🇬🇧',
+    'united kingdom': '🇬🇧',
+    'europe': '🇪🇺',
+    'european': '🇪🇺',
+    'melbourne': '🇦🇺',
+    'brisbane': '🇦🇺',
+    'gold coast': '🇦🇺',
+    'queensland': '🇦🇺',
+    'bangkok': '🇹🇭',
+    'da nang': '🇻🇳',
+  }
+
+  // Check for exact matches or partial matches
+  for (const [key, flag] of Object.entries(countryFlags)) {
+    if (locationLower.includes(key)) {
+      return flag
+    }
+  }
+
+  return '📍'
+}
+
 // Format date as "Month Day Year" (e.g., "September 9 2025") or "Month Year" for partial dates
 const formatDate = (dateStr: string): string => {
   // Check for date range (2020–2021)
@@ -315,7 +357,7 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
           </div>
         </div>
       ) : (
-        /* VERTICAL VIEW — stacked full-size events */
+        /* VERTICAL VIEW — two-column layout with flag and content */
         <div className="w-full max-w-[1340px] mx-auto px-6 space-y-6 mb-12">
           {sortedEvents.map((event, i) => (
             <motion.div
@@ -324,26 +366,34 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.05 }}
-              className="bg-white/5 border border-white/10 rounded-lg p-6"
+              className="flex gap-4 bg-white/5 border border-white/10 rounded-lg overflow-hidden"
             >
-              {/* Event number and date */}
-              <div className="flex items-baseline gap-4 mb-3">
-                <span className="text-[24px] font-bold text-[var(--accent-500)]">#{i + 1}</span>
-                <p className="text-[16px] font-semibold text-white text-center flex-1">{formatDate(event.date_or_year)}</p>
+              {/* LEFT COLUMN — 20% — Flag */}
+              <div className="w-1/5 bg-white/10 flex items-center justify-center p-6 shrink-0">
+                <span className="text-6xl">{getCountryFlag(event.city)}</span>
               </div>
 
-              {/* Full description */}
-              <p className="text-[15px] leading-relaxed text-white/80 mb-4">
-                {event.description}
-              </p>
+              {/* RIGHT COLUMN — 80% — Content */}
+              <div className="w-4/5 p-6 space-y-3">
+                {/* Event number and date — left justified */}
+                <div className="flex items-baseline gap-4">
+                  <span className="text-[24px] font-bold text-[var(--accent-500)]">#{i + 1}</span>
+                  <p className="text-[16px] font-semibold text-white">{formatDate(event.date_or_year)}</p>
+                </div>
 
-              {/* Location */}
-              {event.city && (
-                <p className="flex items-center gap-2 text-[13px] text-white/50">
-                  <MapPinIcon className="h-4 w-4" />
-                  {event.city}
+                {/* Full description */}
+                <p className="text-[15px] leading-relaxed text-white/80">
+                  {event.description}
                 </p>
-              )}
+
+                {/* Location */}
+                {event.city && (
+                  <p className="flex items-center gap-2 text-[13px] text-white/50">
+                    <MapPinIcon className="h-4 w-4" />
+                    {event.city}
+                  </p>
+                )}
+              </div>
             </motion.div>
           ))}
         </div>
