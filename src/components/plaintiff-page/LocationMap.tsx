@@ -94,15 +94,14 @@ interface LocationMapProps {
 function MapCanvas({ resolvedPoints }: { resolvedPoints: ResolvedPoint[] }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef       = useRef<any>(null)
-  const initAttempted = useRef(false)
   const [loaded, setLoaded] = useState(false)
+  const [initFailed, setInitFailed] = useState(false)
 
   useEffect(() => {
-    if (!containerRef.current || resolvedPoints.length === 0) return
+    if (!containerRef.current || resolvedPoints.length === 0 || initFailed) return
 
-    // Prevent double initialization from React.StrictMode
-    if (mapRef.current || initAttempted.current) return
-    initAttempted.current = true
+    // Only initialize if map doesn't exist
+    if (mapRef.current) return
 
     const init = async () => {
       // Dynamic import — keeps Leaflet out of SSR bundle
@@ -242,6 +241,11 @@ function MapCanvas({ resolvedPoints }: { resolvedPoints: ResolvedPoint[] }) {
     }
 
     init().catch(err => {
+      // Suppress "already initialized" errors from React.StrictMode
+      if (err.message?.includes('already initialized')) {
+        setInitFailed(true)
+        return
+      }
       console.warn('Map initialization failed:', err)
     })
 
@@ -263,13 +267,6 @@ function MapCanvas({ resolvedPoints }: { resolvedPoints: ResolvedPoint[] }) {
           // Ignore any errors during cleanup
         }
         mapRef.current = null
-      }
-
-      // Only reset initAttempted if map actually existed
-      // (StrictMode will call cleanup/init again, and we want to skip those)
-      // But if mapRef was never set, reset the flag for true remounts
-      if (!mapRef.current) {
-        initAttempted.current = false
       }
 
       // Nuclear option: completely reset container for React.StrictMode
