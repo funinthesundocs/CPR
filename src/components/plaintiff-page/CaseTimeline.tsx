@@ -38,16 +38,22 @@ const parseDate = (dateStr: string): number => {
     return new Date(dateStr).getTime()
   }
 
-  // Try text format (May 15, 2020)
+  // Try text format with day (May 15, 2020 or May 15 2020)
   const textMatch = dateStr.match(/([A-Za-z]+)\s+(\d{1,2}),?\s+(\d{4})/)
   if (textMatch) {
     return new Date(`${textMatch[1]} ${textMatch[2]}, ${textMatch[3]}`).getTime()
   }
 
-  // Try month year (May 2020)
+  // Try month year (May 2020 or Early 2023, Late 2024, etc.)
   const monthYearMatch = dateStr.match(/([A-Za-z]+)\s+(\d{4})/)
   if (monthYearMatch) {
     return new Date(`${monthYearMatch[1]} 1, ${monthYearMatch[2]}`).getTime()
+  }
+
+  // Try date range with dash (2020–2021 or 2020-2021)
+  const rangeMatch = dateStr.match(/^(\d{4})[–-](\d{4})/)
+  if (rangeMatch) {
+    return new Date(`${rangeMatch[1]}-01-01`).getTime()
   }
 
   // Try year only
@@ -59,12 +65,34 @@ const parseDate = (dateStr: string): number => {
   return 0
 }
 
-// Format date as "Month Day Year" (e.g., "September 9 2025")
+// Format date as "Month Day Year" (e.g., "September 9 2025") or "Month Year" for partial dates
 const formatDate = (dateStr: string): string => {
+  // Check for date range (2020–2021)
+  const rangeMatch = dateStr.match(/^(\d{4})[–-](\d{4})/)
+  if (rangeMatch) {
+    return `${rangeMatch[1]} – ${rangeMatch[2]}`
+  }
+
+  // Check for Early/Late/Mid + Year (Early 2023, Late 2024)
+  const approximateMatch = dateStr.match(/^(Early|Mid|Late)\s+(\d{4})/)
+  if (approximateMatch) {
+    return dateStr
+  }
+
   const timestamp = parseDate(dateStr)
   if (timestamp === 0) return dateStr
+
   const date = new Date(timestamp)
-  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+
+  // Check if original string has a day (full date) or just month+year
+  const hasDayMatch = dateStr.match(/(\d{1,2})/)
+  if (hasDayMatch) {
+    // Has day - format as "Month Day Year"
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+  } else {
+    // No day - format as "Month Year"
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
+  }
 }
 
 function FlipCard({ event }: { event: TimelineEvent }) {
