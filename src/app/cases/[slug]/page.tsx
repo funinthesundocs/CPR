@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { PlaintiffPageClient } from './client'
-import { readFile } from 'fs/promises'
+import { readFile, readdir } from 'fs/promises'
 import { join } from 'path'
 
 export const revalidate = 0  // Fetch fresh data every time during development
@@ -197,6 +197,32 @@ export default async function CaseDetailPage({ params }: PageProps) {
     // File not yet generated for this case — use DB fallback
   }
 
+  // Random summary images — pick 2 different images from the pool folder
+  const POOL_DIR = join(process.cwd(), 'public', 'case-summary-pool')
+  const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp'])
+  let summaryImage1Url = '/case-summary-pool/case-summary-1.png'
+  let summaryImage2Url = '/case-summary-pool/case-summary-2.png'
+  try {
+    const files = (await readdir(POOL_DIR)).filter(f =>
+      IMAGE_EXTENSIONS.has(f.slice(f.lastIndexOf('.')).toLowerCase())
+    )
+    if (files.length >= 2) {
+      // Fisher-Yates shuffle, take first two
+      const shuffled = [...files]
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+      }
+      summaryImage1Url = `/case-summary-pool/${shuffled[0]}`
+      summaryImage2Url = `/case-summary-pool/${shuffled[1]}`
+    } else if (files.length === 1) {
+      summaryImage1Url = `/case-summary-pool/${files[0]}`
+      summaryImage2Url = `/case-summary-pool/${files[0]}`
+    }
+  } catch {
+    // Pool folder missing — keep defaults
+  }
+
   // Public artifact base URL — convention: /artifacts/{plaintiff-slug}/
   const artifactBase = `/artifacts/${artifactSlug}`
 
@@ -269,6 +295,8 @@ export default async function CaseDetailPage({ params }: PageProps) {
       infographic2Url={`${artifactBase}/infographic-landscape-2.jpg`}
       audioUrl={`${artifactBase}/podcast.mp3`}
       pdfUrl={`${artifactBase}/slides.pdf`}
+      summaryImage1Url={summaryImage1Url}
+      summaryImage2Url={summaryImage2Url}
       infoBoxes={infoBoxes}
       timeline={sortedTimeline}
       locations={locations}

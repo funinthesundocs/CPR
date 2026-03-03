@@ -42,9 +42,11 @@ interface CaseSummaryModuleProps {
   caseNarratives: Record<string, any>
   evidenceInventory: { label: string; category: string; description: string }[]
   evidence: any[]
+  summaryImage1Url: string
+  summaryImage2Url: string
 }
 
-export function CaseSummaryModule({ notebookSummary, briefingDocContent, testimonyFields, financialTotal, caseNarratives, evidenceInventory, evidence }: CaseSummaryModuleProps) {
+export function CaseSummaryModule({ notebookSummary, briefingDocContent, testimonyFields, financialTotal, caseNarratives, evidenceInventory, evidence, summaryImage1Url, summaryImage2Url }: CaseSummaryModuleProps) {
   const [modalOpen, setModalOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'analysis' | 'testimony'>('analysis')
 
@@ -82,16 +84,14 @@ export function CaseSummaryModule({ notebookSummary, briefingDocContent, testimo
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-0 auto-rows-fr">
-            {/* A1 — Top Left — Text Summary */}
-            <div className="pr-8 border-r border-white/20 pb-8">
+          <div className="flex gap-8 pb-8">
+            {/* LEFT — Full text summary + evidence inventory */}
+            <div className="flex-1 min-w-0 border-r border-white/20 pr-8">
               <div className="prose prose-invert max-w-none space-y-4 text-white/70">
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   components={{
-                    h2: ({ children }) => (
-                      <h2 className="text-lg font-bold text-white mt-4 mb-2 pb-2 border-b border-[var(--accent-500)]/30">{children}</h2>
-                    ),
+                    h2: ({ children }) => <h2 className="text-lg font-bold text-white mt-4 mb-2 pb-2 border-b border-[var(--accent-500)]/30">{children}</h2>,
                     p: ({ children }) => <p className="text-[16px] leading-relaxed text-white/75 mb-3 text-justify">{children}</p>,
                     strong: ({ children }) => <strong className="text-white/95 font-semibold bg-white/5 px-1 py-0.5 rounded">{children}</strong>,
                     ul: ({ children }) => <ul className="list-none space-y-1 mb-3 pl-4">{children}</ul>,
@@ -102,84 +102,61 @@ export function CaseSummaryModule({ notebookSummary, briefingDocContent, testimo
                   {notebookSummary}
                 </ReactMarkdown>
               </div>
+
+              {/* Supporting Documentation */}
+              {evidenceInventory.length > 0 && (
+                <div className="mt-6">
+                  <h3 className="text-lg font-bold text-white mb-3 pb-2 border-b border-[var(--accent-500)]/30">Supporting Documentation</h3>
+                  <ul className="space-y-2 text-[16px] text-white/70">
+                    {evidenceInventory.slice(0, 5).map((item, i) => (
+                      <li key={i} className="flex gap-2">
+                        <span className="text-[var(--accent-500)] font-bold flex-shrink-0">•</span>
+                        <span>{item.label}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Closing Statement */}
+              <div className="mt-6 pt-4 border-t border-white/10">
+                <p className="text-[16px] text-white/60 italic leading-relaxed text-justify">
+                  These files serve as a formal testimony and evidentiary record intended for a "Court of Public Record" to warn future victims.
+                </p>
+              </div>
             </div>
 
-            {/* B1 — Top Right — Image 1 */}
-            <div className="pl-8 pb-8 flex items-center justify-center">
-              <div className="relative" style={{ perspective: '1000px' }}>
+            {/* RIGHT — Both images stacked, filling full column height */}
+            <div className="flex flex-col gap-8 self-stretch w-[340px] shrink-0 pl-2">
+              {/* Image 1 */}
+              <div className="flex-1 min-h-0 relative rounded-lg overflow-visible" style={{ perspective: '1000px' }}>
                 <img
-                  src="/KellyCai - Summary 1.png"
-                  alt="Broken Trust"
-                  className="max-w-full h-auto rounded-lg"
+                  src={summaryImage1Url}
+                  alt=""
+                  className="w-full h-full object-cover rounded-lg"
                   style={{
                     transform: 'rotateZ(-1.5deg) rotateX(0.5deg)',
                     boxShadow: '0 15px 50px rgba(0,0,0,0.7), -5px 5px 15px rgba(0,0,0,0.3)',
                     filter: 'drop-shadow(-2px 2px 4px rgba(0,0,0,0.4))'
                   }}
                 />
-                {/* Left corner tape */}
                 <div className="absolute top-0 left-0 w-[74px] h-[28px] bg-gradient-to-br from-amber-100 to-amber-200" style={{ transform: 'rotateZ(-25deg) translateX(-8px) translateY(-8px)', boxShadow: '0 4px 12px rgba(0,0,0,0.4)', zIndex: 20, opacity: 0.85 }} />
-                {/* Right corner tape */}
                 <div className="absolute top-0 right-0 w-[74px] h-[28px] bg-gradient-to-bl from-amber-100 to-amber-200" style={{ transform: 'rotateZ(25deg) translateX(8px) translateY(-8px)', boxShadow: '0 4px 12px rgba(0,0,0,0.4)', zIndex: 20, opacity: 0.85 }} />
               </div>
-            </div>
-
-            {/* A2 — Bottom Left — Image 2 */}
-            <div className="pr-8 border-r border-white/20 pt-8 flex items-center justify-center -mt-[120px]">
-              <div className="relative" style={{ perspective: '1000px' }}>
+              {/* Image 2 */}
+              <div className="flex-1 min-h-0 relative rounded-lg overflow-visible" style={{ perspective: '1000px' }}>
                 <img
-                  src="/KellyCai - Summary 2.png"
-                  alt="International Fraud Trail"
-                  className="max-w-full h-auto rounded-lg"
+                  src={summaryImage2Url}
+                  alt=""
+                  className="w-full h-full object-cover rounded-lg"
                   style={{
                     transform: 'rotateZ(1.5deg) rotateX(0.5deg)',
                     boxShadow: '0 15px 50px rgba(0,0,0,0.7), 5px 5px 15px rgba(0,0,0,0.3)',
                     filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.4))'
                   }}
                 />
-                {/* Left corner tape */}
                 <div className="absolute top-0 left-0 w-[74px] h-[28px] bg-gradient-to-br from-amber-100 to-amber-200" style={{ transform: 'rotateZ(-25deg) translateX(-8px) translateY(-8px)', boxShadow: '0 4px 12px rgba(0,0,0,0.4)', zIndex: 20, opacity: 0.85 }} />
-                {/* Right corner tape */}
                 <div className="absolute top-0 right-0 w-[74px] h-[28px] bg-gradient-to-bl from-amber-100 to-amber-200" style={{ transform: 'rotateZ(25deg) translateX(8px) translateY(-8px)', boxShadow: '0 4px 12px rgba(0,0,0,0.4)', zIndex: 20, opacity: 0.85 }} />
-              </div>
-            </div>
-
-            {/* B2 — Supporting Documentation & Pattern */}
-            <div className="pl-8 pt-8">
-              <div className="space-y-6">
-                {/* Supporting Documentation */}
-                <div>
-                  <h3 className="text-lg font-bold text-white mb-3 pb-2 border-b border-[var(--accent-500)]/30">Supporting Documentation</h3>
-                  <ul className="space-y-2 text-[16px] text-white/70">
-                    <li className="flex gap-2">
-                      <span className="text-[var(--accent-500)] font-bold flex-shrink-0">•</span>
-                      <span>Bank transaction receipts</span>
-                    </li>
-                    <li className="flex gap-2">
-                      <span className="text-[var(--accent-500)] font-bold flex-shrink-0">•</span>
-                      <span>Screenshots of Bradley's negative account balances</span>
-                    </li>
-                    <li className="flex gap-2">
-                      <span className="text-[var(--accent-500)] font-bold flex-shrink-0">•</span>
-                      <span>Official child support statement indicating significant unpaid debts</span>
-                    </li>
-                  </ul>
-                </div>
-
-                {/* Pattern of Deception */}
-                <div>
-                  <h3 className="text-lg font-bold text-white mb-3 pb-2 border-b border-[var(--accent-500)]/30">Pattern of Deception</h3>
-                  <p className="text-[16px] text-white/70 leading-relaxed text-justify">
-                    The materials reveal Bradley's habitual infidelity and his history of leaving a trail of bankrupt companies and defrauded partners in every region he visited.
-                  </p>
-                </div>
-
-                {/* Closing Statement */}
-                <div className="pt-4 border-t border-white/10">
-                  <p className="text-[16px] text-white/60 italic leading-relaxed text-justify">
-                    These files serve as a formal testimony and evidentiary record intended for a "Court of Public Record" to warn future victims.
-                  </p>
-                </div>
               </div>
             </div>
           </div>

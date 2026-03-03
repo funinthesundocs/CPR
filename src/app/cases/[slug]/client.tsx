@@ -30,6 +30,8 @@ interface PlaintiffPageClientProps {
   infographic2Url?: string
   audioUrl?: string
   pdfUrl: string | null
+  summaryImage1Url: string
+  summaryImage2Url: string
   infoBoxes: { label: string; value: string }[]
   timeline: any[]
   locations: { name: string; date: string; description: string }[]
@@ -119,6 +121,8 @@ export function PlaintiffPageClient(props: PlaintiffPageClientProps) {
           caseNarratives={props.caseNarratives}
           evidenceInventory={props.evidenceInventory}
           evidence={props.evidence}
+          summaryImage1Url={props.summaryImage1Url}
+          summaryImage2Url={props.summaryImage2Url}
         />
 
         {/* SECTION 06 — Slide Deck */}
