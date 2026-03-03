@@ -100,13 +100,9 @@ function MapCanvas({ resolvedPoints }: { resolvedPoints: ResolvedPoint[] }) {
     if (!containerRef.current || resolvedPoints.length === 0) return
 
     // Only initialize if map doesn't exist
-    if (mapRef.current) {
-      console.log(`[Map] Already initialized with ${resolvedPoints.length} points — skipping reinit`)
-      return
-    }
+    if (mapRef.current) return
 
     const init = async () => {
-      console.log(`[Map] Initializing with ${resolvedPoints.length} locations`)
       // Dynamic import — keeps Leaflet out of SSR bundle
       const L = (await import('leaflet')).default
 
@@ -205,10 +201,8 @@ function MapCanvas({ resolvedPoints }: { resolvedPoints: ResolvedPoint[] }) {
       }
 
       // Numbered markers + popups
-      console.log(`[Map] Adding ${resolvedPoints.length} markers to map`)
       resolvedPoints.forEach(({ loc, index }, i) => {
         const delay = i * 0.3
-        console.log(`[Map] Marker ${i + 1}: "${loc.name}" at ${loc.coords || 'no coords'}`)
         const html = `
           <div style="
             width:34px;height:34px;border-radius:50%;
