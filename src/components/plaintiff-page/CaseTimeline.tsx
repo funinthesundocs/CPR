@@ -389,39 +389,39 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.05 }}
-              className="flex gap-4 bg-white/5 border border-white/10 rounded-lg overflow-hidden"
+              className="flex h-[120px] bg-white/5 border border-white/10 rounded-lg overflow-hidden"
             >
-              {/* LEFT COLUMN — 20% — Flag */}
-              <div className="w-1/5 bg-white/10 flex items-center justify-center p-4 shrink-0">
+              {/* LEFT COLUMN — 15% — Flag */}
+              <div className="w-[15%] bg-white/10 shrink-0 flex">
                 {countryCode ? (
-                  <FlagIcon countryCode={countryCode} className="h-24 w-32 rounded-md" />
+                  <FlagIcon countryCode={countryCode} className="w-full h-full object-cover flex-1" />
                 ) : (
-                  <div className="h-24 w-32 bg-white/20 rounded-md flex items-center justify-center text-white/40 text-sm">
+                  <div className="w-full h-full bg-white/20 flex items-center justify-center text-white/40 text-sm flex-1">
                     Unknown
                   </div>
                 )}
               </div>
 
-              {/* RIGHT COLUMN — 80% — Content */}
-              <div className="w-4/5 p-6 space-y-3">
-                {/* Event number and date — left justified */}
-                <div className="flex items-baseline gap-4">
-                  <span className="text-[24px] font-bold text-[var(--accent-500)]">#{i + 1}</span>
-                  <p className="text-[16px] font-semibold text-white">{formatDate(event.date_or_year)}</p>
+              {/* RIGHT COLUMN — 85% — Content */}
+              <div className="w-[85%] px-6 py-4 space-y-3 flex flex-col justify-center">
+                {/* Event number, date, and location — top line */}
+                <div className="flex items-baseline gap-4 justify-between">
+                  <div className="flex items-baseline gap-4">
+                    <span className="text-[24px] font-bold text-[var(--accent-500)]">#{i + 1}</span>
+                    <p className="text-[16px] font-semibold text-white">{formatDate(event.date_or_year)}</p>
+                  </div>
+                  {event.city && (
+                    <p className="flex items-center gap-2 text-[13px] text-white/50">
+                      <MapPinIcon className="h-4 w-4" />
+                      {event.city}
+                    </p>
+                  )}
                 </div>
 
                 {/* Full description */}
                 <p className="text-[15px] leading-relaxed text-white/80">
                   {event.description}
                 </p>
-
-                {/* Location */}
-                {event.city && (
-                  <p className="flex items-center gap-2 text-[13px] text-white/50">
-                    <MapPinIcon className="h-4 w-4" />
-                    {event.city}
-                  </p>
-                )}
               </div>
             </motion.div>
             )

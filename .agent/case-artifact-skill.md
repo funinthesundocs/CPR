@@ -268,6 +268,51 @@ npm run dev
 
 ---
 
+## Step 9: Vertical Timeline Design Standards (LOCKED)
+
+**File:** `src/components/plaintiff-page/CaseTimeline.tsx`
+
+These rules are PERMANENT and apply to ALL case timelines:
+
+### Container & Layout
+- **Event row height:** `h-[120px]` (fixed, non-negotiable)
+- **Flag column width:** `w-[15%]` of total row width
+- **Content column width:** `w-[85%]` of total row width
+- **Gap between columns:** None (flex container, no gap-4)
+- **Content padding:** `px-6 py-4` (horizontal padding for breathing room, reduced vertical to fit 120px)
+
+### Flag Container (Left Column)
+- **Container class:** `w-[15%] bg-white/10 shrink-0 flex`
+- **Flag fill:** Must use `flex` display with `flex-1` on child to force full-width fill
+- **No padding:** Container must have zero padding (flags flush to edges)
+- **SVG props:** FlagIcon must have `style={{ width: '100%', height: '100%', objectFit: 'cover' }}` and `preserveAspectRatio="xMidYMid slice"` to eliminate padding bars
+
+### Content Container (Right Column)
+- **Container class:** `w-[85%] px-6 py-4 space-y-3 flex flex-col justify-center`
+- **Vertical centering:** REQUIRED — `flex flex-col justify-center` centers all text vertically within 120px height
+- **Top line (number + date + location):** `flex items-baseline gap-4 justify-between`
+  - Left side: event number (#N) + formatted date
+  - Right side: location with map pin icon
+  - Uses `justify-between` to spread left and right
+- **Description:** Standard text paragraph below top line
+- **NO location at bottom** — it moved to top right (see top line rule)
+
+### FlagIcon Component
+- **File:** `src/components/plaintiff-page/FlagIcon.tsx`
+- **Inline styles required:** `style={{ width: '100%', height: '100%', objectFit: 'cover' }}`
+- **SVG aspect ratio:** `preserveAspectRatio="xMidYMid slice"` (fills container, crops if needed)
+- **No className fallback dimensions** — inline styles override and force fill
+
+### What NOT To Do
+- ❌ Do NOT add padding to flag container
+- ❌ Do NOT use `gap-4` between flag and content columns
+- ❌ Do NOT remove `flex flex-col justify-center` from content column
+- ❌ Do NOT change height from 120px (affects entire row proportions)
+- ❌ Do NOT add `rounded-md` to flag images
+- ❌ Do NOT put location at bottom — it ALWAYS goes top-right
+
+---
+
 ## Validation Checklist
 
 Before considering the case "done":
@@ -280,6 +325,9 @@ Before considering the case "done":
 - [ ] All artifact files exist in both folders
 - [ ] Dev server has no errors in console
 - [ ] Git commit includes all artifacts
+- [ ] **Vertical timeline:** flags fill 15% column edge-to-edge (no padding bars), content 85%, height 120px
+- [ ] **Content vertically centered** in 120px row
+- [ ] **Location appears top-right** of timeline row (not bottom)
 
 ---
 
