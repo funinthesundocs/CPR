@@ -94,13 +94,15 @@ interface LocationMapProps {
 function MapCanvas({ resolvedPoints }: { resolvedPoints: ResolvedPoint[] }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef       = useRef<any>(null)
+  const initAttempted = useRef(false)
   const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     if (!containerRef.current || resolvedPoints.length === 0) return
 
-    // Only initialize if map doesn't exist
-    if (mapRef.current) return
+    // Prevent double initialization from React.StrictMode
+    if (mapRef.current || initAttempted.current) return
+    initAttempted.current = true
 
     const init = async () => {
       // Dynamic import — keeps Leaflet out of SSR bundle
@@ -244,28 +246,47 @@ function MapCanvas({ resolvedPoints }: { resolvedPoints: ResolvedPoint[] }) {
     })
 
     return () => {
-      // Aggressive cleanup: destroy map completely before React re-mounts
+      // Complete Leaflet destruction — required for React.StrictMode development
       if (mapRef.current) {
         try {
-          // Remove all event listeners
+          // Stop all map interactions
+          mapRef.current.dragging?.disable()
+          mapRef.current.touchZoom?.disable()
+          mapRef.current.doubleClickZoom?.disable()
+          mapRef.current.scrollWheelZoom?.disable()
+          mapRef.current.boxZoom?.disable()
+          mapRef.current.keyboard?.disable()
+          mapRef.current.tap?.disable()
           mapRef.current.off()
-          // Unlink from container
           mapRef.current.remove()
         } catch (err) {
-          // Ignore cleanup errors
+          // Ignore any errors during cleanup
         }
         mapRef.current = null
       }
 
-      // Clear ALL Leaflet properties from container
+      // Only reset initAttempted if map actually existed
+      // (StrictMode will call cleanup/init again, and we want to skip those)
+      // But if mapRef was never set, reset the flag for true remounts
+      if (!mapRef.current) {
+        initAttempted.current = false
+      }
+
+      // Nuclear option: completely reset container for React.StrictMode
       if (containerRef.current) {
         const el = containerRef.current as any
-        // Delete all _leaflet* properties
+        // Remove ALL Leaflet cruft
         Object.keys(el).forEach(key => {
-          if (key.startsWith('_leaflet')) delete el[key]
+          if (key.startsWith('_leaflet') || key.startsWith('leaflet'))
+            delete el[key]
         })
-        // Clear innerHTML to fully reset container
+        // Reset innerHTML and all inline styles
         el.innerHTML = ''
+        el.style.cssText = ''
+        // Force remove any left-over Leaflet divs
+        el.querySelectorAll('.leaflet-container').forEach((child: any) => {
+          try { child.remove() } catch {}
+        })
       }
     }
   }, [resolvedPoints])
