@@ -341,10 +341,12 @@ These rules are PERMANENT and apply to ALL case timelines:
    - Deduplicate only if coordinates are IDENTICAL (4 decimal places)
    - Preserve all unique coordinate points
 
-### Database Requirements
+### Database Requirements (CRITICAL FOR MAP)
+- **Every timeline event MUST have the `city` field populated** — if `city` is NULL/empty, that event won't appear on the map
 - `timeline_events` table MUST have `latitude` and `longitude` columns (nullable)
 - If `latitude` and `longitude` are NULL, the map falls back to city name lookup
 - To show multiple markers in the same city: **provide explicit latitude/longitude for each event**
+- **Missing city field = missing map marker** (this is the #1 reason maps appear incomplete)
 
 ### What This Fixes
 - ✅ Multiple events in same city with different coordinates: all shown
@@ -369,6 +371,7 @@ Before considering the case "done":
 - [ ] **Vertical timeline:** flags fill 15% column edge-to-edge (no padding bars), content 85%, height 120px
 - [ ] **Content vertically centered** in 120px row
 - [ ] **Location appears top-right** of timeline row (not bottom)
+- [ ] **MAP: All timeline events have `city` field populated** — check browser console for warnings about missing cities
 
 ---
 

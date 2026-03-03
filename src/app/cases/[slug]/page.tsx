@@ -111,6 +111,7 @@ export default async function CaseDetailPage({ params }: PageProps) {
 
   // Extract all locations from timeline — preserve each event location even if same city name
   // (different coordinates represent different specific locations within that city)
+  // CRITICAL: timeline_events MUST have city field populated for map to work
   const locations = sortedTimeline
     .filter((t: any) => t.city)
     .map((t: any) => ({
@@ -119,6 +120,14 @@ export default async function CaseDetailPage({ params }: PageProps) {
       description: t.description,
       coordinates: t.latitude && t.longitude ? [t.longitude, t.latitude] : undefined,
     }))
+
+  // DIAGNOSTIC: Log timeline events that are missing city field
+  if (sortedTimeline.length > 0) {
+    const missingCity = sortedTimeline.filter((t: any) => !t.city)
+    if (missingCity.length > 0) {
+      console.warn(`[Case] ${missingCity.length}/${sortedTimeline.length} timeline events missing city field — map will be incomplete`)
+    }
+  }
 
   // Build testimony fields for the modal
   const testimonyFields = [
