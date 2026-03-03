@@ -162,30 +162,43 @@ export default async function CaseDetailPage({ params }: PageProps) {
   // Plaintiff name
   const plaintiffName = plaintiffProfile?.display_name || 'Plaintiff'
 
-  // Notebook summary — sourced from NotebookLM "Plaintiff - Kelly Cai" (notebook_describe)
-  // Artifact: .agent/artifacts/kelly-cai/notebook-summary.txt
+  // Artifact slug — derived from plaintiff display name (e.g. "Matt Campbell" → "matt-campbell")
+  // This is the folder name under .agent/artifacts/ and public/artifacts/
+  const artifactSlug = plaintiffName
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+
+  // Notebook summary — load from per-plaintiff artifact folder, fall back to DB
   let notebookSummary = story.one_line_summary || ''
   try {
-    const summaryPath = join(process.cwd(), '.agent', 'artifacts', 'kelly-cai', 'notebook-summary.txt')
+    const summaryPath = join(process.cwd(), '.agent', 'artifacts', artifactSlug, 'notebook-summary.txt')
     notebookSummary = await readFile(summaryPath, 'utf-8')
   } catch {
-    // Fall back to story summary if file missing
+    // File not yet generated for this case — use DB fallback
   }
 
-  // Load briefing doc if available, fallback to story body
+  // Briefing doc — load from per-plaintiff artifact folder, fall back to DB story body
   let briefingContent = story.body || ''
   try {
-    const briefingPath = join(process.cwd(), '.agent', 'artifacts', 'kelly-cai', 'briefing.md')
+    const briefingPath = join(process.cwd(), '.agent', 'artifacts', artifactSlug, 'briefing.md')
     briefingContent = await readFile(briefingPath, 'utf-8')
   } catch {
-    // Briefing doc not available — use story body
+    // File not yet generated for this case — use DB fallback
   }
 
-  // Artifact paths — convention: /artifacts/{case-number-lowercase}/
-  const artifactBase = `/artifacts/kelly-cai`
+  // Tagline — load from per-plaintiff artifact folder, fall back to DB one_line_summary
+  let tagline = story.one_line_summary || ''
+  try {
+    const taglinePath = join(process.cwd(), '.agent', 'artifacts', artifactSlug, 'tagline.txt')
+    tagline = (await readFile(taglinePath, 'utf-8')).trim()
+  } catch {
+    // File not yet generated for this case — use DB fallback
+  }
 
-  // Determine tagline
-  const tagline = 'A Fabricated Fortune, Serial Deception, and Five Years of Drained Savings across Four Countries.'
+  // Public artifact base URL — convention: /artifacts/{plaintiff-slug}/
+  const artifactBase = `/artifacts/${artifactSlug}`
 
   // Bundle all narrative JSONB data for the read-only testimony form
   const caseNarratives = {
