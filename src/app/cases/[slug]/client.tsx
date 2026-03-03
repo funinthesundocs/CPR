@@ -7,7 +7,6 @@ import { InfoBoxes } from '@/components/plaintiff-page/InfoBoxes'
 import { CaseSummaryModule } from '@/components/plaintiff-page/CaseSummaryModule'
 import { SlideDeckSection } from '@/components/plaintiff-page/SlideDeckSection'
 import { CaseTimeline } from '@/components/plaintiff-page/CaseTimeline'
-import { MindMapSection } from '@/components/plaintiff-page/MindMapSection'
 import { LocationMap } from '@/components/plaintiff-page/LocationMap'
 import { EvidenceVault } from '@/components/plaintiff-page/EvidenceVault'
 import { InlineVoting } from '@/components/plaintiff-page/InlineVoting'
@@ -36,7 +35,6 @@ interface PlaintiffPageClientProps {
   locations: { name: string; date: string; description: string }[]
   evidence: any[]
   evidenceInventory: { label: string; category: string; description: string }[]
-  mindMapData: any
   financialTotal: number
   caseId: string
   votingOpen: boolean
@@ -144,9 +142,6 @@ export function PlaintiffPageClient(props: PlaintiffPageClientProps) {
           votingOpen={props.votingOpen}
           status={props.status}
         />
-
-        {/* SECTION 11 — Mind Map / Case Network */}
-        <MindMapSection mindMapData={props.mindMapData} />
 
         {/* Footer spacer */}
         <div className="h-32" />

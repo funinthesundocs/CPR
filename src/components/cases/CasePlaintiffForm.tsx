@@ -311,6 +311,7 @@ export function CasePlaintiffForm({ editMode }: Props) {
     const [selectedDefendant, setSelectedDefendant] = useState<DefendantResult | null>(null)
     const [fileUploadModalOpen, setFileUploadModalOpen] = useState(false)
     const [selectedEvidenceIdx, setSelectedEvidenceIdx] = useState<number | null>(null)
+    const [showPhotoUpload, setShowPhotoUpload] = useState(false)
 
     const STEPS = useMemo(() => [
         { id: 1, title: t('wizard.step1Title'), icon: STEP_ICONS[0], desc: t('wizard.step1Desc') },
@@ -378,6 +379,33 @@ export function CasePlaintiffForm({ editMode }: Props) {
         }
     }
 
+    const handleDefendantPhotoUpload = async (file: File) => {
+        try {
+            const caseId = editMode?.caseId || `temp-${Date.now().toString(36)}`
+            const formData = new FormData()
+            formData.append('file', file)
+            formData.append('case_id', caseId)
+            formData.append('title', 'Defendant Photo')
+
+            const res = await fetch('/api/cases/upload-evidence', {
+                method: 'POST',
+                body: formData,
+            })
+
+            if (!res.ok) {
+                const err = await res.json()
+                throw new Error(err.error || 'Upload failed')
+            }
+
+            const data = await res.json()
+            updateForm({ defendant_photo_url: data.file_path })
+            setShowPhotoUpload(false)
+        } catch (err) {
+            console.error('Photo upload error:', err)
+            setError(`Photo upload failed: ${err instanceof Error ? err.message : 'Unknown error'}`)
+        }
+    }
+
     const progress = Math.round((step / STEPS.length) * 100)
 
     // ── Create submit handler ─────────────────────────────────────────────────────
@@ -430,6 +458,7 @@ export function CasePlaintiffForm({ editMode }: Props) {
                         date_of_birth: form.defendant_dob,
                         business_names: form.defendant_business_names ? form.defendant_business_names.split(',').map(b => b.trim()) : [],
                         social_profiles: Object.keys(socialProfiles).length > 0 ? socialProfiles : null,
+                        photo_url: form.defendant_photo_url || null,
                         slug,
                     })
                     .select()
@@ -731,6 +760,38 @@ export function CasePlaintiffForm({ editMode }: Props) {
                                             <Input value={form.defendant_aliases} onChange={e => updateForm({ defendant_aliases: e.target.value })} placeholder={t('wizard.aliasesPlaceholder')} disabled={isEditMode} />
                                         </FieldGroup>
                                     </div>
+                                    <FieldGroup label="Defendant Photo">
+                                        <div className="flex items-center gap-4">
+                                            {form.defendant_photo_url && (
+                                                <div className="shrink-0">
+                                                    <img src={form.defendant_photo_url} alt="Defendant" className="w-20 h-20 rounded-lg object-cover border border-border" />
+                                                </div>
+                                            )}
+                                            <div className="flex-1 flex flex-col gap-2">
+                                                {form.defendant_photo_url && (
+                                                    <p className="text-sm text-muted-foreground">Photo uploaded</p>
+                                                )}
+                                                <div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowPhotoUpload(true)}
+                                                        className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors text-sm"
+                                                    >
+                                                        {form.defendant_photo_url ? 'Change Photo' : 'Upload Photo'}
+                                                    </button>
+                                                    {form.defendant_photo_url && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => updateForm({ defendant_photo_url: '' })}
+                                                            className="ml-2 px-4 py-2 rounded-lg bg-destructive/20 text-destructive font-medium hover:bg-destructive/30 transition-colors text-sm"
+                                                        >
+                                                            Remove
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </FieldGroup>
                                     <FieldGroup label={t('wizard.defendant_description') || 'Description / Background'}>
                                         <Input value={form.defendant_description} onChange={e => updateForm({ defendant_description: e.target.value })} placeholder="Brief background on the defendant" />
                                     </FieldGroup>
@@ -1461,6 +1522,46 @@ export function CasePlaintiffForm({ editMode }: Props) {
                 }
               }}
             />
+
+            {/* Defendant Photo Upload Modal */}
+            {showPhotoUpload && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
+                    <div className="bg-background border border-border rounded-lg max-w-md w-full p-6 space-y-4">
+                        <h3 className="text-lg font-semibold">Upload Defendant Photo</h3>
+                        <div className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
+                            onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add('border-primary') }}
+                            onDragLeave={(e) => e.currentTarget.classList.remove('border-primary')}
+                            onDrop={(e) => {
+                                e.preventDefault()
+                                e.currentTarget.classList.remove('border-primary')
+                                const file = e.dataTransfer.files[0]
+                                if (file && file.type.startsWith('image/')) {
+                                    handleDefendantPhotoUpload(file)
+                                }
+                            }}
+                            onClick={() => {
+                                const input = document.createElement('input')
+                                input.type = 'file'
+                                input.accept = 'image/*'
+                                input.onchange = (e) => {
+                                    const file = (e.target as HTMLInputElement).files?.[0]
+                                    if (file) handleDefendantPhotoUpload(file)
+                                }
+                                input.click()
+                            }}
+                        >
+                            <p className="text-muted-foreground">Drag and drop your photo here, or click to select</p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setShowPhotoUpload(false)}
+                            className="w-full px-4 py-2 rounded-lg bg-muted/50 text-foreground/80 hover:bg-primary hover:text-primary-foreground font-medium"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

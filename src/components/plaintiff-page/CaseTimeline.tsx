@@ -24,6 +24,49 @@ interface CaseTimelineProps {
 
 const DOT_CYCLE = ['bg-blue-500', 'bg-white', 'bg-slate-500']
 
+// Parse date string to timestamp for sorting
+const parseDate = (dateStr: string): number => {
+  if (!dateStr) return 0
+
+  // Try ISO format (2020-05-15)
+  if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
+    return new Date(dateStr).getTime()
+  }
+
+  // Try US format (05/15/2020)
+  if (/^\d{2}\/\d{2}\/\d{4}/.test(dateStr)) {
+    return new Date(dateStr).getTime()
+  }
+
+  // Try text format (May 15, 2020)
+  const textMatch = dateStr.match(/([A-Za-z]+)\s+(\d{1,2}),?\s+(\d{4})/)
+  if (textMatch) {
+    return new Date(`${textMatch[1]} ${textMatch[2]}, ${textMatch[3]}`).getTime()
+  }
+
+  // Try month year (May 2020)
+  const monthYearMatch = dateStr.match(/([A-Za-z]+)\s+(\d{4})/)
+  if (monthYearMatch) {
+    return new Date(`${monthYearMatch[1]} 1, ${monthYearMatch[2]}`).getTime()
+  }
+
+  // Try year only
+  const yearMatch = dateStr.match(/(\d{4})/)
+  if (yearMatch) {
+    return new Date(`${yearMatch[1]}-01-01`).getTime()
+  }
+
+  return 0
+}
+
+// Format date as "Month Day Year" (e.g., "September 9 2025")
+const formatDate = (dateStr: string): string => {
+  const timestamp = parseDate(dateStr)
+  if (timestamp === 0) return dateStr
+  const date = new Date(timestamp)
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+}
+
 function FlipCard({ event }: { event: TimelineEvent }) {
   const [flipped, setFlipped] = useState(false)
   const [animating, setAnimating] = useState(false)
@@ -45,7 +88,7 @@ function FlipCard({ event }: { event: TimelineEvent }) {
   }
 
   return (
-    <div style={{ perspective: '900px', width: '250px' }}>
+    <div style={{ perspective: '900px', width: '300px' }}>
       <div
         ref={scope}
         style={{ transformStyle: 'preserve-3d', position: 'relative', minHeight: '169px' }}
@@ -55,8 +98,8 @@ function FlipCard({ event }: { event: TimelineEvent }) {
           style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
           className="bg-white/5 border border-white/10 rounded-lg p-3"
         >
-          <p className="text-[14px] font-bold uppercase tracking-wider text-[var(--accent-300)] mb-1">
-            {event.date_or_year}
+          <p className="text-[14px] font-bold uppercase tracking-wider text-[var(--accent-300)] mb-1 text-center">
+            {formatDate(event.date_or_year)}
           </p>
           <p className="text-[14px] text-white/70 leading-relaxed line-clamp-3">
             {event.description}
@@ -91,8 +134,8 @@ function FlipCard({ event }: { event: TimelineEvent }) {
           }}
           className="bg-[var(--accent-900)]/50 border border-[var(--accent-500)]/40 rounded-lg p-3"
         >
-          <p className="text-[14px] font-bold uppercase tracking-wider text-[var(--accent-300)] mb-2">
-            {event.date_or_year}
+          <p className="text-[14px] font-bold uppercase tracking-wider text-[var(--accent-300)] mb-2 text-center">
+            {formatDate(event.date_or_year)}
           </p>
           <p className="text-[13px] text-white/80 leading-relaxed">
             {event.description}
@@ -141,41 +184,6 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
   }
 
   if (!events || events.length === 0) return null
-
-  // Parse date string to timestamp for sorting
-  const parseDate = (dateStr: string): number => {
-    if (!dateStr) return 0
-
-    // Try ISO format (2020-05-15)
-    if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
-      return new Date(dateStr).getTime()
-    }
-
-    // Try US format (05/15/2020)
-    if (/^\d{2}\/\d{2}\/\d{4}/.test(dateStr)) {
-      return new Date(dateStr).getTime()
-    }
-
-    // Try text format (May 15, 2020)
-    const textMatch = dateStr.match(/([A-Za-z]+)\s+(\d{1,2}),?\s+(\d{4})/)
-    if (textMatch) {
-      return new Date(`${textMatch[1]} ${textMatch[2]}, ${textMatch[3]}`).getTime()
-    }
-
-    // Try month year (May 2020)
-    const monthYearMatch = dateStr.match(/([A-Za-z]+)\s+(\d{4})/)
-    if (monthYearMatch) {
-      return new Date(`${monthYearMatch[1]} 1, ${monthYearMatch[2]}`).getTime()
-    }
-
-    // Try year only
-    const yearMatch = dateStr.match(/(\d{4})/)
-    if (yearMatch) {
-      return new Date(`${yearMatch[1]}-01-01`).getTime()
-    }
-
-    return 0
-  }
 
   // Sort events chronologically by date
   const sortedEvents = [...events].sort((a, b) => {
@@ -293,7 +301,7 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
               {/* Event number and date */}
               <div className="flex items-baseline gap-4 mb-3">
                 <span className="text-[24px] font-bold text-[var(--accent-500)]">#{i + 1}</span>
-                <p className="text-[16px] font-semibold text-white">{event.date_or_year}</p>
+                <p className="text-[16px] font-semibold text-white text-center flex-1">{formatDate(event.date_or_year)}</p>
               </div>
 
               {/* Full description */}

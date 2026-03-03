@@ -181,16 +181,6 @@ export default async function CaseDetailPage({ params }: PageProps) {
     // Briefing doc not available — use story body
   }
 
-  // Load mind map JSON (server-side only)
-  let mindMapData = null
-  try {
-    const mindmapPath = join(process.cwd(), 'public', 'artifacts', 'kelly-cai', 'mindmap.json')
-    const raw = await readFile(mindmapPath, 'utf-8')
-    mindMapData = JSON.parse(raw)
-  } catch {
-    // Mind map file not available — will show placeholder
-  }
-
   // Artifact paths — convention: /artifacts/{case-number-lowercase}/
   const artifactBase = `/artifacts/kelly-cai`
 
@@ -263,7 +253,6 @@ export default async function CaseDetailPage({ params }: PageProps) {
       locations={locations}
       evidence={evidence || []}
       evidenceInventory={evidenceInventory}
-      mindMapData={mindMapData}
       financialTotal={financialTotal}
       caseId={caseData.id}
       votingOpen={votingOpen}
