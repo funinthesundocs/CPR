@@ -3,7 +3,8 @@ import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { createHash } from 'crypto'
 
-const BUCKET_NAME = 'evidence'
+const EVIDENCE_BUCKET = 'evidence'
+const PHOTOS_BUCKET = 'defendant-photos'
 const MAX_SIZE = 50 * 1024 * 1024 // 50 MB
 
 /**
@@ -23,6 +24,7 @@ export async function POST(request: NextRequest) {
     const file = formData.get('file') as File
     const caseId = formData.get('case_id') as string
     const title = (formData.get('title') as string) || file?.name || 'Untitled'
+    const isPhoto = title.toLowerCase().includes('photo') || file.type.startsWith('image/')
 
     if (!file || !caseId) {
       return NextResponse.json({ error: 'Missing file or case_id' }, { status: 400 })
@@ -41,10 +43,12 @@ export async function POST(request: NextRequest) {
     // SHA-256 for tamper-proof integrity (required NOT NULL column)
     const fileHash = createHash('sha256').update(buffer).digest('hex')
 
-    // Ensure bucket exists
+    // Determine bucket and create if needed
+    const bucketName = isPhoto ? PHOTOS_BUCKET : EVIDENCE_BUCKET
+    const isPublicBucket = isPhoto
     const { data: bucketList } = await admin.storage.listBuckets()
-    if (!bucketList?.some(b => b.name === BUCKET_NAME)) {
-      const { error: bErr } = await admin.storage.createBucket(BUCKET_NAME, { public: false })
+    if (!bucketList?.some(b => b.name === bucketName)) {
+      const { error: bErr } = await admin.storage.createBucket(bucketName, { public: isPublicBucket })
       if (bErr && !bErr.message.includes('already exists')) {
         return NextResponse.json({ error: `Storage setup failed: ${bErr.message}` }, { status: 500 })
       }
@@ -56,17 +60,23 @@ export async function POST(request: NextRequest) {
     const filePath = `${sanitizedCaseId}/${Date.now()}-${sanitizedFileName}`
 
     const { data: uploadData, error: uploadError } = await admin.storage
-      .from(BUCKET_NAME)
+      .from(bucketName)
       .upload(filePath, buffer, { contentType: file.type, upsert: false })
 
     if (uploadError) {
       return NextResponse.json({ error: `Upload failed: ${uploadError.message}` }, { status: 500 })
     }
 
+    // Build public URL for photos, path for evidence
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+    const publicUrl = isPhoto
+      ? `${supabaseUrl}/storage/v1/object/public/${bucketName}/${uploadData.path}`
+      : uploadData.path
+
     // Insert into evidence table (skip for temp drafts)
     let evidenceId: string | null = null
     const isRealCase = !caseId.startsWith('temp-')
-    if (isRealCase) {
+    if (isRealCase && !isPhoto) {
       const { data: row, error: insertError } = await admin
         .from('evidence')
         .insert({
@@ -94,9 +104,9 @@ export async function POST(request: NextRequest) {
       file_name: file.name,
       file_size: file.size,
       file_type: file.type,
-      file_path: uploadData.path,
+      file_path: publicUrl,
       file_hash: fileHash,
-      bucket: BUCKET_NAME,
+      bucket: bucketName,
       uploaded_at: new Date().toISOString(),
     })
   } catch (error) {

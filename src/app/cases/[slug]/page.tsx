@@ -231,13 +231,21 @@ export default async function CaseDetailPage({ params }: PageProps) {
     return `${parts[0]} ${parts[parts.length - 1]}`
   }
 
+  // Convert avatar_url to public URL if it's just a path
+  const buildPublicUrl = (url: string | null | undefined): string | null => {
+    if (!url) return null
+    if (url.startsWith('http')) return url
+    // If it's a path, construct public URL
+    return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${url}`
+  }
+
   return (
     <PlaintiffPageClient
       caseNumber={caseData.case_number}
       status={caseData.status}
       filedAt={caseData.created_at}
       plaintiffName={plaintiffName}
-      plaintiffPhoto={plaintiffProfile?.avatar_url || null}
+      plaintiffPhoto={buildPublicUrl(plaintiffProfile?.avatar_url) || null}
       defendantName={getDisplayName(defendant.full_name)}
       defendantPhoto={defendant.photo_url || null}
       tagline={tagline}
