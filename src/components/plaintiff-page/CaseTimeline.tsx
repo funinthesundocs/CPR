@@ -227,11 +227,11 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
       className="pt-16 pb-[30px]"
     >
       {/* Header with title and view toggle */}
-      <div className="flex items-center gap-4 px-6 mb-8 max-w-[1340px] mx-auto">
-        <h2 className="text-[38px] font-semibold text-white">Case Timeline</h2>
+      <div className="flex items-center justify-end gap-6 px-6 mb-8 max-w-[1340px] mx-auto">
+        <h2 className="text-[38px] font-semibold text-white mr-auto">Case Timeline</h2>
 
         {/* View toggle buttons */}
-        <div className="flex gap-2 ml-auto">
+        <div className="flex gap-2">
           <button
             onClick={() => setViewMode('horizontal')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
