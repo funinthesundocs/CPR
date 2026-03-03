@@ -118,8 +118,69 @@ function FlipCard({ event }: { event: TimelineEvent }) {
 export function CaseTimeline({ events }: CaseTimelineProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [viewMode, setViewMode] = useState<'horizontal' | 'vertical'>('horizontal')
+  const [isDragging, setIsDragging] = useState(false)
+  const dragStartX = useRef(0)
+  const dragStartScrollLeft = useRef(0)
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!scrollRef.current) return
+    setIsDragging(true)
+    dragStartX.current = e.clientX
+    dragStartScrollLeft.current = scrollRef.current.scrollLeft
+  }
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isDragging || !scrollRef.current) return
+    e.preventDefault()
+    const delta = dragStartX.current - e.clientX
+    scrollRef.current.scrollLeft = dragStartScrollLeft.current + delta
+  }
+
+  const handleMouseUp = () => {
+    setIsDragging(false)
+  }
 
   if (!events || events.length === 0) return null
+
+  // Parse date string to timestamp for sorting
+  const parseDate = (dateStr: string): number => {
+    if (!dateStr) return 0
+
+    // Try ISO format (2020-05-15)
+    if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
+      return new Date(dateStr).getTime()
+    }
+
+    // Try US format (05/15/2020)
+    if (/^\d{2}\/\d{2}\/\d{4}/.test(dateStr)) {
+      return new Date(dateStr).getTime()
+    }
+
+    // Try text format (May 15, 2020)
+    const textMatch = dateStr.match(/([A-Za-z]+)\s+(\d{1,2}),?\s+(\d{4})/)
+    if (textMatch) {
+      return new Date(`${textMatch[1]} ${textMatch[2]}, ${textMatch[3]}`).getTime()
+    }
+
+    // Try month year (May 2020)
+    const monthYearMatch = dateStr.match(/([A-Za-z]+)\s+(\d{4})/)
+    if (monthYearMatch) {
+      return new Date(`${monthYearMatch[1]} 1, ${monthYearMatch[2]}`).getTime()
+    }
+
+    // Try year only
+    const yearMatch = dateStr.match(/(\d{4})/)
+    if (yearMatch) {
+      return new Date(`${yearMatch[1]}-01-01`).getTime()
+    }
+
+    return 0
+  }
+
+  // Sort events chronologically by date
+  const sortedEvents = [...events].sort((a, b) => {
+    return parseDate(a.date_or_year) - parseDate(b.date_or_year)
+  })
 
   return (
     <motion.section
@@ -165,18 +226,22 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
         <div style={{ overflow: 'hidden' }} className="w-full">
           <div
             ref={scrollRef}
-            style={{ overflowX: 'auto', overflowY: 'hidden' }}
-            className="w-full pb-6 mb-[60px] scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20"
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            style={{ overflowX: 'auto', overflowY: 'hidden', cursor: isDragging ? 'grabbing' : 'grab' }}
+            className="w-full pb-6 mb-[60px] scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20 select-none"
           >
             <div
-              style={{ minWidth: `${events.length * 288}px` }}
+              style={{ minWidth: `${sortedEvents.length * 288}px` }}
               className="relative flex items-center px-12 py-72"
             >
               {/* Timeline spine */}
               <div className="absolute left-0 right-0 top-1/2 h-0.5 bg-[var(--accent-500)]/50" />
 
               {/* Events */}
-              {events.map((event, i) => {
+              {sortedEvents.map((event, i) => {
                 const dotColor = DOT_CYCLE[i % 3]
                 const isAbove = i % 2 === 0
 
@@ -216,7 +281,7 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
       ) : (
         /* VERTICAL VIEW — stacked full-size events */
         <div className="w-full max-w-[1340px] mx-auto px-6 space-y-6 mb-12">
-          {events.map((event, i) => (
+          {sortedEvents.map((event, i) => (
             <motion.div
               key={event.id}
               initial={{ opacity: 0, y: 12 }}

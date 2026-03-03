@@ -33,51 +33,51 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
         @keyframes orangeGlow {
           0% {
             box-shadow:
-              0 0 20px 3px rgba(255,150,0,0.9),
-              0 0 40px 8px rgba(255,100,0,0.7),
-              0 0 65px 13px rgba(255,50,0,0.5)
+              0 0 14px 2px rgba(255,150,0,0.63),
+              0 0 28px 6px rgba(255,100,0,0.49),
+              0 0 46px 9px rgba(255,50,0,0.35)
           }
           15% {
             box-shadow:
-              0 0 35px 6px rgba(255,180,0,0.98),
-              0 0 65px 13px rgba(255,120,0,0.85),
-              0 0 95px 18px rgba(255,60,0,0.6)
+              0 0 25px 4px rgba(255,180,0,0.69),
+              0 0 46px 9px rgba(255,120,0,0.6),
+              0 0 67px 13px rgba(255,60,0,0.42)
           }
           25% {
             box-shadow:
-              0 0 12px 1px rgba(255,100,0,0.7),
-              0 0 28px 5px rgba(255,70,0,0.5),
-              0 0 45px 8px rgba(255,40,0,0.35)
+              0 0 8px 1px rgba(255,100,0,0.49),
+              0 0 20px 4px rgba(255,70,0,0.35),
+              0 0 32px 6px rgba(255,40,0,0.25)
           }
           40% {
             box-shadow:
-              0 0 32px 5px rgba(255,160,0,0.95),
-              0 0 58px 10px rgba(255,110,0,0.8),
-              0 0 88px 15px rgba(255,55,0,0.55)
+              0 0 22px 4px rgba(255,160,0,0.67),
+              0 0 41px 7px rgba(255,110,0,0.56),
+              0 0 62px 11px rgba(255,55,0,0.39)
           }
           50% {
             box-shadow:
-              0 0 18px 3px rgba(255,130,0,0.85),
-              0 0 40px 7px rgba(255,85,0,0.65),
-              0 0 65px 11px rgba(255,45,0,0.45)
+              0 0 13px 2px rgba(255,130,0,0.6),
+              0 0 28px 5px rgba(255,85,0,0.46),
+              0 0 46px 8px rgba(255,45,0,0.32)
           }
           65% {
             box-shadow:
-              0 0 28px 4px rgba(255,145,0,0.92),
-              0 0 52px 9px rgba(255,95,0,0.75),
-              0 0 80px 14px rgba(255,50,0,0.5)
+              0 0 20px 3px rgba(255,145,0,0.64),
+              0 0 37px 6px rgba(255,95,0,0.53),
+              0 0 56px 10px rgba(255,50,0,0.35)
           }
           75% {
             box-shadow:
-              0 0 15px 2px rgba(255,110,0,0.75),
-              0 0 32px 6px rgba(255,70,0,0.55),
-              0 0 50px 9px rgba(255,35,0,0.3)
+              0 0 11px 1px rgba(255,110,0,0.53),
+              0 0 22px 4px rgba(255,70,0,0.39),
+              0 0 35px 6px rgba(255,35,0,0.21)
           }
           100% {
             box-shadow:
-              0 0 20px 3px rgba(255,120,0,0.8),
-              0 0 38px 8px rgba(255,80,0,0.6),
-              0 0 60px 11px rgba(255,40,0,0.4)
+              0 0 14px 2px rgba(255,120,0,0.56),
+              0 0 27px 6px rgba(255,80,0,0.42),
+              0 0 42px 8px rgba(255,40,0,0.28)
           }
         }
 
@@ -92,13 +92,13 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
       {/* EXPLOSION PARTICLES — radiate from collision point (left side only) */}
       {[...Array(4)].map((_, i) => {
         const angle = (i / 4) * Math.PI - Math.PI / 2  // Only left side (90° range)
-        const distance = 150
+        const distance = 105
         const x = Math.cos(angle) * distance
         const y = Math.sin(angle) * distance
         return (
           <motion.div
             key={`particle-${i}`}
-            className="absolute left-1/2 top-1/2 w-3 h-3 rounded-full bg-orange-500/80"
+            className="absolute left-1/2 top-1/2 w-2 h-2 rounded-full bg-orange-500/56"
             initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
             animate={{ x, y, opacity: 0, scale: 0 }}
             transition={{ delay: 0.7, duration: 0.6, ease: 'easeOut' }}
@@ -108,12 +108,12 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
 
       {/* EXPLOSION FLASH — bright center burst (fire) */}
       <motion.div
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-25 w-32 h-32 rounded-full"
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-25 w-24 h-24 rounded-full"
         style={{
-          background: 'radial-gradient(circle, rgba(255,140,0,0.9) 0%, rgba(255,80,0,0.6) 40%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(255,140,0,0.63) 0%, rgba(255,80,0,0.42) 40%, transparent 70%)',
         }}
         initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: [0, 2, 0], opacity: [0, 1, 0] }}
+        animate={{ scale: [0, 1.4, 0], opacity: [0, 0.7, 0] }}
         transition={{ delay: 0.7, duration: 0.5, ease: 'easeOut' }}
       />
 

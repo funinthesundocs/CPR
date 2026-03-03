@@ -1,20 +1,19 @@
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { createHash } from 'crypto'
+
+const BUCKET_NAME = 'evidence'
+const MAX_SIZE = 50 * 1024 * 1024 // 50 MB
 
 /**
  * POST /api/cases/upload-evidence
- * Handles file uploads for case evidence.
- * Stores files in Supabase Storage bucket organized by case ID.
- *
- * Expected: multipart/form-data with:
- * - file: File object
- * - case_id: UUID of the case
+ * Uploads a file to the `evidence` storage bucket, inserts a row into
+ * the `evidence` table (with SHA-256 hash), and returns metadata.
  */
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
-
-    // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -23,76 +22,95 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData()
     const file = formData.get('file') as File
     const caseId = formData.get('case_id') as string
+    const title = (formData.get('title') as string) || file?.name || 'Untitled'
 
     if (!file || !caseId) {
-      return NextResponse.json(
-        { error: 'Missing file or case_id' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Missing file or case_id' }, { status: 400 })
     }
-
-    // Validate file size (max 100MB)
-    const MAX_SIZE = 100 * 1024 * 1024
     if (file.size > MAX_SIZE) {
-      return NextResponse.json(
-        { error: 'File too large (max 100MB)' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'File too large (max 50 MB)' }, { status: 400 })
     }
 
-    // Convert File to Buffer
+    const admin = createServiceClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    )
+
     const buffer = Buffer.from(await file.arrayBuffer())
 
-    // Create bucket name from case ID (lowercase, replace hyphens)
-    const bucketName = `case-evidence-${caseId.replace(/-/g, '')}`
+    // SHA-256 for tamper-proof integrity (required NOT NULL column)
+    const fileHash = createHash('sha256').update(buffer).digest('hex')
 
-    // Ensure bucket exists (create if not)
-    const { data: bucketList } = await supabase.storage.listBuckets()
-    const bucketExists = bucketList?.some(b => b.name === bucketName)
-
-    if (!bucketExists) {
-      await supabase.storage.createBucket(bucketName, {
-        public: false,
-        fileSizeLimit: MAX_SIZE,
-      })
+    // Ensure bucket exists
+    const { data: bucketList } = await admin.storage.listBuckets()
+    if (!bucketList?.some(b => b.name === BUCKET_NAME)) {
+      const { error: bErr } = await admin.storage.createBucket(BUCKET_NAME, { public: false })
+      if (bErr && !bErr.message.includes('already exists')) {
+        return NextResponse.json({ error: `Storage setup failed: ${bErr.message}` }, { status: 500 })
+      }
     }
 
-    // Upload file with timestamp to avoid collisions
-    const timestamp = Date.now()
-    const sanitizedFileName = file.name
-      .replace(/[^a-zA-Z0-9._-]/g, '_')
-      .substring(0, 200)
-    const filePath = `${timestamp}-${sanitizedFileName}`
+    // Upload: {caseId}/{timestamp}-{filename}
+    const sanitizedCaseId = caseId.toLowerCase().replace(/[^a-z0-9-]/g, '')
+    const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_').substring(0, 200)
+    const filePath = `${sanitizedCaseId}/${Date.now()}-${sanitizedFileName}`
 
-    const { data, error } = await supabase.storage
-      .from(bucketName)
-      .upload(filePath, buffer, {
-        contentType: file.type,
-        upsert: false,
-      })
+    const { data: uploadData, error: uploadError } = await admin.storage
+      .from(BUCKET_NAME)
+      .upload(filePath, buffer, { contentType: file.type, upsert: false })
 
-    if (error) {
-      return NextResponse.json(
-        { error: `Upload failed: ${error.message}` },
-        { status: 500 }
-      )
+    if (uploadError) {
+      return NextResponse.json({ error: `Upload failed: ${uploadError.message}` }, { status: 500 })
     }
 
-    // Return file metadata
+    // Insert into evidence table (skip for temp drafts)
+    let evidenceId: string | null = null
+    const isRealCase = !caseId.startsWith('temp-')
+    if (isRealCase) {
+      const { data: row, error: insertError } = await admin
+        .from('evidence')
+        .insert({
+          case_id: caseId,
+          submitted_by: user.id,
+          title,
+          file_url: uploadData.path,
+          file_type: file.type,
+          file_hash: fileHash,
+          category: guessCategoryFromMime(file.type),
+        })
+        .select('id')
+        .single()
+
+      if (insertError) {
+        console.error('[upload-evidence] DB insert failed:', insertError.message)
+      } else {
+        evidenceId = row.id
+      }
+    }
+
     return NextResponse.json({
       success: true,
+      evidence_id: evidenceId,
       file_name: file.name,
       file_size: file.size,
       file_type: file.type,
-      file_path: data.path,
-      bucket: bucketName,
+      file_path: uploadData.path,
+      file_hash: fileHash,
+      bucket: BUCKET_NAME,
       uploaded_at: new Date().toISOString(),
     })
   } catch (error) {
-    console.error('Evidence upload error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    const msg = error instanceof Error ? error.message : String(error)
+    console.error('[upload-evidence] Error:', msg)
+    return NextResponse.json({ error: msg }, { status: 500 })
   }
+}
+
+function guessCategoryFromMime(mime: string): string {
+  if (mime.startsWith('image/')) return 'photo'
+  if (mime.startsWith('video/')) return 'video'
+  if (mime.startsWith('audio/')) return 'audio'
+  if (mime === 'application/pdf') return 'document'
+  if (mime.includes('spreadsheet') || mime.includes('csv')) return 'financial'
+  return 'document'
 }
