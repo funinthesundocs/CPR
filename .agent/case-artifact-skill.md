@@ -5,6 +5,37 @@ Build complete case artifacts (tagline, notebook summary, briefing, images) for 
 
 ---
 
+## ⚠️ CRITICAL PREREQUISITE: Timeline Events Must Have `city` Fields
+
+**BEFORE BUILDING ARTIFACTS, verify all timeline events have the required fields:**
+
+### Required Fields in `timeline_events` Table
+- **`city`** (TEXT, NOT NULL) — Event location city/country (e.g., "Bangkok", "Dubai", "Sydney")
+  - **IF MISSING:** Map will not display this event's location
+  - **PERMANENT REQUIREMENT:** Every timeline event MUST have a city or the Fraud Trail map is broken
+- **`latitude`** (NUMERIC, optional) — Precise event location latitude
+- **`longitude`** (NUMERIC, optional) — Precise event location longitude
+- **`date_or_year`** (TEXT) — Event date/timeframe
+- **`description`** (TEXT) — What happened at this location
+- **`event_type`** (TEXT, optional) — Category of event
+
+### How to Check (SQL Query)
+```sql
+SELECT COUNT(*) as missing_cities FROM timeline_events
+WHERE case_id = 'YOUR_CASE_ID' AND (city IS NULL OR city = '');
+```
+**If this returns > 0, you have missing cities — populate them BEFORE building artifacts.**
+
+### If Missing Cities Found
+1. Open the timeline_events for this case
+2. For EVERY event, populate the `city` field with the location
+3. Optionally add `latitude` and `longitude` for precise map placement
+4. Test the page — Fraud Trail map should now show all locations
+
+**DO NOT PROCEED to artifact building until all timeline events have cities.**
+
+---
+
 ## Step 1: Verify Case Exists in Database
 
 Query Supabase to confirm the case exists and retrieve:
@@ -358,8 +389,11 @@ These rules are PERMANENT and apply to ALL case timelines:
 
 ## Validation Checklist
 
-Before considering the case "done":
+**DO THIS FIRST BEFORE BUILDING ANYTHING:**
+- [ ] **⚠️ CRITICAL: All timeline_events have `city` field populated** (check browser console: should NOT warn about missing cities)
+- [ ] If events missing cities, populate database → clear cache → restart dev server
 
+**Then build artifacts:**
 - [ ] Tagline displays centered, on 1-2 lines max, title case
 - [ ] Case Summary shows SHORT notebook summary (not full briefing)
 - [ ] "View Full Report" button opens modal with full briefing
