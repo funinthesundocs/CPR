@@ -27,7 +27,7 @@ export function StoryInfographic({ infographicUrl, audioUrl, caseTitle }: StoryI
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: '-80px' }}
-        className="pt-0 pb-12 px-8 bg-gradient-to-b from-black to-[var(--accent-900)]"
+        className="pt-0 pb-12 px-8"
       >
         <div className="max-w-[1340px] mx-auto flex flex-col items-center gap-6">
           {/* Audio button above infographic */}

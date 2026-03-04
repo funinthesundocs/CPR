@@ -307,6 +307,7 @@ export function CasePlaintiffForm({ editMode }: Props) {
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState('')
     const [savedAt, setSavedAt] = useState<string | null>(null)
+    const [saveMessage, setSaveMessage] = useState<string | null>(null)
     const [defendantMode, setDefendantMode] = useState<'search' | 'existing' | 'new'>('search')
     const [selectedDefendant, setSelectedDefendant] = useState<DefendantResult | null>(null)
     const [fileUploadModalOpen, setFileUploadModalOpen] = useState(false)
@@ -370,8 +371,9 @@ export function CasePlaintiffForm({ editMode }: Props) {
             const now = new Date().toLocaleTimeString()
             localStorage.setItem(STORAGE_KEY, JSON.stringify({ data: form, step, savedAt: now }))
             setSavedAt(now)
-            // Brief delay for visual feedback
             await new Promise(resolve => setTimeout(resolve, 300))
+            setSaveMessage('Draft saved.')
+            setTimeout(() => setSaveMessage(null), 3500)
         } catch (err) {
             console.error('Draft save error:', err)
         } finally {
@@ -612,8 +614,8 @@ export function CasePlaintiffForm({ editMode }: Props) {
             const data = await res.json()
             if (!res.ok) throw new Error(data.error || 'Save failed')
 
-            router.push(`/cases/${editMode.caseNumber}`)
-            router.refresh()
+            setSaveMessage('Changes saved successfully.')
+            setTimeout(() => setSaveMessage(null), 3500)
         } catch (err: any) {
             setError(err.message || 'Failed to save changes')
         } finally {
@@ -1440,10 +1442,10 @@ export function CasePlaintiffForm({ editMode }: Props) {
                         <>
                             <Button
                                 variant="outline"
-                                onClick={handleDraftSave}
-                                disabled={saving}
+                                onClick={isEditMode ? handleEditSave : handleDraftSave}
+                                disabled={isEditMode ? submitting : saving}
                             >
-                                {saving ? (
+                                {(isEditMode ? submitting : saving) ? (
                                     <span className="flex items-center gap-2">
                                         <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                                         Saving...
@@ -1493,6 +1495,12 @@ export function CasePlaintiffForm({ editMode }: Props) {
             {error && (
                 <div className="rounded-lg border border-destructive/50 bg-destructive/5 p-4">
                     <p className="text-base text-destructive">{error}</p>
+                </div>
+            )}
+
+            {saveMessage && (
+                <div className="rounded-lg border border-green-500/50 bg-green-500/10 p-4">
+                    <p className="text-base text-green-400">{saveMessage}</p>
                 </div>
             )}
 
