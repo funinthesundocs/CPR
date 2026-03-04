@@ -48,15 +48,6 @@ const EVIDENCE_CHECKLIST_KEYS = [
     'evidVideo', 'evidAudio', 'evidSocial', 'evidPolice', 'evidMedical', 'evidWitness', 'evidOther',
 ] as const
 
-const EVENT_TYPES = [
-    { value: 'first_contact', key: 'eventFirstContact' },
-    { value: 'trust_built', key: 'eventTrustBuilt' },
-    { value: 'red_flag', key: 'eventRedFlag' },
-    { value: 'escalation', key: 'eventEscalation' },
-    { value: 'the_act', key: 'eventTheAct' },
-    { value: 'discovery', key: 'eventDiscovery' },
-    { value: 'aftermath', key: 'eventAftermath' },
-]
 
 const STEP_ICONS: ComponentType<{ className?: string }>[] = [
     UserIcon, LinkIcon, HandRaisedIcon, FaceFrownIcon, CalendarDaysIcon, BookOpenIcon,
@@ -950,20 +941,11 @@ export function CasePlaintiffForm({ editMode }: Props) {
                                             <p className="text-xs text-muted-foreground mt-1">City name, coordinates (13.7,100.5), or Google Maps link</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex flex-wrap gap-1.5">
-                                            {EVENT_TYPES.map(et => (
-                                                <button key={et.value} onClick={() => {
-                                                    const events = [...form.timeline_events]; events[idx] = { ...events[idx], event_type: et.value }; updateForm({ timeline_events: events })
-                                                }} className={`px-2 py-0.5 rounded text-[10px] font-semibold border transition-all ${event.event_type === et.value ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted/50 text-muted-foreground border-border hover:border-primary/50'}`}>
-                                                    {t(`wizard.${et.key}`)}
-                                                </button>
-                                            ))}
-                                        </div>
-                                        {form.timeline_events.length > 1 && (
+                                    {form.timeline_events.length > 1 && (
+                                        <div className="flex justify-end">
                                             <Button variant="ghost" size="sm" className="text-destructive shrink-0" onClick={() => updateForm({ timeline_events: form.timeline_events.filter((_, i) => i !== idx) })}>X</Button>
-                                        )}
-                                    </div>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                             <Button variant="outline" size="sm" onClick={() => updateForm({ timeline_events: [...form.timeline_events, { date: '', event: '', location: '', event_type: 'incident' }] })}>
