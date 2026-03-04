@@ -127,10 +127,10 @@ export async function POST(req: NextRequest) {
             .select('date_or_year, description, latitude, longitude, sort_order')
             .eq('case_id', caseId)
 
-        const latlngMap = new Map<string, { lat: number | null; lng: number | null }>()
+        const latlngMap = new Map<string, { lat: number | null; lng: number | null; city: string | null }>()
         for (const e of existingEvents || []) {
             const key = `${e.date_or_year}|${(e.description || '').substring(0, 80)}`
-            latlngMap.set(key, { lat: e.latitude ?? null, lng: e.longitude ?? null })
+            latlngMap.set(key, { lat: e.latitude ?? null, lng: e.longitude ?? null, city: e.city ?? null })
         }
 
         await admin.from('timeline_events').delete().eq('case_id', caseId)
@@ -138,6 +138,9 @@ export async function POST(req: NextRequest) {
         for (const event of validEvents) {
             const key = `${event.date}|${(event.event || '').substring(0, 80)}`
             const preserved = latlngMap.get(key)
+            // Only preserve lat/lng if the location field hasn't changed.
+            // If the user changed the city, clear coords so they resolve fresh from the new city name.
+            const locationChanged = preserved && preserved.city !== event.location
             await admin.from('timeline_events').insert({
                 case_id: caseId,
                 event_type: event.event_type || 'incident',
@@ -145,8 +148,8 @@ export async function POST(req: NextRequest) {
                 description: event.event,
                 city: event.location,
                 short_title: event.short_title || null,
-                latitude: preserved?.lat ?? null,
-                longitude: preserved?.lng ?? null,
+                latitude: locationChanged ? null : (preserved?.lat ?? null),
+                longitude: locationChanged ? null : (preserved?.lng ?? null),
                 submitted_by: user.id,
             })
         }

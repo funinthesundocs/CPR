@@ -67,6 +67,46 @@ const parseDate = (dateStr: string): number => {
   return 0
 }
 
+// Resolve a human-readable city name from a city field value.
+// If the field contains a raw coordinate string (e.g. "16.0476743, 108.2496587"),
+// find the nearest known city by Euclidean distance and return its display name.
+const DISPLAY_CITY_LOOKUP: { name: string; lat: number; lng: number }[] = [
+  { name: 'Da Nang, Vietnam',         lat:  16.0544,  lng: 108.2022 },
+  { name: 'Ho Chi Minh City, Vietnam',lat:  10.8231,  lng: 106.6297 },
+  { name: 'Hanoi, Vietnam',           lat:  21.0278,  lng: 105.8342 },
+  { name: 'Brisbane, Australia',      lat: -27.4698,  lng: 153.0251 },
+  { name: 'Melbourne, Australia',     lat: -37.8136,  lng: 144.9631 },
+  { name: 'Sydney, Australia',        lat: -33.8688,  lng: 151.2093 },
+  { name: 'Perth, Australia',         lat: -31.9505,  lng: 115.8605 },
+  { name: 'Bangkok, Thailand',        lat:  13.7563,  lng: 100.5018 },
+  { name: 'Dubai, UAE',               lat:  25.2048,  lng:  55.2708 },
+  { name: 'Singapore',                lat:   1.3521,  lng: 103.8198 },
+  { name: 'Hong Kong',                lat:  22.3193,  lng: 114.1694 },
+  { name: 'Shanghai, China',          lat:  31.2304,  lng: 121.4737 },
+  { name: 'Beijing, China',           lat:  39.9042,  lng: 116.4074 },
+  { name: 'Tokyo, Japan',             lat:  35.6895,  lng: 139.6917 },
+  { name: 'London, UK',               lat:  51.5074,  lng:  -0.1278 },
+  { name: 'New York, USA',            lat:  40.7128,  lng: -74.0059 },
+  { name: 'Los Angeles, USA',         lat:  34.0522,  lng:-118.2437 },
+  { name: 'Toronto, Canada',          lat:  43.6532,  lng: -79.3832 },
+]
+
+function resolveDisplayCity(city: string | null): string {
+  if (!city) return ''
+  const coordMatch = city.match(/^([-\d.]+)\s*,\s*([-\d.]+)$/)
+  if (!coordMatch) return city
+  const lat = parseFloat(coordMatch[1])
+  const lng = parseFloat(coordMatch[2])
+  if (isNaN(lat) || isNaN(lng)) return city
+  let closest = city
+  let minDist = Infinity
+  for (const c of DISPLAY_CITY_LOOKUP) {
+    const dist = (lat - c.lat) ** 2 + (lng - c.lng) ** 2
+    if (dist < minDist) { minDist = dist; closest = c.name }
+  }
+  return closest
+}
+
 // Get country code from location string for flag rendering
 type CountryCode = 'AU' | 'TH' | 'AE' | 'VN' | 'CN' | 'US' | 'GB' | 'EU'
 
@@ -208,7 +248,7 @@ function FlipCard({ event }: { event: TimelineEvent }) {
           {event.city && (
             <p className="flex items-center justify-center gap-1 text-[16px] text-white/40">
               <MapPinIcon className="h-3 w-3 shrink-0" />
-              {event.city}
+              {resolveDisplayCity(event.city)}
             </p>
           )}
 
@@ -244,7 +284,7 @@ function FlipCard({ event }: { event: TimelineEvent }) {
           {event.city && (
             <p className="flex items-center gap-1 text-[12px] text-white/40 mt-2">
               <MapPinIcon className="h-3 w-3" />
-              {event.city}
+              {resolveDisplayCity(event.city)}
             </p>
           )}
           <button
@@ -437,7 +477,7 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
                 {event.city ? (
                   <p className="flex flex-col items-center gap-1 text-[13px] text-white/50 text-center">
                     <MapPinIcon className="h-4 w-4 shrink-0" />
-                    {event.city}
+                    {resolveDisplayCity(event.city)}
                   </p>
                 ) : (
                   <p className="text-[12px] text-white/20 text-center">—</p>
