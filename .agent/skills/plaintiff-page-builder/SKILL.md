@@ -851,7 +851,7 @@ Where `sortedTimeline` is `timeline_events[]` sorted by `date_or_year` ASC.
 **Vertical view — top line format (locked):**
 `#1  THE MEETING  September 5 2025  [location right-aligned]`
 - `#N`: `text-[24px] font-bold text-[var(--accent-500)]`
-- `short_title`: `text-[22px] font-black uppercase tracking-tight text-[var(--accent-500)]` (same blue as number)
+- `short_title`: `text-[18px] font-black uppercase tracking-tight text-[var(--accent-500)]` (same blue as number)
 - Date: `text-[16px] font-semibold text-white`
 - All three on one `items-baseline` flex row with `gap-4`
 
