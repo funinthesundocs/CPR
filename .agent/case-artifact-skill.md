@@ -46,6 +46,12 @@ const coordsByDate = {
 
 **DO NOT PROCEED to artifact building until all timeline events have cities.**
 
+### Run the Audit Script First (MANDATORY)
+```bash
+node scripts/skill-audit.js
+```
+This checks every prerequisite automatically. **All blockers must be resolved before touching NotebookLM.**
+
 ---
 
 ## Step 1: Verify Case Exists in Database
