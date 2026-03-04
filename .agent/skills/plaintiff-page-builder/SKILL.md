@@ -13,7 +13,7 @@ description: >
 > AGENT: Gemini 2.5 Pro (builder)
 > REVIEWER: Claude (scores against 96% checklist)
 > SPEC: `.agent/blueprints/plaintiff-page-skill-spec.md`
-> VERSION: 1.0 — 2026-03-01
+> VERSION: 1.2 — 2026-03-04
 
 ---
 
@@ -108,8 +108,8 @@ WHERE c.id = '[case_id]'
 -- Financial impacts
 SELECT * FROM financial_impacts WHERE case_id = '[case_id]'
 
--- Timeline events (ordered)
-SELECT * FROM timeline_events WHERE case_id = '[case_id]' ORDER BY date_or_year ASC
+-- Timeline events — fetch all, sort in JS (date_or_year is TEXT; DB sort is unreliable for mixed formats)
+SELECT * FROM timeline_events WHERE case_id = '[case_id]' ORDER BY created_at ASC
 
 -- Witnesses
 SELECT * FROM witnesses WHERE case_id = '[case_id]'
@@ -148,6 +148,8 @@ mcp__notebooklm-mcp__download_artifact(
 **CPR Notebook IDs (real data):**
 - Kelly Cai (plaintiff): `86438ec8-ec42-4f4e-8331-fda2ed649053`
 - Colin James Bradley (defendant): `ddcaf0ca-f7d6-40a5-8588-ea19a3747398`
+- Matt Campbell (plaintiff): `b66ee65e-bb54-4bf4-a1e7-c279bbfb2aa7`
+- Lorelle Smith (plaintiff): `cb820ef1-672f-438d-8280-3ac4182e5d71`
 
 ---
 
@@ -978,31 +980,42 @@ export function MindMapSection({ mindMapJson }) {
 
 **Technology**: Leaflet (loaded dynamically via `import('leaflet')`). NOT react-map-gl, NOT MapLibre.
 
-**How coordinate resolution works** (`resolveCoords` priority order — highest to lowest):
-1. `city` field contains a coordinate string like `"16.0476743, 108.2496587"` → parsed directly ✓
-2. `city` field contains a Google Maps URL → coords extracted from URL ✓
-3. `latitude` / `longitude` DB columns are set → used as-is ✓
-4. `city` is a plain name → looked up in `CITY_COORDS` table in LocationMap.tsx ✓
+**How coordinate resolution works** (`resolveCoords` in LocationMap.tsx — priority order):
+1. `coordinates` field contains `"lat, lng"` string → parsed directly into map pin ✓
+2. `coordinates` field contains a Google Maps URL → coords extracted from URL ✓
+3. `city` is a plain name → looked up in `CITY_COORDS` table in LocationMap.tsx ✓
 
-**Page.tsx passes locations like this:**
+`city` and `coordinates` are **completely independent** — no relationship, no fallback between them.
+`latitude` / `longitude` columns are legacy and **ignored** by the map.
+
+**Page.tsx passes locations like this** (already implemented — do not change):
 ```tsx
 const locations = sortedTimeline
   .filter((t: any) => t.city || t.coordinates)
   .map((t: any) => ({
-    name: t.city || '',
+    name: t.city || '',          // display only — shown in map popup and timeline cards
     date: t.date_or_year,
     description: t.description,
-    coordinates: t.coordinates || undefined,  // TEXT column — "lat, lng" or Maps URL
+    coordinates: t.coordinates || undefined,  // drives pin placement — "lat, lng" or Maps URL
   }))
 ```
 
-**DB requirements** (set in Phase 0.5 Step B):
-- `coordinates` = `"lat, lng"` string (e.g. `"16.0476743, 108.2496587"`) — drives map pins
-- `city` = display name (e.g. `"Da Nang, Vietnam"`) — shown on timeline cards, independent of coordinates
-- `latitude` = numeric lat
-- `longitude` = numeric lng
+**Timeline sort** (already implemented in page.tsx — do not change):
+```tsx
+const parseTs = (s: string) => {
+  if (!s) return 0
+  const d = new Date(s)
+  if (!isNaN(d.getTime())) return d.getTime()
+  const y = parseInt(s)
+  return isNaN(y) ? 0 : new Date(`${y}-01-01`).getTime()
+}
+const sortedTimeline = (timeline || []).sort((a, b) => parseTs(a.date_or_year) - parseTs(b.date_or_year))
+```
+Handles ISO dates (`2025-09-20`), year-only (`2023`), month-year (`May 2023`), and ranges.
 
-Both fields set = maximum redundancy. Map always renders correctly regardless of which field survives.
+**DB requirements** (set in Phase 0.5 Step B):
+- `coordinates` TEXT = `"lat, lng"` string (e.g. `"16.0476743, 108.2496587"`) — sole source for map pins
+- `city` TEXT = display name (e.g. `"Da Nang, Vietnam"`) — shown on cards, independent of coordinates
 
 ---
 
@@ -1308,6 +1321,8 @@ mcp__notebooklm-mcp__studio_status(notebook_id="[ID]")
 **CPR Notebook IDs:**
 - Kelly Cai (plaintiff): `86438ec8-ec42-4f4e-8331-fda2ed649053`
 - Colin James Bradley (defendant): `ddcaf0ca-f7d6-40a5-8588-ea19a3747398`
+- Matt Campbell (plaintiff): `b66ee65e-bb54-4bf4-a1e7-c279bbfb2aa7`
+- Lorelle Smith (plaintiff): `cb820ef1-672f-438d-8280-3ac4182e5d71`
 
 ---
 

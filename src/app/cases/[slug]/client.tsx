@@ -33,7 +33,7 @@ interface PlaintiffPageClientProps {
   summaryImage2Url: string
   infoBoxes: { label: string; value: string }[]
   timeline: any[]
-  locations: { name: string; date: string; description: string }[]
+  locations: { name: string; date: string; description: string; coordinates?: string }[]
   evidence: any[]
   evidenceInventory: { label: string; category: string; description: string }[]
   financialTotal: number
