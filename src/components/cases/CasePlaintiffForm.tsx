@@ -105,7 +105,7 @@ type FormData = {
     when_realized: string
     how_confirmed: string
     is_ongoing: string
-    timeline_events: { date: string; event: string; location: string; event_type: string }[]
+    timeline_events: { date: string; event: string; location: string; event_type: string; short_title?: string | null; latitude?: number | null; longitude?: number | null }[]
     one_line_summary: string
     case_summary: string
     fin_direct_payments: string
@@ -245,6 +245,9 @@ function dbToFormData(existing: ExistingCaseData): FormData {
                 event: t.description || '',
                 location: t.city || '',
                 event_type: t.event_type || 'incident',
+                short_title: t.short_title || null,
+                latitude: t.latitude ?? null,
+                longitude: t.longitude ?? null,
             }))
             : [{ date: '', event: '', location: '', event_type: 'incident' }],
         // Step 6: Summary

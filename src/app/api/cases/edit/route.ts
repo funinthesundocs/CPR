@@ -130,6 +130,8 @@ export async function POST(req: NextRequest) {
                 description: event.event,
                 city: event.location,
                 short_title: event.short_title || null,
+                latitude: event.latitude ?? null,
+                longitude: event.longitude ?? null,
                 submitted_by: user.id,
             })
         }
