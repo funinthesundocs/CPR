@@ -58,7 +58,7 @@ Prune in this order — lowest score = first to go:
 | Recursive self-critique with a target | Set a numeric satisfaction threshold (e.g., 93%) and iterate until you reach it — open-ended "make it better" loops never converge | Established | 2026-02-19 | 0 |
 | Additive enhancement only | After each test or iteration, add what you learned to the documentation — never remove existing rules, only add new ones | Established | 2026-02-19 | 0 |
 | Consistency grep after every change | After modifying any code or documentation, grep the entire file for stale references to the old approach — one contradictory line wastes more debugging time than no documentation | Established | 2026-02-19 | 0 |
-| Trace data through full pipeline | Before assuming data is missing or a feature broken, trace a single record through the complete pipeline (input → storage → retrieval → display) — the actual failure is often in a different layer than suspected | Seed | 2026-03-02 | 0 |
+| Trace data through full pipeline | Before assuming data is missing or a feature broken, trace a single record through the complete pipeline (input → storage → retrieval → display) — the actual failure is often in a different layer than suspected | Confirmed | 2026-03-02 | 0 |
 
 ## General Engineering
 
@@ -82,6 +82,8 @@ Prune in this order — lowest score = first to go:
 | Check capability lazily not eagerly | Detect browser capabilities (microphone, camera, geolocation, clipboard) on first user interaction rather than on component mount — eager detection causes blank UI if the async check races with the first render | Seed | 2026-02-20 | 0 |
 | Admin UI/API namespace split | When adding middleware admin route guards, explicitly protect both the UI namespace (/admin/*) and the API namespace (/api/admin/*) — they share no prefix and a guard on one does not cover the other | Seed | 2026-02-28 | 0 |
 | CSS Grid for cross-row column alignment | When independent sibling rows must have elements aligned at the same horizontal position, use CSS Grid with fixed column widths on each row — Flexbox flex-1 distributes space within one container and cannot align elements across separate sibling containers | Seed | 2026-03-03 | 0 |
+| Audit shared component callers before style changes | Before modifying default styles or adding inline overrides to a shared UI component, check every caller — a change that fixes one use case silently breaks all others | Seed | 2026-03-03 | 0 |
+| Async useEffect needs cancellation token not init guard | In async useEffect functions with expensive initialization (dynamic imports, third-party lib setup), use a cancellation token checked after every await — React.StrictMode cleanup fires before async resumption, making boolean init-guard flags ineffective | Seed | 2026-03-03 | 0 |
 
 ## Database & Auth
 
@@ -95,3 +97,4 @@ Prune in this order — lowest score = first to go:
 | PostgREST joins require explicit FK in schema | Supabase's nested query JOIN syntax (e.g. table(columns)) only works when the foreign key is explicitly declared in the database schema — PostgREST cannot infer relationships from matching column names alone | Seed | 2026-03-01 | 1 |
 | Service-role key required for storage operations | Supabase anon keys cannot create buckets or modify storage settings — always use service-role key for any storage admin operations (bucket creation, bucket config, file metadata) | Seed | 2026-03-02 | 0 |
 | Anon storage uploads need API wrapper | Supabase anon keys fail silently on file uploads to buckets with RLS policies enabled — create an API route using service-role key to accept file uploads from the browser client | Seed | 2026-03-03 | 0 |
+| Key batch DB updates by natural field not insertion order | When batch-patching database rows that have a natural ordering field (e.g., date), key the update map by that field rather than array index or created_at — insertion order rarely matches logical sequence and applies data to the wrong records | Seed | 2026-03-03 | 0 |
