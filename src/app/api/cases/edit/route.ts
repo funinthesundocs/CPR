@@ -120,9 +120,24 @@ export async function POST(req: NextRequest) {
         if (finError) throw new Error(`Failed to update financial data: ${finError.message}`)
 
         // 3. Delete + re-insert timeline_events
+        // IMPORTANT: Preserve lat/lng from DB — form edits must never wipe coordinates.
+        // Fetch existing lat/lng before deleting, then restore by matching date+description.
+        const { data: existingEvents } = await admin
+            .from('timeline_events')
+            .select('date_or_year, description, latitude, longitude, sort_order')
+            .eq('case_id', caseId)
+
+        const latlngMap = new Map<string, { lat: number | null; lng: number | null }>()
+        for (const e of existingEvents || []) {
+            const key = `${e.date_or_year}|${(e.description || '').substring(0, 80)}`
+            latlngMap.set(key, { lat: e.latitude ?? null, lng: e.longitude ?? null })
+        }
+
         await admin.from('timeline_events').delete().eq('case_id', caseId)
         const validEvents = (form.timeline_events || []).filter((e: any) => e.event)
         for (const event of validEvents) {
+            const key = `${event.date}|${(event.event || '').substring(0, 80)}`
+            const preserved = latlngMap.get(key)
             await admin.from('timeline_events').insert({
                 case_id: caseId,
                 event_type: event.event_type || 'incident',
@@ -130,8 +145,8 @@ export async function POST(req: NextRequest) {
                 description: event.event,
                 city: event.location,
                 short_title: event.short_title || null,
-                latitude: event.latitude ?? null,
-                longitude: event.longitude ?? null,
+                latitude: preserved?.lat ?? null,
+                longitude: preserved?.lng ?? null,
                 submitted_by: user.id,
             })
         }
