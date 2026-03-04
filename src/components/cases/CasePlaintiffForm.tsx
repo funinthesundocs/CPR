@@ -945,7 +945,7 @@ export function CasePlaintiffForm({ editMode }: Props) {
                                         <div>
                                             <label className="text-sm font-medium block mb-1">Location</label>
                                             <Input placeholder="City, lat/long, or map link" value={event.location} onChange={e => {
-                                                const events = [...form.timeline_events]; events[idx] = { ...events[idx], location: e.target.value }; updateForm({ timeline_events: events })
+                                                const events = [...form.timeline_events]; events[idx] = { ...events[idx], location: e.target.value, latitude: null, longitude: null }; updateForm({ timeline_events: events })
                                             }} />
                                             <p className="text-xs text-muted-foreground mt-1">City name, coordinates (13.7,100.5), or Google Maps link</p>
                                         </div>

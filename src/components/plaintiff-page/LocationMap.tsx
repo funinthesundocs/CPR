@@ -22,6 +22,7 @@ const CITY_COORDS: Record<string, [number, number]> = {
   'dubai':           [ 55.2962,  25.2048],
   'uae':             [ 53.8478,  23.4241],
   'abu dhabi':       [ 54.3773,  24.4539],
+  'da nang':         [108.2022,  16.0544],
   'vietnam':         [108.2772,  14.0583],
   'ho chi minh':     [106.6297,  10.8231],
   'saigon':          [106.6297,  10.8231],
@@ -41,22 +42,20 @@ const CITY_COORDS: Record<string, [number, number]> = {
 }
 
 function resolveCoords(name: string, coords?: [number, number]): [number, number] | null {
-  if (coords) return coords  // already [lng, lat]
-
   const input = name.toLowerCase().trim()
-  if (!input) return null
 
-  // Try parsing as "lat, lng" or "lat,lng" coordinates
+  // 1. If the city field contains an explicit coordinate string, always use it —
+  //    user-typed coords beat everything, including the lat/lng columns.
   const coordMatch = input.match(/^([-\d.]+)\s*,\s*([-\d.]+)$/)
   if (coordMatch) {
     const lat = parseFloat(coordMatch[1])
     const lng = parseFloat(coordMatch[2])
     if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
-      return [lng, lat]  // return as [lng, lat]
+      return [lng, lat]
     }
   }
 
-  // Try extracting from Google Maps URL (e.g., maps.google.com/?q=13.7,100.5)
+  // 2. If the city field is a Google Maps URL, extract coords from it.
   const mapsMatch = input.match(/[?&]q=([-\d.]+)[,+]([-\d.]+)/)
   if (mapsMatch) {
     const lat = parseFloat(mapsMatch[1])
@@ -66,7 +65,11 @@ function resolveCoords(name: string, coords?: [number, number]): [number, number
     }
   }
 
-  // Fall back to city name lookup
+  // 3. Use explicit lat/lng columns from the DB (set by skill/backfill for precision).
+  if (coords) return coords
+
+  // 4. Fall back to city name lookup.
+  if (!input) return null
   for (const [city, c] of Object.entries(CITY_COORDS)) {
     if (input.includes(city)) return c
   }
