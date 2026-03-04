@@ -921,11 +921,24 @@ export function CasePlaintiffForm({ editMode }: Props) {
                             {form.timeline_events.map((event, idx) => (
                                 <div key={idx} className="space-y-4 p-4 rounded-lg border bg-muted/20">
                                     <div className="grid grid-cols-1 sm:grid-cols-[15%_1fr_20%] gap-4">
-                                        <div>
+                                        <div className="flex flex-col">
                                             <label className="text-sm font-medium block mb-1">Date</label>
-                                            <Input placeholder={t('wizard.dateOrYear')} value={event.date} onChange={e => {
-                                                const events = [...form.timeline_events]; events[idx] = { ...events[idx], date: e.target.value }; updateForm({ timeline_events: events })
-                                            }} />
+                                            <div className="relative flex-1">
+                                                <input
+                                                    type="date"
+                                                    value={/^\d{4}-\d{2}-\d{2}$/.test(event.date) ? event.date : ''}
+                                                    onChange={e => {
+                                                        const events = [...form.timeline_events]; events[idx] = { ...events[idx], date: e.target.value }; updateForm({ timeline_events: events })
+                                                    }}
+                                                    className="w-full h-[76px] px-3 border rounded-md bg-muted text-foreground text-sm cursor-pointer appearance-none flex items-center justify-center text-center"
+                                                    style={{ colorScheme: 'dark' }}
+                                                />
+                                                {!/^\d{4}-\d{2}-\d{2}$/.test(event.date) && event.date && (
+                                                    <p className="absolute inset-x-0 top-1/2 -translate-y-1/2 text-center text-xs text-muted-foreground pointer-events-none px-2">
+                                                        {event.date}
+                                                    </p>
+                                                )}
+                                            </div>
                                         </div>
                                         <div>
                                             <label className="text-sm font-medium block mb-1">Event</label>
