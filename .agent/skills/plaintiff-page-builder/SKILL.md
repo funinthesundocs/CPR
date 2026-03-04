@@ -151,6 +151,36 @@ mcp__notebooklm-mcp__download_artifact(
 
 ---
 
+## Phase 0.5: Generate Timeline Short Titles
+
+After loading timeline events, check each one for a `short_title` value.
+
+For every event where `short_title` IS NULL, generate a 1–3 word dramatic chapter title that captures the essence of the event. Think: "The Meeting", "First Lie", "The Hook", "Money Gone", "The Escape", "Silence Begins", "Court Filed", "Setting the Hook", "Taking the Bait".
+
+Rules for short titles:
+- Exactly 2 words — no exceptions
+- First word is always "THE"
+- Second word is one powerful noun in ALL CAPS that captures the event
+- Examples: THE MEETING, THE BETRAYAL, THE ARREST, THE CLIMAX, THE ESCAPE, THE LIE, THE HOOK, THE COLLAPSE, THE SILENCE, THE VERDICT, THE DEMAND, THE THREAT, THE TRANSFER, THE DISAPPEARANCE
+- Must reflect the specific event, not be generic
+
+For each event needing a title, write it back to the DB immediately:
+```
+supabase (admin/service-role):
+UPDATE timeline_events
+SET short_title = '[generated_title]'
+WHERE id = '[event_id]'
+```
+
+Or using the Supabase client:
+```javascript
+await admin.from('timeline_events').update({ short_title: '[title]' }).eq('id', event.id)
+```
+
+Do this for ALL events with NULL short_title before proceeding. Events already having a short_title are not modified.
+
+---
+
 ## Phase 1: Design Analysis
 
 **This phase drives ALL visual decisions. Do not skip any step.**
@@ -1324,7 +1354,7 @@ profiles: id, display_name, avatar_url (plaintiff display)
 financial_impacts: case_id, total_lost, direct_payments, lost_wages,
                    property_loss, legal_fees, medical_costs
 
-timeline_events: id, case_id, event_type, date_or_year, description, city, submitted_by
+timeline_events: id, case_id, event_type, date_or_year, description, short_title, city, submitted_by
 
 witnesses: id, case_id, full_name, witness_type, contact_info, details (JSONB)
 

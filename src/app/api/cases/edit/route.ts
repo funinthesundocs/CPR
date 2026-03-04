@@ -129,6 +129,7 @@ export async function POST(req: NextRequest) {
                 date_or_year: event.date,
                 description: event.event,
                 city: event.location,
+                short_title: event.short_title || null,
                 submitted_by: user.id,
             })
         }

@@ -15,6 +15,7 @@ interface TimelineEvent {
   id: string
   date_or_year: string
   description: string
+  short_title: string | null
   city: string | null
   event_type: string
 }
@@ -158,11 +159,15 @@ const formatDate = (dateStr: string): string => {
   }
 }
 
+// Derive a fallback label when short_title is absent
+const fallbackTitle = (description: string): string =>
+  'THE ' + (description.trim().split(/\s+/)[0] || 'EVENT').toUpperCase()
+
 function FlipCard({ event }: { event: TimelineEvent }) {
   const [flipped, setFlipped] = useState(false)
   const [animating, setAnimating] = useState(false)
   const [scope, animateFlip] = useAnimate()
-  const needsMore = event.description.length > 120
+  const displayTitle = event.short_title || fallbackTitle(event.description)
 
   const flip = async (toFlipped: boolean) => {
     if (animating) return
@@ -187,28 +192,33 @@ function FlipCard({ event }: { event: TimelineEvent }) {
         {/* Front face */}
         <div
           style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
-          className="bg-white/5 border border-white/10 rounded-lg p-3"
+          className="bg-white/5 border border-white/10 rounded-lg p-4 flex flex-col items-center justify-center text-center gap-3"
         >
-          <p className="text-[14px] font-bold uppercase tracking-wider text-[var(--accent-300)] mb-1 text-center">
+          {/* Short title — the hook */}
+          <p className="text-[28px] font-black uppercase leading-none tracking-tight text-white">
+            {displayTitle}
+          </p>
+
+          {/* Date badge */}
+          <p className="text-[13px] font-bold uppercase tracking-wider text-[var(--accent-300)]">
             {formatDate(event.date_or_year)}
           </p>
-          <p className="text-[14px] text-white/70 leading-relaxed line-clamp-3">
-            {event.description}
-          </p>
+
+          {/* Location */}
           {event.city && (
-            <p className="flex items-center gap-1 text-[12px] text-white/40 mt-2">
-              <MapPinIcon className="h-3 w-3" />
+            <p className="flex items-center justify-center gap-1 text-[12px] text-white/40">
+              <MapPinIcon className="h-3 w-3 shrink-0" />
               {event.city}
             </p>
           )}
-          {needsMore && (
-            <button
-              onClick={() => flip(true)}
-              className="mt-3 px-3 py-1 text-[11px] font-semibold rounded-md bg-[var(--accent-500)]/20 hover:bg-[var(--accent-500)]/50 border border-[var(--accent-500)]/40 hover:border-[var(--accent-500)]/80 text-[var(--accent-300)] hover:text-white transition-all tracking-wide"
-            >
-              More
-            </button>
-          )}
+
+          {/* More button — full width, inviting interaction */}
+          <button
+            onClick={() => flip(true)}
+            className="mt-1 w-full px-6 py-2 text-[12px] font-semibold rounded-md bg-[var(--accent-500)]/20 hover:bg-[var(--accent-500)]/50 border border-[var(--accent-500)]/40 hover:border-[var(--accent-500)]/80 text-[var(--accent-300)] hover:text-white transition-all tracking-widest uppercase"
+          >
+            Read More
+          </button>
         </div>
 
         {/* Back face */}
