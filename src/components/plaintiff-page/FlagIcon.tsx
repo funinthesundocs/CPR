@@ -31,5 +31,5 @@ export function FlagIcon({ countryCode, className = 'h-24 w-32 rounded-md' }: Fl
   if (!countryCode || !FLAG_COMPONENTS[countryCode]) return null
 
   const FlagComponent = FLAG_COMPONENTS[countryCode]
-  return <FlagComponent className={className} style={{ width: '100%', height: '100%', objectFit: 'cover' }} preserveAspectRatio="xMidYMid slice" />
+  return <FlagComponent className={className} preserveAspectRatio="xMidYMid slice" />
 }

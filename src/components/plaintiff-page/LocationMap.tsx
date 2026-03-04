@@ -95,17 +95,19 @@ function MapCanvas({ resolvedPoints }: { resolvedPoints: ResolvedPoint[] }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef       = useRef<any>(null)
   const [loaded, setLoaded] = useState(false)
-  const [initFailed, setInitFailed] = useState(false)
 
   useEffect(() => {
-    if (!containerRef.current || resolvedPoints.length === 0 || initFailed) return
+    if (!containerRef.current || resolvedPoints.length === 0) return
 
-    // Only initialize if map doesn't exist
-    if (mapRef.current) return
+    // Cancellation token — checked after every async yield to prevent
+    // React.StrictMode double-initialization race condition
+    let cancelled = false
 
     const init = async () => {
-      // Dynamic import — keeps Leaflet out of SSR bundle
       const L = (await import('leaflet')).default
+
+      // After the dynamic import, StrictMode cleanup may have fired
+      if (cancelled || !containerRef.current) return
 
       // Inject Leaflet CSS once
       if (!document.getElementById('leaflet-css')) {
@@ -142,10 +144,19 @@ function MapCanvas({ resolvedPoints }: { resolvedPoints: ResolvedPoint[] }) {
         [maxLat + latBuffer, maxLng + lngBuffer],
       ]
 
-      const map = L.map(containerRef.current!, {
+      // Final check before the critical L.map() call
+      if (cancelled || !containerRef.current) return
+
+      const map = L.map(containerRef.current, {
         zoomControl:       true,
         attributionControl: false,
       }).fitBounds(bounds, { padding: [50, 50], maxZoom: 18 })
+
+      // If cancelled between map creation and ref assignment, tear down immediately
+      if (cancelled) {
+        map.remove()
+        return
+      }
 
       mapRef.current = map
 
@@ -157,14 +168,12 @@ function MapCanvas({ resolvedPoints }: { resolvedPoints: ResolvedPoint[] }) {
 
       // Trail polyline
       if (latLngs.length >= 2) {
-        // Glow layer
         L.polyline(latLngs, {
           color:   '#818cf8',
           weight:  8,
           opacity: 0.18,
           interactive: false,
         }).addTo(map)
-        // Dashed line
         L.polyline(latLngs, {
           color:       '#a5b4fc',
           weight:      2,
@@ -240,50 +249,21 @@ function MapCanvas({ resolvedPoints }: { resolvedPoints: ResolvedPoint[] }) {
       setLoaded(true)
     }
 
-    init().catch(err => {
-      // Suppress "already initialized" errors from React.StrictMode
-      if (err.message?.includes('already initialized')) {
-        setInitFailed(true)
-        return
-      }
-      console.warn('Map initialization failed:', err)
+    init().catch(() => {
+      // Silently swallow — the only expected error is from a cancelled init
     })
 
     return () => {
-      // Complete Leaflet destruction — required for React.StrictMode development
+      // Signal any in-flight async init to abort
+      cancelled = true
+
+      // Destroy existing map if it was created
       if (mapRef.current) {
         try {
-          // Stop all map interactions
-          mapRef.current.dragging?.disable()
-          mapRef.current.touchZoom?.disable()
-          mapRef.current.doubleClickZoom?.disable()
-          mapRef.current.scrollWheelZoom?.disable()
-          mapRef.current.boxZoom?.disable()
-          mapRef.current.keyboard?.disable()
-          mapRef.current.tap?.disable()
           mapRef.current.off()
           mapRef.current.remove()
-        } catch (err) {
-          // Ignore any errors during cleanup
-        }
+        } catch {}
         mapRef.current = null
-      }
-
-      // Nuclear option: completely reset container for React.StrictMode
-      if (containerRef.current) {
-        const el = containerRef.current as any
-        // Remove ALL Leaflet cruft
-        Object.keys(el).forEach(key => {
-          if (key.startsWith('_leaflet') || key.startsWith('leaflet'))
-            delete el[key]
-        })
-        // Reset innerHTML and all inline styles
-        el.innerHTML = ''
-        el.style.cssText = ''
-        // Force remove any left-over Leaflet divs
-        el.querySelectorAll('.leaflet-container').forEach((child: any) => {
-          try { child.remove() } catch {}
-        })
       }
     }
   }, [resolvedPoints])
