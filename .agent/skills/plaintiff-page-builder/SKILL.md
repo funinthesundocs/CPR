@@ -155,7 +155,7 @@ mcp__notebooklm-mcp__download_artifact(
 
 After loading timeline events, check each one for a `short_title` value.
 
-For every event where `short_title` IS NULL, generate a 1–3 word dramatic chapter title that captures the essence of the event. Think: "The Meeting", "First Lie", "The Hook", "Money Gone", "The Escape", "Silence Begins", "Court Filed", "Setting the Hook", "Taking the Bait".
+For every event where `short_title` IS NULL, generate a 2-word dramatic chapter title that captures the essence of the event.
 
 Rules for short titles:
 - Exactly 2 words — no exceptions
@@ -812,77 +812,45 @@ Swipe: `touchstart`/`touchend` handlers tracking deltaX.
 
 ### SECTION 07 — Case Timeline
 
-**File**: `CaseTimeline.tsx`
+**File**: `src/components/plaintiff-page/CaseTimeline.tsx`
 
-**CRITICAL**: The timeline MUST follow the z-index isolation rules exactly.
+**DO NOT rewrite this component** — it is a production-stable shared component used by all case pages. Import and use it directly:
 
 ```tsx
-'use client'
-import { useRef } from 'react'
+import { CaseTimeline } from '@/components/plaintiff-page/CaseTimeline'
 
-export function CaseTimeline({ events, evidence }) {
-  // events: timeline_events[]
-  // evidence: evidence[] with timeline_event_id links
-
-  return (
-    <motion.section /* scroll wrapper */>
-      <h2 className="text-2xl font-semibold mb-8 px-6">Case Timeline</h2>
-
-      {/* ===== ISOLATION CONTAINER ===== */}
-      {/* This div must NEVER have position:sticky, z-index, or overflow:visible */}
-      <div
-        style={{ overflow: 'hidden' }}   /* clips any overflow — no z-index */
-        className="w-full"
-      >
-        {/* Scrollable track — ONLY this inner div gets overflow-x:auto */}
-        <div
-          style={{ overflowX: 'auto', overflowY: 'hidden' }}
-          className="w-full pb-6"
-        >
-          {/* Track with minimum width to force horizontal scroll */}
-          <div
-            style={{ minWidth: `${events.length * 220}px` }}
-            className="relative flex items-center px-12 py-8"
-          >
-            {/* Timeline spine line */}
-            <div className="absolute left-0 right-0 top-1/2 h-0.5 bg-[var(--accent-500)]" />
-
-            {/* Events */}
-            {events.map((event, i) => {
-              const linkedEvidence = evidence.filter(e => e.timeline_event_id === event.id)
-              return (
-                <div key={event.id} className="relative flex flex-col items-center" style={{ width: 200, marginRight: 20 }}>
-                  {/* Dot on spine */}
-                  <div className="w-4 h-4 rounded-full bg-[var(--accent-500)] border-2 border-background z-10" />
-
-                  {/* Event card — alternates above/below spine */}
-                  <div className={`absolute ${i % 2 === 0 ? 'bottom-8' : 'top-8'} w-48`}>
-                    <div className="bg-card border border-border rounded-lg p-3 text-sm">
-                      <p className="text-xs text-[var(--accent-300)] font-medium mb-1">{event.date_or_year}</p>
-                      <p className="text-foreground text-xs leading-relaxed">{event.description}</p>
-                      {event.city && (
-                        <p className="text-xs text-muted-foreground mt-1">{event.city}</p>
-                      )}
-                      {/* Evidence indicator */}
-                      {linkedEvidence.length > 0 && (
-                        <button className="mt-2 text-xs text-[var(--accent-500)] hover:underline">
-                          {linkedEvidence.length} evidence item{linkedEvidence.length > 1 ? 's' : ''} →
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-    </motion.section>
-  )
-}
+// In page:
+<CaseTimeline events={sortedTimeline} />
 ```
 
-**Self-check**: Scroll right in the timeline. Does the sidebar remain fixed? Does the hero section above remain centered? If anything shifts: the timeline is leaking z-index. Fix by removing any position or z-index from the isolation container.
+Where `sortedTimeline` is `timeline_events[]` sorted by `date_or_year` ASC.
+
+**Component behaviour (do not deviate):**
+
+- **Horizontal view** (default): horizontally scrollable flip-card track with drag support and numbered alternating above/below spine dots
+- **Vertical view**: togglable via header buttons — two-column rows (flag left, content right)
+- **Flip cards**: 300px wide, 3D flip animation (framer-motion `useAnimate`)
+
+**FlipCard — FRONT face spec (locked):**
+- Layout: `flex flex-col items-center justify-center text-center gap-3`
+- Short title: `text-[22px] font-black uppercase leading-none tracking-tight text-white` — reads from `event.short_title`; fallback: `'THE ' + firstWord.toUpperCase()`
+- Date: `text-[16px] font-bold uppercase tracking-wider text-[var(--accent-300)]`
+- Location: `text-[16px] text-white/40` with `MapPinIcon h-3 w-3`
+- Button: `w-full px-6 py-2 text-[12px] tracking-widest uppercase` label **"Flip Card"** — accent colours
+
+**FlipCard — BACK face spec (locked):**
+- Date: `text-[14px] font-bold uppercase tracking-wider text-[var(--accent-300)] mb-2 text-center`
+- Description: `text-[14px] text-white/80 leading-[1.5] text-justify` + `style={{ letterSpacing: '-1px' }}`
+- Location: `text-[12px] text-white/40` with `MapPinIcon h-3 w-3`
+- Button: `px-3 py-1 text-[11px]` label **"← Back"** — accent colours
+
+**short_title rules (set in Phase 0.5):**
+- Always exactly 2 words: `THE [NOUN]` in ALL CAPS
+- Examples: THE MEETING, THE BETRAYAL, THE ARREST, THE COLLAPSE, THE SILENCE
+
+**CRITICAL z-index rule**: The timeline isolation container (`style={{ overflow: 'hidden' }}`) must NEVER have `position`, `z-index`, or `overflow:visible` — it will break the sidebar.
+
+**Self-check**: Scroll right in the timeline. Does the sidebar remain fixed? Does the hero section above remain centered? If anything shifts: the timeline is leaking z-index.
 
 ---
 

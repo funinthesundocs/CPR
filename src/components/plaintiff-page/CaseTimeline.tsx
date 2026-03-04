@@ -195,18 +195,18 @@ function FlipCard({ event }: { event: TimelineEvent }) {
           className="bg-white/5 border border-white/10 rounded-lg p-4 flex flex-col items-center justify-center text-center gap-3"
         >
           {/* Short title — the hook */}
-          <p className="text-[28px] font-black uppercase leading-none tracking-tight text-white">
+          <p className="text-[22px] font-black uppercase leading-none tracking-tight text-white">
             {displayTitle}
           </p>
 
           {/* Date badge */}
-          <p className="text-[13px] font-bold uppercase tracking-wider text-[var(--accent-300)]">
+          <p className="text-[16px] font-bold uppercase tracking-wider text-[var(--accent-300)]">
             {formatDate(event.date_or_year)}
           </p>
 
           {/* Location */}
           {event.city && (
-            <p className="flex items-center justify-center gap-1 text-[12px] text-white/40">
+            <p className="flex items-center justify-center gap-1 text-[16px] text-white/40">
               <MapPinIcon className="h-3 w-3 shrink-0" />
               {event.city}
             </p>
@@ -217,7 +217,7 @@ function FlipCard({ event }: { event: TimelineEvent }) {
             onClick={() => flip(true)}
             className="mt-1 w-full px-6 py-2 text-[12px] font-semibold rounded-md bg-[var(--accent-500)]/20 hover:bg-[var(--accent-500)]/50 border border-[var(--accent-500)]/40 hover:border-[var(--accent-500)]/80 text-[var(--accent-300)] hover:text-white transition-all tracking-widest uppercase"
           >
-            Read More
+            Flip Card
           </button>
         </div>
 
@@ -238,7 +238,7 @@ function FlipCard({ event }: { event: TimelineEvent }) {
           <p className="text-[14px] font-bold uppercase tracking-wider text-[var(--accent-300)] mb-2 text-center">
             {formatDate(event.date_or_year)}
           </p>
-          <p className="text-[13px] text-white/80 leading-relaxed">
+          <p className="text-[14px] text-white/80 leading-[1.5] text-justify" style={{ letterSpacing: '-1px' }}>
             {event.description}
           </p>
           {event.city && (
