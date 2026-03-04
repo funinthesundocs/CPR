@@ -151,33 +151,53 @@ mcp__notebooklm-mcp__download_artifact(
 
 ---
 
-## Phase 0.5: Generate Timeline Short Titles
+## Phase 0.5: Generate Short Titles + Set Coordinates
+
+### Step A — Short Titles
 
 After loading timeline events, check each one for a `short_title` value.
 
-For every event where `short_title` IS NULL, generate a 2-word dramatic chapter title that captures the essence of the event.
-
-Rules for short titles:
+For every event where `short_title` IS NULL, generate a 2-word dramatic chapter title:
 - Exactly 2 words — no exceptions
 - First word is always "THE"
-- Second word is one powerful noun in ALL CAPS that captures the event
-- Examples: THE MEETING, THE BETRAYAL, THE ARREST, THE CLIMAX, THE ESCAPE, THE LIE, THE HOOK, THE COLLAPSE, THE SILENCE, THE VERDICT, THE DEMAND, THE THREAT, THE TRANSFER, THE DISAPPEARANCE
-- Must reflect the specific event, not be generic
+- Second word: one powerful noun in ALL CAPS capturing the event essence
+- Examples: THE MEETING, THE BETRAYAL, THE ARREST, THE HOOK, THE COLLAPSE, THE SILENCE, THE DEMAND, THE THREAT, THE TRANSFER
 
-For each event needing a title, write it back to the DB immediately:
-```
-supabase (admin/service-role):
-UPDATE timeline_events
-SET short_title = '[generated_title]'
-WHERE id = '[event_id]'
-```
-
-Or using the Supabase client:
+Write back immediately:
 ```javascript
 await admin.from('timeline_events').update({ short_title: '[title]' }).eq('id', event.id)
 ```
 
-Do this for ALL events with NULL short_title before proceeding. Events already having a short_title are not modified.
+Do NOT modify events that already have a short_title.
+
+---
+
+### Step B — Coordinates
+
+**Every timeline event must have precise `latitude` and `longitude` set in the DB.**
+
+Rules:
+1. Use Google Search or maps to get exact coordinates for each event's city/location
+2. Write BOTH the coordinate string AND the numeric columns:
+   - `city` = `"lat, lng"` string (e.g. `"16.0476743, 108.2496587"`) — this is the primary source for map rendering
+   - `latitude` = numeric value
+   - `longitude` = numeric value
+3. Store coordinates as precise as possible — suburb/district level, not country center
+4. If the location is vague (e.g. "Australia (communication)"), use the most relevant city in that country
+
+**Why both fields?** `resolveCoords()` checks the `city` string for coordinate format first (highest priority), then falls back to `latitude`/`longitude` columns. Storing both provides redundancy — if either is present, the map pin renders correctly.
+
+**CRITICAL: Never overwrite existing coordinates.** Use UPDATE only if `latitude IS NULL`:
+```javascript
+// Only set if not already populated
+if (!event.latitude) {
+  await admin.from('timeline_events')
+    .update({ city: `${lat}, ${lng}`, latitude: lat, longitude: lng })
+    .eq('id', event.id)
+}
+```
+
+Do this for ALL events before building the page.
 
 ---
 
@@ -955,66 +975,34 @@ export function MindMapSection({ mindMapJson }) {
 
 ### SECTION 09 — Location Map
 
-**File**: `LocationMap.tsx`
+**File**: `LocationMap.tsx` — DO NOT rewrite this component. It already exists and is production-ready.
 
-Technology: react-map-gl + MapLibre GL JS (free, no billing surprises).
+**Technology**: Leaflet (loaded dynamically via `import('leaflet')`). NOT react-map-gl, NOT MapLibre.
 
+**How coordinate resolution works** (`resolveCoords` priority order — highest to lowest):
+1. `city` field contains a coordinate string like `"16.0476743, 108.2496587"` → parsed directly ✓
+2. `city` field contains a Google Maps URL → coords extracted from URL ✓
+3. `latitude` / `longitude` DB columns are set → used as-is ✓
+4. `city` is a plain name → looked up in `CITY_COORDS` table in LocationMap.tsx ✓
+
+**Page.tsx passes locations like this:**
 ```tsx
-'use client'
-import { useState, useEffect, useRef } from 'react'
-
-// Extract locations from timeline events
-function extractLocations(events: any[]) {
-  return events
-    .filter(e => e.city)
-    .map((e, i) => ({
-      id: i,
-      name: e.city,
-      date: e.date_or_year,
-      description: e.description,
-      // Geocode: use INVOKE GOOGLE SEARCH to verify coordinates for each city
-    }))
-}
-
-export function LocationMap({ timelineEvents }) {
-  const [visible, setVisible] = useState(false)
-  const ref = useRef(null)
-  const locations = extractLocations(timelineEvents)
-
-  // INVOKE GOOGLE SEARCH GROUNDING to get coordinates for each city
-  // Example: "Brisbane Australia coordinates" → [-27.4698, 153.0251]
-  // Store as: [{ name, coordinates: [lng, lat] }]
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setVisible(true) },
-      { threshold: 0.1 }
-    )
-    if (ref.current) observer.observe(ref.current)
-    return () => observer.disconnect()
-  }, [])
-
-  if (locations.length === 0) return <ComingSoonPlaceholder section="Location Map" />
-
-  return (
-    <motion.section /* scroll wrapper */ ref={ref}>
-      <h2 className="text-2xl font-semibold mb-8 px-6">Fraud Trail</h2>
-      {visible && (
-        <div className="h-[400px] rounded-lg overflow-hidden">
-          {/* react-map-gl implementation:
-              - Show each location as a custom pin
-              - Connect with animated trail line (GeoJSON LineString)
-              - Numbered pins showing sequence of fraud journey
-              - Popup on hover showing event description
-          */}
-        </div>
-      )}
-    </motion.section>
-  )
-}
+const locations = sortedTimeline
+  .filter((t: any) => t.city)
+  .map((t: any) => ({
+    name: t.city,
+    date: t.date_or_year,
+    description: t.description,
+    coordinates: t.latitude && t.longitude ? [t.longitude, t.latitude] : undefined,
+  }))
 ```
 
-**Coordinates**: Use INVOKE GOOGLE SEARCH GROUNDING to get exact lat/lng for each city name in the timeline events. Never hardcode or guess coordinates.
+**DB requirements** (set in Phase 0.5 Step B):
+- `city` = coordinate string `"lat, lng"` (e.g. `"16.0476743, 108.2496587"`)
+- `latitude` = numeric lat
+- `longitude` = numeric lng
+
+Both fields set = maximum redundancy. Map always renders correctly regardless of which field survives.
 
 ---
 
@@ -1341,7 +1329,11 @@ profiles: id, display_name, avatar_url (plaintiff display)
 financial_impacts: case_id, total_lost, direct_payments, lost_wages,
                    property_loss, legal_fees, medical_costs
 
-timeline_events: id, case_id, event_type, date_or_year, description, short_title, city, submitted_by
+timeline_events: id, case_id, event_type, date_or_year, description, short_title,
+                 city (coordinate string "lat, lng" OR display name),
+                 latitude (DOUBLE PRECISION), longitude (DOUBLE PRECISION),
+                 submitted_by
+                 — NEVER wipe lat/lng via form save; only skill/SQL may write coordinates
 
 witnesses: id, case_id, full_name, witness_type, contact_info, details (JSONB)
 
