@@ -381,7 +381,7 @@ export default async function DefendantDetailPage({ params }: PageProps) {
       notebookSummary={notebookSummary}
       briefingContent={briefingContent}
       testimonyFields={testimonyFields}
-      infographicUrl={`${artifactBase}/infographic-landscape.jpg`}
+      infographicUrl={`${artifactBase}/infographic-landscape.png`}
       audioUrl={`${artifactBase}/podcast.mp3`}
       pdfUrl={`${artifactBase}/slides.pdf`}
       summaryImage1Url={summaryImage1Url}
