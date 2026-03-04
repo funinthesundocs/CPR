@@ -96,7 +96,7 @@ type FormData = {
     when_realized: string
     how_confirmed: string
     is_ongoing: string
-    timeline_events: { date: string; event: string; location: string; event_type: string; short_title?: string | null; latitude?: number | null; longitude?: number | null }[]
+    timeline_events: { date: string; event: string; location: string; coordinates: string; event_type: string; short_title?: string | null; latitude?: number | null; longitude?: number | null }[]
     one_line_summary: string
     case_summary: string
     fin_direct_payments: string
@@ -129,6 +129,26 @@ type FormData = {
     nominal_damages: string
 }
 
+// ── Coordinate parsing ─────────────────────────────────────────────────────────
+// Parses "lat, lng" or Google Maps URLs into { lat, lng }. Returns null if unrecognized.
+function parseCoordinateString(input: string): { lat: number; lng: number } | null {
+    const s = input.trim()
+    if (!s) return null
+    const coordMatch = s.match(/^([-\d.]+)\s*,\s*([-\d.]+)$/)
+    if (coordMatch) {
+        const lat = parseFloat(coordMatch[1]), lng = parseFloat(coordMatch[2])
+        if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180)
+            return { lat, lng }
+    }
+    const mapsMatch = s.match(/[?&]q=([-\d.]+)[,+]([-\d.]+)/)
+    if (mapsMatch) {
+        const lat = parseFloat(mapsMatch[1]), lng = parseFloat(mapsMatch[2])
+        if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180)
+            return { lat, lng }
+    }
+    return null
+}
+
 const DEFAULT_FORM: FormData = {
     entity_type: 'person',
     defendant_first_name: '', defendant_middle_name: '', defendant_last_name: '', defendant_full_name: '',
@@ -142,7 +162,7 @@ const DEFAULT_FORM: FormData = {
     explicit_agreement: '', agreement_terms: '', reasonable_expectation: '',
     evidence_of_trust: '', others_vouch: '',
     what_happened: '', primary_incident: '', when_realized: '', how_confirmed: '', is_ongoing: '',
-    timeline_events: [{ date: '', event: '', location: '', event_type: 'incident' }],
+    timeline_events: [{ date: '', event: '', location: '', coordinates: '', event_type: 'incident' }],
     one_line_summary: '', case_summary: '',
     fin_direct_payments: '', fin_lost_wages: '', fin_property_loss: '',
     fin_legal_fees: '', fin_medical_costs: '', fin_credit_damage: '',
@@ -235,6 +255,7 @@ function dbToFormData(existing: ExistingCaseData): FormData {
                 date: t.date_or_year || '',
                 event: t.description || '',
                 location: t.city || '',
+                coordinates: t.latitude && t.longitude ? `${t.latitude}, ${t.longitude}` : '',
                 event_type: t.event_type || 'incident',
                 short_title: t.short_title || null,
                 latitude: t.latitude ?? null,
@@ -538,12 +559,15 @@ export function CasePlaintiffForm({ editMode }: Props) {
             if (caseError) throw new Error(`Failed to create case: ${caseError.message}`)
 
             for (const event of form.timeline_events.filter(e => e.event)) {
+                const parsedCoords = parseCoordinateString(event.coordinates || '')
                 await supabase.from('timeline_events').insert({
                     case_id: newCase.id,
                     event_type: event.event_type || 'incident',
                     date_or_year: event.date,
                     description: event.event,
                     city: event.location,
+                    latitude: parsedCoords?.lat ?? null,
+                    longitude: parsedCoords?.lng ?? null,
                     submitted_by: user.id,
                 })
             }
@@ -951,6 +975,11 @@ export function CasePlaintiffForm({ editMode }: Props) {
                                             <Input placeholder="City or location" value={event.location} onChange={e => {
                                                 const events = [...form.timeline_events]; events[idx] = { ...events[idx], location: e.target.value }; updateForm({ timeline_events: events })
                                             }} />
+                                            <label className="text-sm font-medium block mt-2 mb-1">Coordinates</label>
+                                            <Input placeholder="Lat, Long — or paste a Google Maps link" value={event.coordinates} onChange={e => {
+                                                const events = [...form.timeline_events]; events[idx] = { ...events[idx], coordinates: e.target.value }; updateForm({ timeline_events: events })
+                                            }} />
+                                            <p className="text-xs text-muted-foreground mt-1">e.g. 16.0476, 108.2496 or maps.google.com/...</p>
                                         </div>
                                     </div>
                                     {form.timeline_events.length > 1 && (
@@ -960,7 +989,7 @@ export function CasePlaintiffForm({ editMode }: Props) {
                                     )}
                                 </div>
                             ))}
-                            <Button variant="outline" size="sm" onClick={() => updateForm({ timeline_events: [...form.timeline_events, { date: '', event: '', location: '', event_type: 'incident' }] })}>
+                            <Button variant="outline" size="sm" onClick={() => updateForm({ timeline_events: [...form.timeline_events, { date: '', event: '', location: '', coordinates: '', event_type: 'incident' }] })}>
                                 {t('wizard.addEvent')}
                             </Button>
                             <p className="text-sm text-muted-foreground italic">{t('wizard.step5Micro')}</p>

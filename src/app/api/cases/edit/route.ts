@@ -2,6 +2,25 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
+// Parses "lat, lng" or Google Maps URLs into { lat, lng }. Returns null if unrecognized.
+function parseCoordinateString(input: string): { lat: number; lng: number } | null {
+    const s = (input || '').trim()
+    if (!s) return null
+    const coordMatch = s.match(/^([-\d.]+)\s*,\s*([-\d.]+)$/)
+    if (coordMatch) {
+        const lat = parseFloat(coordMatch[1]), lng = parseFloat(coordMatch[2])
+        if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180)
+            return { lat, lng }
+    }
+    const mapsMatch = s.match(/[?&]q=([-\d.]+)[,+]([-\d.]+)/)
+    if (mapsMatch) {
+        const lat = parseFloat(mapsMatch[1]), lng = parseFloat(mapsMatch[2])
+        if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180)
+            return { lat, lng }
+    }
+    return null
+}
+
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json()
@@ -124,7 +143,7 @@ export async function POST(req: NextRequest) {
         // Fetch existing lat/lng before deleting, then restore by matching date+description.
         const { data: existingEvents } = await admin
             .from('timeline_events')
-            .select('date_or_year, description, latitude, longitude, sort_order')
+            .select('date_or_year, description, latitude, longitude, city, sort_order')
             .eq('case_id', caseId)
 
         const latlngMap = new Map<string, { lat: number | null; lng: number | null; city: string | null }>()
@@ -138,9 +157,21 @@ export async function POST(req: NextRequest) {
         for (const event of validEvents) {
             const key = `${event.date}|${(event.event || '').substring(0, 80)}`
             const preserved = latlngMap.get(key)
-            // Only preserve lat/lng if the location field hasn't changed.
-            // If the user changed the city, clear coords so they resolve fresh from the new city name.
-            const locationChanged = preserved && preserved.city !== event.location
+
+            // Priority: explicit coordinates field > preserved DB values (if city unchanged) > null
+            const explicitCoords = parseCoordinateString(event.coordinates || '')
+            let lat: number | null = null
+            let lng: number | null = null
+            if (explicitCoords) {
+                lat = explicitCoords.lat
+                lng = explicitCoords.lng
+            } else if (preserved) {
+                // Only preserve DB lat/lng if the city field hasn't changed
+                const locationChanged = preserved.city !== event.location
+                lat = locationChanged ? null : (preserved.lat ?? null)
+                lng = locationChanged ? null : (preserved.lng ?? null)
+            }
+
             await admin.from('timeline_events').insert({
                 case_id: caseId,
                 event_type: event.event_type || 'incident',
@@ -148,8 +179,8 @@ export async function POST(req: NextRequest) {
                 description: event.event,
                 city: event.location,
                 short_title: event.short_title || null,
-                latitude: locationChanged ? null : (preserved?.lat ?? null),
-                longitude: locationChanged ? null : (preserved?.lng ?? null),
+                latitude: lat,
+                longitude: lng,
                 submitted_by: user.id,
             })
         }
