@@ -231,7 +231,16 @@ function dbToFormData(existing: ExistingCaseData): FormData {
         is_ongoing: betrayal.is_ongoing || '',
         // Step 5: Timeline
         timeline_events: tl && tl.length > 0
-            ? tl.map(t => ({
+            ? [...tl].sort((a, b) => {
+                const parseTs = (s: string) => {
+                    if (!s) return 0
+                    const d = new Date(s)
+                    if (!isNaN(d.getTime())) return d.getTime()
+                    const y = parseInt(s)
+                    return isNaN(y) ? 0 : new Date(`${y}-01-01`).getTime()
+                }
+                return parseTs(a.date_or_year) - parseTs(b.date_or_year)
+            }).map(t => ({
                 date: t.date_or_year || '',
                 event: t.description || '',
                 location: t.city || '',

@@ -97,12 +97,17 @@ export default async function CaseDetailPage({ params }: PageProps) {
       (fi.legal_fees || 0) + (fi.medical_costs || 0) + (fi.credit_damage || 0) + (fi.other_amount || 0)
     : (caseData.nominal_damages_claimed || 0)
 
-  // Timeline: sort by date_or_year
-  const sortedTimeline = (timeline || []).sort((a: any, b: any) => {
-    const yearA = parseInt(a.date_or_year) || 0
-    const yearB = parseInt(b.date_or_year) || 0
-    return yearA - yearB
-  })
+  // Timeline: sort chronologically — handles ISO dates, year-only strings, and everything between
+  const parseTs = (s: string) => {
+    if (!s) return 0
+    const d = new Date(s)
+    if (!isNaN(d.getTime())) return d.getTime()
+    const y = parseInt(s)
+    return isNaN(y) ? 0 : new Date(`${y}-01-01`).getTime()
+  }
+  const sortedTimeline = (timeline || []).sort((a: any, b: any) =>
+    parseTs(a.date_or_year) - parseTs(b.date_or_year)
+  )
 
   // Years active
   const years = sortedTimeline.map((t: any) => parseInt(t.date_or_year)).filter((y: number) => !isNaN(y))
