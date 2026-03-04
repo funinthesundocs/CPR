@@ -4,7 +4,8 @@ import "./globals.css";
 import { ThemeProvider } from "@/lib/theme/theme-provider";
 import { I18nProvider } from "@/i18n";
 import { PermissionsProvider } from "@/components/providers/permissions-provider";
-import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarInsetWrapper } from "@/components/layout/sidebar-inset-wrapper";
+import { StickyHeader } from "@/components/layout/sticky-header";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { SmartSidebarProvider } from "@/components/layout/smart-sidebar-provider";
 import { ConditionalFooter } from "@/components/layout/conditional-footer";
@@ -64,15 +65,13 @@ export default function RootLayout({
           <I18nProvider>
             <PermissionsProvider>
               <SmartSidebarProvider sidebar={<AppSidebar />}>
-                <SidebarInset suppressHydrationWarning>
-                  <header className="flex h-14 items-center gap-2 border-b px-4">
-                    <SidebarTrigger className="-ml-2" />
-                  </header>
+                <SidebarInsetWrapper>
+                  <StickyHeader />
                   <main className="flex-1 p-6">
                     {children}
                   </main>
                   <ConditionalFooter />
-                </SidebarInset>
+                </SidebarInsetWrapper>
               </SmartSidebarProvider>
             </PermissionsProvider>
           </I18nProvider>

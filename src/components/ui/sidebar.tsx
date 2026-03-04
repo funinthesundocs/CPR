@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
-import { PanelLeftIcon } from "lucide-react"
+import { ChevronDoubleLeftIcon } from "@heroicons/react/24/outline"
 import { Slot } from "radix-ui"
 
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -265,15 +265,16 @@ function SidebarTrigger({
       data-sidebar="trigger"
       data-slot="sidebar-trigger"
       variant="ghost"
-      size="icon"
-      className={cn("size-7", className)}
+      size="sm"
+      className={cn("h-8 px-2 gap-1.5", className)}
       onClick={(event) => {
         onClick?.(event)
         toggleSidebar()
       }}
       {...props}
     >
-      <PanelLeftIcon />
+      <ChevronDoubleLeftIcon className="size-5 shrink-0" />
+      <span className="text-sm">Sidebar</span>
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   )
