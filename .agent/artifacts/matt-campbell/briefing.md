@@ -4,9 +4,9 @@ This briefing documents the extensive, multi-national fraud perpetrated by **Col
 
 ## The Defendant Profile
 
-**Colin James Bradley**, commonly known as **Cole**, operates under the aliases **Marine Warrior Superyachts** and **Finish Line Boats**. He has conducted fraudulent activities across multiple continents including **Australia**, **Thailand**, the **UAE** (**Dubai**), **Vietnam**, **China**, and **Turkey**. He is currently wanted in **Australia**, banned from re-entry in **Thailand**, faces default judgments in the **UAE**, and is under review for an Interpol referral.
+Colin James Bradley, commonly known as Cole, operates under the aliases Marine Warrior Superyachts and Finish Line Boats. He has conducted fraudulent activities across multiple continents: Australia, Thailand, the UAE (Dubai), Vietnam, China, and Turkey. He is currently wanted in Australia, banned from re-entry in Thailand, faces default judgments in the UAE, and is under review for an Interpol referral.
 
-Bradley's method is consistent: he uses charm and fabricated credentials to recruit professionals, creates false evidence of immense wealth and nonexistent funding, extracts unpaid labor and financial loans from his associates, and disappears or blames others when confronted. He exhibits pathological lying and emotional manipulation, frequently crying or feigning crises to evade accountability.
+Bradley's method is consistent. He uses charm and fabricated credentials to recruit professionals, creates false evidence of immense wealth and nonexistent funding, extracts unpaid labor and financial loans from his associates, and disappears or blames others when confronted. He exhibits pathological lying and emotional manipulation, frequently crying or feigning crises to evade accountability.
 
 ## How the Relationship Began
 
