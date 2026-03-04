@@ -848,12 +848,24 @@ Where `sortedTimeline` is `timeline_events[]` sorted by `date_or_year` ASC.
 - Always exactly 2 words: `THE [NOUN]` in ALL CAPS
 - Examples: THE MEETING, THE BETRAYAL, THE ARREST, THE COLLAPSE, THE SILENCE
 
-**Vertical view — top line format (locked):**
-`#1  THE MEETING  September 5 2025  [location right-aligned]`
+**Vertical view — 3-column row layout (locked):**
+
+| Col | Width | Content |
+|-----|-------|---------|
+| A — Flag | `w-[15%]` | Country flag (FlagIcon), `bg-white/10`, full bleed |
+| B — Text | `flex-1` | Number + short_title + date on top line; full description below |
+| divider | `w-px bg-white/10` | Full-height vertical rule |
+| C — Location | `w-[15%]` | MapPinIcon + city, centered, `text-[13px] text-white/50` |
+
+**Column B top line:**
 - `#N`: `text-[24px] font-bold text-[var(--accent-500)]`
-- `short_title`: `text-[18px] font-black uppercase tracking-tight text-[var(--accent-500)]` (same blue as number)
+- `short_title`: `text-[18px] font-black uppercase tracking-tight text-[var(--accent-500)]`
 - Date: `text-[16px] font-semibold text-white`
-- All three on one `items-baseline` flex row with `gap-4`
+- All three on one `items-baseline flex gap-4` row
+
+**Column B description:** `text-[15px] leading-relaxed text-white/80`
+
+**Column C:** `flex flex-col items-center gap-1 text-center`, pin icon above city name, dash if no city
 
 **CRITICAL z-index rule**: The timeline isolation container (`style={{ overflow: 'hidden' }}`) must NEVER have `position`, `z-index`, or `overflow:visible` — it will break the sidebar.
 

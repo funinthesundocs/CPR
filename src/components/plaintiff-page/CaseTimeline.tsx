@@ -412,29 +412,36 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
                 )}
               </div>
 
-              {/* RIGHT COLUMN — 85% — Content */}
-              <div className="w-[85%] px-6 py-4 space-y-3 flex flex-col justify-center">
-                {/* Event number, date, and location — top line */}
-                <div className="flex items-baseline gap-4 justify-between">
-                  <div className="flex items-baseline gap-4">
-                    <span className="text-[24px] font-bold text-[var(--accent-500)]">#{i + 1}</span>
-                    {event.short_title && (
-                      <span className="text-[18px] font-black uppercase tracking-tight text-[var(--accent-500)]">{event.short_title}</span>
-                    )}
-                    <p className="text-[16px] font-semibold text-white">{formatDate(event.date_or_year)}</p>
-                  </div>
-                  {event.city && (
-                    <p className="flex items-center gap-2 text-[13px] text-white/50">
-                      <MapPinIcon className="h-4 w-4" />
-                      {event.city}
-                    </p>
+              {/* COLUMN B — Text content */}
+              <div className="flex-1 px-6 py-4 space-y-3 flex flex-col justify-center min-w-0">
+                {/* Event number, title, date — top line */}
+                <div className="flex items-baseline gap-4">
+                  <span className="text-[24px] font-bold text-[var(--accent-500)]">#{i + 1}</span>
+                  {event.short_title && (
+                    <span className="text-[18px] font-black uppercase tracking-tight text-[var(--accent-500)]">{event.short_title}</span>
                   )}
+                  <p className="text-[16px] font-semibold text-white">{formatDate(event.date_or_year)}</p>
                 </div>
 
                 {/* Full description */}
                 <p className="text-[15px] leading-relaxed text-white/80">
                   {event.description}
                 </p>
+              </div>
+
+              {/* Vertical divider */}
+              <div className="w-px bg-white/10 shrink-0 self-stretch" />
+
+              {/* COLUMN C — Location — 15% */}
+              <div className="w-[15%] shrink-0 flex items-center justify-center px-3">
+                {event.city ? (
+                  <p className="flex flex-col items-center gap-1 text-[13px] text-white/50 text-center">
+                    <MapPinIcon className="h-4 w-4 shrink-0" />
+                    {event.city}
+                  </p>
+                ) : (
+                  <p className="text-[12px] text-white/20 text-center">—</p>
+                )}
               </div>
             </motion.div>
             )
