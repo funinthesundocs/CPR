@@ -240,13 +240,13 @@ function FlipCard({ event }: { event: TimelineEvent }) {
           </p>
 
           {/* Date badge */}
-          <p className="text-[16px] font-bold uppercase tracking-wider text-[var(--accent-300)]">
+          <p className="text-[15px] font-bold uppercase tracking-wider text-[var(--accent-300)]">
             {formatDate(event.date_or_year)}
           </p>
 
           {/* Location */}
           {event.city && (
-            <p className="flex items-center justify-center gap-1 text-[16px] text-white/40">
+            <p className="flex items-center justify-center gap-1 text-[14px] text-white/40">
               <MapPinIcon className="h-3 w-3 shrink-0" />
               {resolveDisplayCity(event.city)}
             </p>
@@ -275,14 +275,14 @@ function FlipCard({ event }: { event: TimelineEvent }) {
           }}
           className="bg-[var(--accent-900)]/50 border border-[var(--accent-500)]/40 rounded-lg p-3"
         >
-          <p className="text-[14px] font-bold uppercase tracking-wider text-[var(--accent-300)] mb-2 text-center">
+          <p className="text-[15px] font-bold uppercase tracking-wider text-[var(--accent-300)] mb-2 text-center">
             {formatDate(event.date_or_year)}
           </p>
-          <p className="text-[14px] text-white/80 leading-[1.5] text-justify" style={{ letterSpacing: '-1px' }}>
+          <p className="text-[15px] text-white/80 leading-[1.5] text-justify" style={{ letterSpacing: '-1px' }}>
             {event.description}
           </p>
           {event.city && (
-            <p className="flex items-center gap-1 text-[12px] text-white/40 mt-2">
+            <p className="flex items-center gap-1 text-[14px] text-white/40 mt-2">
               <MapPinIcon className="h-3 w-3" />
               {resolveDisplayCity(event.city)}
             </p>
@@ -460,7 +460,7 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
                   {event.short_title && (
                     <span className="text-[18px] font-black uppercase tracking-tight text-[var(--accent-500)]">{event.short_title}</span>
                   )}
-                  <p className="text-[16px] font-semibold text-white">{formatDate(event.date_or_year)}</p>
+                  <p className="text-[15px] font-semibold text-white">{formatDate(event.date_or_year)}</p>
                 </div>
 
                 {/* Full description */}
@@ -475,7 +475,7 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
               {/* COLUMN C — Location — 15% */}
               <div className="w-[15%] shrink-0 flex items-center justify-center px-3">
                 {event.city ? (
-                  <p className="flex flex-col items-center gap-1 text-[13px] text-white/50 text-center">
+                  <p className="flex flex-col items-center gap-1 text-[14px] text-white/50 text-center">
                     <MapPinIcon className="h-4 w-4 shrink-0" />
                     {resolveDisplayCity(event.city)}
                   </p>

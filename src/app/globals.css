@@ -47,6 +47,16 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
+/* Timeline date picker — hide native calendar icon; replaced by Heroicon overlay */
+.timeline-date-input::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);

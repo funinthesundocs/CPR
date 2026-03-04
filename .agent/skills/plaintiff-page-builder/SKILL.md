@@ -153,7 +153,7 @@ mcp__notebooklm-mcp__download_artifact(
 
 ---
 
-## Phase 0.5: Generate Short Titles + Set Coordinates
+## Phase 0.5: Generate Short Titles + Set Coordinates + Formatting
 
 ### Step A — Short Titles
 
@@ -171,6 +171,39 @@ await admin.from('timeline_events').update({ short_title: '[title]' }).eq('id', 
 ```
 
 Do NOT modify events that already have a short_title.
+
+---
+
+### Step A.5 — Text Formatting
+
+After writing short titles, scan every `description` field for these formatting errors and fix them before building the page:
+
+**Rule 1 — No double dashes**
+`--` must always be a single dash with a space on each side: ` - `
+```
+✗ "warning signs -- missed payments"
+✓ "warning signs - missed payments"
+```
+
+**Rule 2 — Spaced slashes in lists**
+When `/` separates list items, it must have a space on both sides: ` / `
+```
+✗ "production/vendor/invoicing"
+✓ "production / vendor / invoicing"
+
+✗ "investors/engineers"
+✓ "investors / engineers"
+```
+
+**Rule 3 — Hyphenated compound words are exempt**
+Do NOT add spaces around hyphens in compound words or proper names:
+```
+✓ "ex-partner" (compound word — keep as-is)
+✓ "zero-fuel" (compound word — keep as-is)
+✓ "4x4" (keep as-is)
+```
+
+Fix all violations with a direct SQL UPDATE before rendering any content.
 
 ---
 
