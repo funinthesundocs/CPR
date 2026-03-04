@@ -418,6 +418,9 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
                 <div className="flex items-baseline gap-4 justify-between">
                   <div className="flex items-baseline gap-4">
                     <span className="text-[24px] font-bold text-[var(--accent-500)]">#{i + 1}</span>
+                    {event.short_title && (
+                      <span className="text-[22px] font-black uppercase tracking-tight text-[var(--accent-500)]">{event.short_title}</span>
+                    )}
                     <p className="text-[16px] font-semibold text-white">{formatDate(event.date_or_year)}</p>
                   </div>
                   {event.city && (

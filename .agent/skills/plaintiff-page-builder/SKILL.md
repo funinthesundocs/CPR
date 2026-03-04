@@ -848,6 +848,13 @@ Where `sortedTimeline` is `timeline_events[]` sorted by `date_or_year` ASC.
 - Always exactly 2 words: `THE [NOUN]` in ALL CAPS
 - Examples: THE MEETING, THE BETRAYAL, THE ARREST, THE COLLAPSE, THE SILENCE
 
+**Vertical view — top line format (locked):**
+`#1  THE MEETING  September 5 2025  [location right-aligned]`
+- `#N`: `text-[24px] font-bold text-[var(--accent-500)]`
+- `short_title`: `text-[22px] font-black uppercase tracking-tight text-[var(--accent-500)]` (same blue as number)
+- Date: `text-[16px] font-semibold text-white`
+- All three on one `items-baseline` flex row with `gap-4`
+
 **CRITICAL z-index rule**: The timeline isolation container (`style={{ overflow: 'hidden' }}`) must NEVER have `position`, `z-index`, or `overflow:visible` — it will break the sidebar.
 
 **Self-check**: Scroll right in the timeline. Does the sidebar remain fixed? Does the hero section above remain centered? If anything shifts: the timeline is leaking z-index.
