@@ -1,15 +1,18 @@
 'use client'
 
+import { useState } from 'react'
 import { HeroSection } from '@/components/defendant-page/HeroSection'
 import { HeroText } from '@/components/defendant-page/HeroText'
 import { StoryInfographic } from '@/components/defendant-page/StoryInfographic'
 import { InfoBoxes } from '@/components/defendant-page/InfoBoxes'
 import { CaseSummaryModule } from '@/components/defendant-page/CaseSummaryModule'
 import { SlideDeckSection } from '@/components/defendant-page/SlideDeckSection'
-import { CaseTimeline } from '@/components/defendant-page/CaseTimeline'
+import { CaseTimeline, type EnrichedTimelineEvent, type CaseFilterOption } from '@/components/defendant-page/CaseTimeline'
 import { LocationMap } from '@/components/defendant-page/LocationMap'
 import { EvidenceVault } from '@/components/defendant-page/EvidenceVault'
 import { InlineVoting } from '@/components/defendant-page/InlineVoting'
+import { CasesAndAccusers, type CaseCard } from '@/components/defendant-page/CasesAndAccusers'
+import { type InfoBox } from '@/components/defendant-page/InfoBoxes'
 
 // Accent palette derived dynamically from --primary (user's selected theme color)
 // via CSS color-mix — no hardcoded values, responds to theme changes automatically
@@ -31,19 +34,44 @@ interface PlaintiffPageClientProps {
   pdfUrl: string | null
   summaryImage1Url: string
   summaryImage2Url: string
-  infoBoxes: { label: string; value: string }[]
-  timeline: any[]
-  locations: { name: string; date: string; description: string; coordinates?: string }[]
+  infoBoxes: InfoBox[]
+  enrichedTimeline: EnrichedTimelineEvent[]
+  caseFilterOptions: CaseFilterOption[]
   evidence: any[]
-  evidenceInventory: { label: string; category: string; description: string }[]
+  evidenceInventory: { label: string; category: string; description: string; case_id?: string }[]
   financialTotal: number
   caseId: string
   votingOpen: boolean
   caseNarratives: Record<string, any>
+  caseCards: CaseCard[]
 }
 
 export function PlaintiffPageClient(props: PlaintiffPageClientProps) {
   const caseTitle = `${props.plaintiffName} vs. ${props.defendantName}`
+
+  // Timeline / map filter state
+  const [selectedCaseId, setSelectedCaseId] = useState('all')
+
+  const filteredEvents = selectedCaseId === 'all'
+    ? props.enrichedTimeline
+    : props.enrichedTimeline.filter(e => e.case_id === selectedCaseId)
+
+  const filteredLocations = filteredEvents
+    .filter(e => e.city || e.coordinates)
+    .map(e => ({
+      name: e.city || '',
+      date: e.date_or_year,
+      description: e.description,
+      coordinates: e.coordinates || undefined,
+    }))
+
+  const filteredEvidence = selectedCaseId === 'all'
+    ? props.evidence
+    : props.evidence.filter((e: any) => e.case_id === selectedCaseId)
+
+  const filteredInventory = selectedCaseId === 'all'
+    ? props.evidenceInventory
+    : props.evidenceInventory.filter(item => item.case_id === selectedCaseId)
 
   return (
     <>
@@ -91,15 +119,8 @@ export function PlaintiffPageClient(props: PlaintiffPageClientProps) {
           status={props.status}
         />
 
-        {/* SECTION 02 — Hero Text */}
-        <HeroText
-          plaintiffName={props.plaintiffName}
-          plaintiffPhoto={props.plaintiffPhoto}
-          defendantName={props.defendantName}
-          tagline={props.tagline}
-          caseNumber={props.caseNumber}
-          filedAt={props.filedAt}
-        />
+        {/* SECTION 02 — Cases & Accusers */}
+        <CasesAndAccusers cards={props.caseCards} />
 
         {/* SECTION 03 — Story Infographic */}
         <StoryInfographic
@@ -128,15 +149,22 @@ export function PlaintiffPageClient(props: PlaintiffPageClientProps) {
         <SlideDeckSection pdfUrl={props.pdfUrl} />
 
         {/* SECTION 07 — Case Timeline */}
-        <CaseTimeline events={props.timeline} />
+        <CaseTimeline
+          events={filteredEvents}
+          filterOptions={props.caseFilterOptions}
+          selectedCaseId={selectedCaseId}
+          onSelectCase={setSelectedCaseId}
+        />
 
         {/* SECTION 08 — Location Map / Fraud Trail */}
-        <LocationMap locations={props.locations} />
+        {/* key= forces clean Leaflet remount on filter change */}
+        <LocationMap key={selectedCaseId} locations={filteredLocations} />
 
         {/* SECTION 09 — Evidence Vault */}
         <EvidenceVault
-          evidence={props.evidence}
-          evidenceInventory={props.evidenceInventory}
+          evidence={filteredEvidence}
+          evidenceInventory={filteredInventory}
+          timelineEvents={filteredEvents}
         />
 
         {/* SECTION 10 — Inline Voting */}

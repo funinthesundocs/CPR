@@ -7,7 +7,9 @@ import {
   ShieldExclamationIcon,
   XMarkIcon,
   ArrowTopRightOnSquareIcon,
+  LinkIcon,
 } from '@heroicons/react/24/outline'
+import { type EnrichedTimelineEvent } from './CaseTimeline'
 
 const sectionVariants = {
   hidden: { opacity: 0, y: 24 },
@@ -21,6 +23,7 @@ interface EvidenceRecord {
   description?: string
   file_url: string
   file_type: string
+  timeline_event_id?: string | null
 }
 
 interface DeclaredItem {
@@ -34,6 +37,7 @@ interface DeclaredItem {
 interface EvidenceVaultProps {
   evidence: EvidenceRecord[]
   evidenceInventory: DeclaredItem[]
+  timelineEvents?: EnrichedTimelineEvent[]
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -59,6 +63,7 @@ type VaultItem = {
   fileUrl: string | null
   fileType: string | null
   source: 'uploaded' | 'declared'
+  timelineEventId?: string | null
 }
 
 /** Check if an item has meaningful content */
@@ -81,6 +86,7 @@ function buildVaultItems(evidence: EvidenceRecord[], inventory: DeclaredItem[]):
         fileUrl: e.file_url,
         fileType: e.file_type,
         source: 'uploaded',
+        timelineEventId: e.timeline_event_id,
       })
     }
   }
@@ -107,12 +113,24 @@ function buildVaultItems(evidence: EvidenceRecord[], inventory: DeclaredItem[]):
   return items
 }
 
-export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProps) {
+export function EvidenceVault({ evidence, evidenceInventory, timelineEvents = [] }: EvidenceVaultProps) {
   const items = buildVaultItems(evidence || [], evidenceInventory || [])
   const [selectedItem, setSelectedItem] = useState<VaultItem | null>(null)
   const [opening, setOpening] = useState(false)
 
-  const hasItems = items.length > 0
+  // Build lookup: timeline_event_id → { index (1-based), short_title }
+  const timelineLookup = new Map<string, { index: number; short_title: string }>(
+    timelineEvents.map((e, i) => [e.id, { index: i + 1, short_title: e.short_title || e.description.slice(0, 30) }])
+  )
+
+  // Sort by timeline step ascending; unlinked items go to the end
+  const sortedItems = [...items].sort((a, b) => {
+    const ai = a.timelineEventId ? (timelineLookup.get(a.timelineEventId)?.index ?? Infinity) : Infinity
+    const bi = b.timelineEventId ? (timelineLookup.get(b.timelineEventId)?.index ?? Infinity) : Infinity
+    return ai - bi
+  })
+
+  const hasItems = sortedItems.length > 0
 
   const handleOpenEvidence = async (item: VaultItem) => {
     if (!item.fileUrl) return
@@ -131,11 +149,12 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
   }
 
   // Split into two columns
-  const leftItems = items.slice(0, Math.ceil(items.length / 2))
-  const rightItems = items.slice(Math.ceil(items.length / 2))
+  const leftItems = sortedItems.slice(0, Math.ceil(sortedItems.length / 2))
+  const rightItems = sortedItems.slice(Math.ceil(sortedItems.length / 2))
 
   const renderItem = (item: VaultItem) => {
     const category = CATEGORY_LABELS[item.category] || item.category
+    const timelineRef = item.timelineEventId ? timelineLookup.get(item.timelineEventId) : null
     return (
       <div
         key={item.id}
@@ -151,7 +170,7 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
           )}
         </div>
         <div className="min-w-0">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex flex-wrap items-center gap-2 mb-1">
             <p className="text-white font-medium" style={{ fontSize: '18px' }}>{item.title}</p>
             <span className="px-2 py-0.5 rounded-full bg-white/10 text-white/50" style={{ fontSize: '14px' }}>
               {category}
@@ -159,6 +178,15 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
             {item.fileUrl && (
               <span className="px-2 py-0.5 rounded-full bg-green-500/20 text-green-400" style={{ fontSize: '12px' }}>
                 Uploaded
+              </span>
+            )}
+            {timelineRef && (
+              <span
+                className="flex items-center gap-1 px-2 py-0.5 rounded-full border border-[var(--accent-500)]/40 bg-[var(--accent-700)]/20 text-[var(--accent-300)]"
+                style={{ fontSize: '12px' }}
+              >
+                <LinkIcon className="h-3 w-3 shrink-0" />
+                #{timelineRef.index} — {timelineRef.short_title.toUpperCase()}
               </span>
             )}
           </div>
@@ -196,7 +224,7 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
         {hasItems && (
           <div>
             <h3 className="font-bold uppercase tracking-widest text-[var(--accent-300)] mb-8 text-center" style={{ fontSize: '18px' }}>
-              {items.filter(i => i.fileUrl).length} filed &middot; {items.filter(i => !i.fileUrl).length} declared
+              {sortedItems.filter(i => i.fileUrl).length} filed &middot; {sortedItems.filter(i => !i.fileUrl).length} declared
             </h3>
             <div className="flex gap-8">
               {/* Left column */}
@@ -204,7 +232,7 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
                 {leftItems.map(renderItem)}
               </div>
 
-              {items.length > 1 && <div className="w-px bg-white" />}
+              {sortedItems.length > 1 && <div className="w-px bg-white" />}
 
               {/* Right column */}
               <div className="flex-1 space-y-3">
@@ -238,9 +266,23 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
             <div className="p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                  <p style={{ fontSize: '14px' }} className="text-[var(--accent-300)] uppercase tracking-widest mb-2">
-                    {CATEGORY_LABELS[selectedItem.category] || selectedItem.category}
-                  </p>
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <p style={{ fontSize: '14px' }} className="text-[var(--accent-300)] uppercase tracking-widest">
+                      {CATEGORY_LABELS[selectedItem.category] || selectedItem.category}
+                    </p>
+                    {selectedItem.timelineEventId && timelineLookup.get(selectedItem.timelineEventId) && (() => {
+                      const ref = timelineLookup.get(selectedItem.timelineEventId!)!
+                      return (
+                        <span
+                          className="flex items-center gap-1 px-2 py-0.5 rounded-full border border-[var(--accent-500)]/40 bg-[var(--accent-700)]/20 text-[var(--accent-300)]"
+                          style={{ fontSize: '12px' }}
+                        >
+                          <LinkIcon className="h-3 w-3 shrink-0" />
+                          #{ref.index} — {ref.short_title.toUpperCase()}
+                        </span>
+                      )
+                    })()}
+                  </div>
                   <h3 style={{ fontSize: '24px' }} className="text-white font-semibold">
                     {selectedItem.title}
                   </h3>

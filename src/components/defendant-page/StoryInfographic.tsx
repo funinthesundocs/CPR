@@ -43,7 +43,7 @@ export function StoryInfographic({ infographicUrl, audioUrl, caseTitle }: StoryI
               }}
             >
               <PlayCircleIcon className="h-5 w-5" />
-              Listen to Case Summary
+              Listen to Defendant Summary
             </button>
           )}
 

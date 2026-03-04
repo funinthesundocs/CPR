@@ -61,22 +61,38 @@ export default async function DefendantDetailPage({ params }: PageProps) {
   const caseData = cases[0]
 
   const plaintiffId = caseData.plaintiff_id
+  const caseIds = cases.map((c: any) => c.id)
+  const plaintiffIds = cases.map((c: any) => c.plaintiff_id).filter(Boolean)
 
-  // Parallel queries against first case
+  // Parallel queries — primary case data + all-cases batch data
   const [
     { data: timeline },
     { data: evidence },
     { data: witnesses },
     { data: financialImpacts },
     { data: plaintiffProfile },
+    { data: allFinancialImpacts },
+    { data: allPlaintiffProfiles },
+    { data: allTimelineEvents },
+    { data: allEvidence },
   ] = await Promise.all([
     supabase.from('timeline_events').select('*').eq('case_id', caseData.id).order('created_at'),
     supabase.from('evidence').select('*').eq('case_id', caseData.id).order('created_at'),
     supabase.from('witnesses').select('*').eq('case_id', caseData.id),
     supabase.from('financial_impacts').select('*').eq('case_id', caseData.id).maybeSingle(),
     plaintiffId
-      ? supabase.from('user_profiles').select('display_name, avatar_url').eq('id', plaintiffId).maybeSingle()
+      ? supabase.from('user_profiles').select('id, display_name, avatar_url').eq('id', plaintiffId).maybeSingle()
       : Promise.resolve({ data: null }),
+    // All financial impacts across all cases
+    supabase.from('financial_impacts').select('*').in('case_id', caseIds),
+    // All plaintiff profiles across all cases
+    plaintiffIds.length > 0
+      ? supabase.from('user_profiles').select('id, display_name, avatar_url').in('id', plaintiffIds)
+      : Promise.resolve({ data: [] }),
+    // All timeline events across all cases (full select — enriched for timeline + map + country)
+    supabase.from('timeline_events').select('*').in('case_id', caseIds),
+    // All evidence across all cases
+    supabase.from('evidence').select('*').in('case_id', caseIds).order('created_at'),
   ])
 
   const relationship = (caseData.relationship_narrative as any) || {}
@@ -93,7 +109,7 @@ export default async function DefendantDetailPage({ params }: PageProps) {
       (fi.legal_fees || 0) + (fi.medical_costs || 0) + (fi.credit_damage || 0) + (fi.other_amount || 0)
     : (caseData.nominal_damages_claimed || 0)
 
-  // Timeline: sort chronologically
+  // Years active — use ALL timeline events across all cases
   const parseTs = (s: string) => {
     if (!s) return 0
     const d = new Date(s)
@@ -101,24 +117,11 @@ export default async function DefendantDetailPage({ params }: PageProps) {
     const y = parseInt(s)
     return isNaN(y) ? 0 : new Date(`${y}-01-01`).getTime()
   }
-  const sortedTimeline = (timeline || []).sort((a: any, b: any) =>
-    parseTs(a.date_or_year) - parseTs(b.date_or_year)
-  )
-
-  // Years active
-  const years = sortedTimeline.map((t: any) => parseInt(t.date_or_year)).filter((y: number) => !isNaN(y))
-  const minYear = years.length > 0 ? Math.min(...years) : null
-  const maxYear = years.length > 0 ? Math.max(...years) : null
-
-  // Map locations
-  const locations = sortedTimeline
-    .filter((t: any) => t.city || t.coordinates)
-    .map((t: any) => ({
-      name: t.city || '',
-      date: t.date_or_year,
-      description: t.description,
-      coordinates: t.coordinates || undefined,
-    }))
+  const allYears = (allTimelineEvents || [])
+    .map((t: any) => parseInt(t.date_or_year))
+    .filter((y: number) => !isNaN(y) && y > 1900 && y <= new Date().getFullYear() + 1)
+  const minYear = allYears.length > 0 ? Math.min(...allYears) : null
+  const maxYear = allYears.length > 0 ? Math.max(...allYears) : null
 
   // Testimony fields
   const testimonyFields = [
@@ -133,27 +136,55 @@ export default async function DefendantDetailPage({ params }: PageProps) {
     legal.why_filing && { label: 'Why Filing', value: legal.why_filing },
   ].filter(Boolean) as { label: string; value: string }[]
 
-  // Info boxes
+  // Info boxes — accordion-ready: primary = first line, extras = accordion items
+  // Aliases: aggregate from defendant record + all cases
+  const allAliases = Array.from(new Set([
+    ...(defendant.aliases || []),
+    ...cases.flatMap((c: any) => {
+      const s = (c.story_narrative as any) || {}
+      return s.aliases ? (Array.isArray(s.aliases) ? s.aliases : [s.aliases]) : []
+    }),
+  ].filter(Boolean))) as string[]
+
+  // Business names: aggregate from defendant record + all cases
+  const allBusinessNames = Array.from(new Set([
+    ...(defendant.business_names || []),
+    ...cases.flatMap((c: any) => {
+      const s = (c.story_narrative as any) || {}
+      const names: string[] = []
+      if (s.business_name) names.push(s.business_name)
+      if (s.business_names) names.push(...(Array.isArray(s.business_names) ? s.business_names : [s.business_names]))
+      return names
+    }),
+  ].filter(Boolean))) as string[]
+
   const infoBoxes = [
     {
       label: 'Known Aliases',
-      value: defendant.aliases?.length > 0 ? defendant.aliases.join(', ') : 'None on record',
+      primary: allAliases.length > 0 ? allAliases[0] : 'None on record',
+      extras: allAliases.length > 1 ? allAliases.slice(1) : undefined,
     },
     {
       label: 'Business Name(s)',
-      value: story.business_name || defendant.business_names?.[0] || 'See case details',
+      primary: allBusinessNames.length > 0 ? allBusinessNames[0] : 'See case details',
+      extras: allBusinessNames.length > 1 ? allBusinessNames.slice(1) : undefined,
     },
     {
       label: 'Years Active',
-      value: minYear && maxYear ? `${minYear} \u2013 ${maxYear}` : 'See timeline',
+      primary: minYear && maxYear ? `${minYear} \u2013 ${maxYear}` : 'See timeline',
     },
     {
-      label: 'Cases Filed',
-      value: `${cases.length} on record`,
+      label: 'Victims on Record',
+      primary: `${cases.length}`,
+      primaryClass: 'text-[22px]',
     },
   ]
 
-  const evidenceInventory = story.evidence_inventory || []
+  // Aggregate declared evidence from ALL cases, tagged with case_id so client can filter per plaintiff
+  const evidenceInventory = cases.flatMap((c: any) => {
+    const s = (c.story_narrative as any) || {}
+    return (s.evidence_inventory || []).map((item: any) => ({ ...item, case_id: c.id }))
+  })
 
   const votingOpen = ['judgment', 'investigation', 'pending_convergence'].includes(caseData.status)
 
@@ -236,6 +267,95 @@ export default async function DefendantDetailPage({ params }: PageProps) {
     other_victims: legal.other_victims,
   }
 
+  // City → country key map
+  const CITY_COUNTRY: Record<string, string> = {
+    sydney: 'AU', melbourne: 'AU', brisbane: 'AU', perth: 'AU', adelaide: 'AU',
+    queensland: 'AU', 'new south wales': 'AU', victoria: 'AU', australia: 'AU',
+    'los angeles': 'USA', 'new york': 'USA', chicago: 'USA', houston: 'USA', miami: 'USA',
+    'san francisco': 'USA', seattle: 'USA', denver: 'USA', dallas: 'USA',
+    'united states': 'USA', usa: 'USA',
+    london: 'UK', manchester: 'UK', birmingham: 'UK', 'united kingdom': 'UK', uk: 'UK', england: 'UK',
+    toronto: 'CA', vancouver: 'CA', montreal: 'CA', calgary: 'CA', canada: 'CA',
+    dubai: 'UAE', 'abu dhabi': 'UAE', 'united arab emirates': 'UAE', uae: 'UAE',
+    paris: 'FR', france: 'FR', berlin: 'DE', germany: 'DE',
+    singapore: 'SG', 'hong kong': 'HK', tokyo: 'JP', japan: 'JP',
+    vietnam: 'VN', 'da nang': 'VN', hanoi: 'VN', 'ho chi minh': 'VN', saigon: 'VN',
+    thailand: 'TH', bangkok: 'TH', phuket: 'TH', 'chiang mai': 'TH',
+    china: 'CN', beijing: 'CN', shanghai: 'CN', shenzhen: 'CN',
+    indonesia: 'ID', bali: 'ID', jakarta: 'ID',
+    philippines: 'PH', manila: 'PH',
+    malaysia: 'MY', 'kuala lumpur': 'MY',
+    'new zealand': 'NZ', auckland: 'NZ',
+  }
+  const getCountriesForCase = (caseId: string): string[] => {
+    const cities = (allTimelineEvents || [])
+      .filter((e: any) => e.case_id === caseId && e.city)
+      .map((e: any) => (e.city as string).toLowerCase())
+    const codes = new Set<string>()
+    for (const city of cities) {
+      for (const [key, code] of Object.entries(CITY_COUNTRY)) {
+        if (city.includes(key)) codes.add(code)
+      }
+    }
+    return Array.from(codes)
+  }
+
+  // Build CaseCards for all cases
+  const profileMap = new Map((allPlaintiffProfiles || []).map((p: any) => [p.id, p]))
+  const fiMap = new Map((allFinancialImpacts || []).map((f: any) => [f.case_id, f]))
+
+  // Maps for timeline enrichment: case_id → plaintiffName / caseNumber
+  const caseToPlaintiff = new Map(
+    cases.map((c: any) => [c.id, profileMap.get(c.plaintiff_id)?.display_name || 'Plaintiff'])
+  )
+  const caseToCaseNumber = new Map(cases.map((c: any) => [c.id, c.case_number as string]))
+
+  // Enriched timeline — all events across all cases, sorted chronologically
+  const enrichedTimeline = (allTimelineEvents || [])
+    .map((e: any) => ({
+      ...e,
+      plaintiffName: caseToPlaintiff.get(e.case_id) || 'Plaintiff',
+      caseNumber: caseToCaseNumber.get(e.case_id) || '',
+    }))
+    .sort((a: any, b: any) => parseTs(a.date_or_year) - parseTs(b.date_or_year))
+
+  // Filter options for the timeline dropdown
+  const caseFilterOptions = [
+    { value: 'all', label: 'All Cases' },
+    ...cases.map((c: any) => ({
+      value: c.id,
+      label: caseToPlaintiff.get(c.id) || 'Plaintiff',
+      caseNumber: c.case_number as string,
+    })),
+  ]
+
+  const caseCards = cases.map((c: any) => {
+    const profile = profileMap.get(c.plaintiff_id)
+    const fi = fiMap.get(c.id) as any
+    const caseStory = (c.story_narrative as any) || {}
+    const awarded = ['verdict', 'restitution'].includes(c.status)
+    const damages = awarded
+      ? (c.damages_awarded || c.nominal_damages_claimed || 0)
+      : (c.nominal_damages_claimed || 0)
+    const avatarUrl = profile?.avatar_url
+      ? profile.avatar_url.startsWith('http')
+        ? profile.avatar_url
+        : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${profile.avatar_url}`
+      : null
+    return {
+      caseNumber: c.case_number,
+      status: c.status,
+      filedAt: c.created_at,
+      plaintiffName: profile?.display_name || 'Plaintiff',
+      plaintiffPhoto: avatarUrl,
+      synopsis: caseStory.one_line_summary || caseStory.case_summary || '',
+      damages,
+      damagesAwarded: awarded,
+      countries: getCountriesForCase(c.id) as string[],
+      caseTypes: (c.case_types || []).slice(0, 3) as string[],
+    }
+  })
+
   const getDisplayName = (fullName: string) => {
     const parts = fullName.trim().split(/\s+/).filter(Boolean)
     if (parts.length <= 2) return fullName
@@ -267,14 +387,15 @@ export default async function DefendantDetailPage({ params }: PageProps) {
       summaryImage1Url={summaryImage1Url}
       summaryImage2Url={summaryImage2Url}
       infoBoxes={infoBoxes}
-      timeline={sortedTimeline}
-      locations={locations}
-      evidence={evidence || []}
+      enrichedTimeline={enrichedTimeline}
+      caseFilterOptions={caseFilterOptions}
+      evidence={allEvidence || []}
       evidenceInventory={evidenceInventory}
       financialTotal={financialTotal}
       caseId={caseData.id}
       votingOpen={votingOpen}
       caseNarratives={caseNarratives}
+      caseCards={caseCards}
     />
   )
 }
