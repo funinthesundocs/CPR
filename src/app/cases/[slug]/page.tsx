@@ -150,7 +150,7 @@ export default async function CaseDetailPage({ params }: PageProps) {
     },
     {
       label: 'Business Name(s)',
-      value: defendant.business_names?.[0] || 'See case details',
+      value: story.business_name || defendant.business_names?.[0] || 'See case details',
     },
     {
       label: 'Years Active',
