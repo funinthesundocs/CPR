@@ -96,7 +96,7 @@ type FormData = {
     when_realized: string
     how_confirmed: string
     is_ongoing: string
-    timeline_events: { date: string; event: string; location: string; coordinates: string; event_type: string; short_title?: string | null; latitude?: number | null; longitude?: number | null }[]
+    timeline_events: { date: string; event: string; location: string; coordinates: string; event_type: string; short_title?: string | null }[]
     one_line_summary: string
     case_summary: string
     fin_direct_payments: string
@@ -127,26 +127,6 @@ type FormData = {
     consent_contact_sharing: boolean
     consent_terms: boolean
     nominal_damages: string
-}
-
-// ── Coordinate parsing ─────────────────────────────────────────────────────────
-// Parses "lat, lng" or Google Maps URLs into { lat, lng }. Returns null if unrecognized.
-function parseCoordinateString(input: string): { lat: number; lng: number } | null {
-    const s = input.trim()
-    if (!s) return null
-    const coordMatch = s.match(/^([-\d.]+)\s*,\s*([-\d.]+)$/)
-    if (coordMatch) {
-        const lat = parseFloat(coordMatch[1]), lng = parseFloat(coordMatch[2])
-        if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180)
-            return { lat, lng }
-    }
-    const mapsMatch = s.match(/[?&]q=([-\d.]+)[,+]([-\d.]+)/)
-    if (mapsMatch) {
-        const lat = parseFloat(mapsMatch[1]), lng = parseFloat(mapsMatch[2])
-        if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180)
-            return { lat, lng }
-    }
-    return null
 }
 
 const DEFAULT_FORM: FormData = {
@@ -255,13 +235,11 @@ function dbToFormData(existing: ExistingCaseData): FormData {
                 date: t.date_or_year || '',
                 event: t.description || '',
                 location: t.city || '',
-                coordinates: t.latitude && t.longitude ? `${t.latitude}, ${t.longitude}` : '',
+                coordinates: t.coordinates || '',
                 event_type: t.event_type || 'incident',
                 short_title: t.short_title || null,
-                latitude: t.latitude ?? null,
-                longitude: t.longitude ?? null,
             }))
-            : [{ date: '', event: '', location: '', event_type: 'incident' }],
+            : [{ date: '', event: '', location: '', coordinates: '', event_type: 'incident' }],
         // Step 6: Summary
         one_line_summary: story.one_line_summary || '',
         case_summary: story.body || '',
@@ -559,15 +537,13 @@ export function CasePlaintiffForm({ editMode }: Props) {
             if (caseError) throw new Error(`Failed to create case: ${caseError.message}`)
 
             for (const event of form.timeline_events.filter(e => e.event)) {
-                const parsedCoords = parseCoordinateString(event.coordinates || '')
                 await supabase.from('timeline_events').insert({
                     case_id: newCase.id,
                     event_type: event.event_type || 'incident',
                     date_or_year: event.date,
                     description: event.event,
-                    city: event.location,
-                    latitude: parsedCoords?.lat ?? null,
-                    longitude: parsedCoords?.lng ?? null,
+                    city: event.location || null,
+                    coordinates: event.coordinates || null,
                     submitted_by: user.id,
                 })
             }
@@ -941,11 +917,13 @@ export function CasePlaintiffForm({ editMode }: Props) {
                     {/* STEP 5: Timeline of Events */}
                     {step === 5 && (
                         <>
-                            <p className="text-base text-muted-foreground">{t('wizard.timelineInstructions')}</p>
                             {form.timeline_events.map((event, idx) => (
-                                <div key={idx} className="space-y-4 p-4 rounded-lg border bg-muted/20">
-                                    <div className="grid grid-cols-1 sm:grid-cols-[15%_1fr_20%] gap-4">
-                                        <div className="flex flex-col">
+                                <div key={idx} className="relative space-y-4 p-4 rounded-lg border bg-muted/20">
+                                    {form.timeline_events.length > 1 && (
+                                        <Button variant="ghost" size="sm" className="absolute top-2 right-2 text-destructive" onClick={() => updateForm({ timeline_events: form.timeline_events.filter((_, i) => i !== idx) })}>X</Button>
+                                    )}
+                                    <div className="grid grid-cols-1 sm:grid-cols-[15%_1fr_20%] gap-4 items-stretch">
+                                        <div className="flex flex-col h-full">
                                             <label className="text-sm font-medium block mb-1">Date</label>
                                             <div className="relative flex-1">
                                                 <input
@@ -954,9 +932,10 @@ export function CasePlaintiffForm({ editMode }: Props) {
                                                     onChange={e => {
                                                         const events = [...form.timeline_events]; events[idx] = { ...events[idx], date: e.target.value }; updateForm({ timeline_events: events })
                                                     }}
-                                                    className="w-full h-[76px] px-3 border rounded-md bg-muted text-foreground text-sm cursor-pointer appearance-none flex items-center justify-center text-center"
+                                                    className="timeline-date-input w-full h-full px-3 border rounded-md bg-muted text-foreground cursor-pointer appearance-none flex items-center justify-center text-center text-[18px]"
                                                     style={{ colorScheme: 'dark' }}
                                                 />
+                                                <CalendarDaysIcon className="absolute top-2 right-2 w-5 h-5 text-muted-foreground pointer-events-none" />
                                                 {!/^\d{4}-\d{2}-\d{2}$/.test(event.date) && event.date && (
                                                     <p className="absolute inset-x-0 top-1/2 -translate-y-1/2 text-center text-xs text-muted-foreground pointer-events-none px-2">
                                                         {event.date}
@@ -964,11 +943,11 @@ export function CasePlaintiffForm({ editMode }: Props) {
                                                 )}
                                             </div>
                                         </div>
-                                        <div>
+                                        <div className="flex flex-col h-full">
                                             <label className="text-sm font-medium block mb-1">Event</label>
                                             <textarea placeholder={t('wizard.whatHappenedShort')} value={event.event} onChange={e => {
                                                 const events = [...form.timeline_events]; events[idx] = { ...events[idx], event: e.target.value }; updateForm({ timeline_events: events })
-                                            }} rows={3} className="w-full px-3 py-2 border rounded-md bg-muted text-foreground text-sm resize-none" />
+                                            }} className="flex-1 w-full px-3 py-2 border rounded-md bg-muted text-foreground text-sm resize-none" />
                                         </div>
                                         <div>
                                             <label className="text-sm font-medium block mb-1">City</label>
@@ -976,17 +955,11 @@ export function CasePlaintiffForm({ editMode }: Props) {
                                                 const events = [...form.timeline_events]; events[idx] = { ...events[idx], location: e.target.value }; updateForm({ timeline_events: events })
                                             }} />
                                             <label className="text-sm font-medium block mt-2 mb-1">Coordinates</label>
-                                            <Input placeholder="Lat, Long — or paste a Google Maps link" value={event.coordinates} onChange={e => {
+                                            <Input placeholder="Lat, Long or Google Map Link" value={event.coordinates} onChange={e => {
                                                 const events = [...form.timeline_events]; events[idx] = { ...events[idx], coordinates: e.target.value }; updateForm({ timeline_events: events })
                                             }} />
-                                            <p className="text-xs text-muted-foreground mt-1">e.g. 16.0476, 108.2496 or maps.google.com/...</p>
                                         </div>
                                     </div>
-                                    {form.timeline_events.length > 1 && (
-                                        <div className="flex justify-end">
-                                            <Button variant="ghost" size="sm" className="text-destructive shrink-0" onClick={() => updateForm({ timeline_events: form.timeline_events.filter((_, i) => i !== idx) })}>X</Button>
-                                        </div>
-                                    )}
                                 </div>
                             ))}
                             <Button variant="outline" size="sm" onClick={() => updateForm({ timeline_events: [...form.timeline_events, { date: '', event: '', location: '', coordinates: '', event_type: 'incident' }] })}>

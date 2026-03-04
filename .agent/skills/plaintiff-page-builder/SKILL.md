@@ -174,25 +174,24 @@ Do NOT modify events that already have a short_title.
 
 ### Step B — Coordinates
 
-**Every timeline event must have precise `latitude` and `longitude` set in the DB.**
+**Every timeline event must have precise `coordinates` set in the DB.**
+
+`city` and `coordinates` are completely independent fields with no relationship to each other:
+- `city` = display name shown on timeline cards (e.g. `"Da Nang, Vietnam"`)
+- `coordinates` = map pin source — stores exactly what the user typed: `"lat, lng"` or a Google Maps URL
 
 Rules:
-1. Use Google Search or maps to get exact coordinates for each event's city/location
-2. Write BOTH the coordinate string AND the numeric columns:
-   - `city` = `"lat, lng"` string (e.g. `"16.0476743, 108.2496587"`) — this is the primary source for map rendering
-   - `latitude` = numeric value
-   - `longitude` = numeric value
-3. Store coordinates as precise as possible — suburb/district level, not country center
-4. If the location is vague (e.g. "Australia (communication)"), use the most relevant city in that country
+1. Use Google Search or Maps to get exact coordinates for each event's city/location
+2. Write the coordinate string to the `coordinates` column ONLY — do NOT put coordinates in the `city` field
+3. Format: `"lat, lng"` (e.g. `"16.0476743, 108.2496587"`) — suburb/district level precision
+4. If the location is vague (e.g. "Australia (communication)"), use the most relevant city center
 
-**Why both fields?** `resolveCoords()` checks the `city` string for coordinate format first (highest priority), then falls back to `latitude`/`longitude` columns. Storing both provides redundancy — if either is present, the map pin renders correctly.
-
-**CRITICAL: Never overwrite existing coordinates.** Use UPDATE only if `latitude IS NULL`:
+**CRITICAL: Never overwrite existing coordinates.** Use UPDATE only if `coordinates IS NULL`:
 ```javascript
 // Only set if not already populated
-if (!event.latitude) {
+if (!event.coordinates) {
   await admin.from('timeline_events')
-    .update({ city: `${lat}, ${lng}`, latitude: lat, longitude: lng })
+    .update({ coordinates: `${lat}, ${lng}` })
     .eq('id', event.id)
 }
 ```
@@ -988,17 +987,18 @@ export function MindMapSection({ mindMapJson }) {
 **Page.tsx passes locations like this:**
 ```tsx
 const locations = sortedTimeline
-  .filter((t: any) => t.city)
+  .filter((t: any) => t.city || t.coordinates)
   .map((t: any) => ({
-    name: t.city,
+    name: t.city || '',
     date: t.date_or_year,
     description: t.description,
-    coordinates: t.latitude && t.longitude ? [t.longitude, t.latitude] : undefined,
+    coordinates: t.coordinates || undefined,  // TEXT column — "lat, lng" or Maps URL
   }))
 ```
 
 **DB requirements** (set in Phase 0.5 Step B):
-- `city` = coordinate string `"lat, lng"` (e.g. `"16.0476743, 108.2496587"`)
+- `coordinates` = `"lat, lng"` string (e.g. `"16.0476743, 108.2496587"`) — drives map pins
+- `city` = display name (e.g. `"Da Nang, Vietnam"`) — shown on timeline cards, independent of coordinates
 - `latitude` = numeric lat
 - `longitude` = numeric lng
 
@@ -1330,10 +1330,11 @@ financial_impacts: case_id, total_lost, direct_payments, lost_wages,
                    property_loss, legal_fees, medical_costs
 
 timeline_events: id, case_id, event_type, date_or_year, description, short_title,
-                 city (coordinate string "lat, lng" OR display name),
-                 latitude (DOUBLE PRECISION), longitude (DOUBLE PRECISION),
+                 city (display name — independent from coordinates),
+                 coordinates TEXT ("lat, lng" or Google Maps URL — sole source for map pins),
+                 latitude/longitude (legacy columns — no longer written by form),
                  submitted_by
-                 — NEVER wipe lat/lng via form save; only skill/SQL may write coordinates
+                 — city and coordinates are completely independent; never put coordinate strings in city field
 
 witnesses: id, case_id, full_name, witness_type, contact_info, details (JSONB)
 

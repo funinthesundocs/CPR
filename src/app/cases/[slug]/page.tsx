@@ -109,25 +109,15 @@ export default async function CaseDetailPage({ params }: PageProps) {
   const minYear = years.length > 0 ? Math.min(...years) : null
   const maxYear = years.length > 0 ? Math.max(...years) : null
 
-  // Extract all locations from timeline — preserve each event location even if same city name
-  // (different coordinates represent different specific locations within that city)
-  // CRITICAL: timeline_events MUST have city field populated for map to work
+  // Map locations — coordinates field drives pin placement, city is display only
   const locations = sortedTimeline
-    .filter((t: any) => t.city)
+    .filter((t: any) => t.city || t.coordinates)
     .map((t: any) => ({
-      name: t.city,
+      name: t.city || '',
       date: t.date_or_year,
       description: t.description,
-      coordinates: t.latitude && t.longitude ? [t.longitude, t.latitude] : undefined,
+      coordinates: t.coordinates || undefined,
     }))
-
-  // DIAGNOSTIC: Log timeline events that are missing city field
-  if (sortedTimeline.length > 0) {
-    const missingCity = sortedTimeline.filter((t: any) => !t.city)
-    if (missingCity.length > 0) {
-      console.warn(`[Case] ${missingCity.length}/${sortedTimeline.length} timeline events missing city field — map will be incomplete`)
-    }
-  }
 
   // Build testimony fields for the modal
   const testimonyFields = [

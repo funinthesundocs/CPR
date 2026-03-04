@@ -41,47 +41,44 @@ const CITY_COORDS: Record<string, [number, number]> = {
   'tokyo':           [139.6917,  35.6895],
 }
 
-function resolveCoords(name: string, coords?: [number, number]): [number, number] | null {
-  const input = name.toLowerCase().trim()
-
-  // 1. If the city field contains an explicit coordinate string, always use it —
-  //    user-typed coords beat everything, including the lat/lng columns.
-  const coordMatch = input.match(/^([-\d.]+)\s*,\s*([-\d.]+)$/)
-  if (coordMatch) {
-    const lat = parseFloat(coordMatch[1])
-    const lng = parseFloat(coordMatch[2])
-    if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
-      return [lng, lat]
+// Resolves a [lng, lat] pair from the coordinates field, then falls back to city name lookup.
+// coordinates field is completely independent from city — no relationship between them.
+function resolveCoords(city: string, coordinates?: string): [number, number] | null {
+  // 1. Explicit coordinates field — "lat, lng" format
+  if (coordinates) {
+    const s = coordinates.trim()
+    const coordMatch = s.match(/^([-\d.]+)\s*,\s*([-\d.]+)$/)
+    if (coordMatch) {
+      const lat = parseFloat(coordMatch[1])
+      const lng = parseFloat(coordMatch[2])
+      if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180)
+        return [lng, lat]
+    }
+    // Google Maps URL
+    const mapsMatch = s.match(/[?&]q=([-\d.]+)[,+]([-\d.]+)/)
+    if (mapsMatch) {
+      const lat = parseFloat(mapsMatch[1])
+      const lng = parseFloat(mapsMatch[2])
+      if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180)
+        return [lng, lat]
     }
   }
 
-  // 2. If the city field is a Google Maps URL, extract coords from it.
-  const mapsMatch = input.match(/[?&]q=([-\d.]+)[,+]([-\d.]+)/)
-  if (mapsMatch) {
-    const lat = parseFloat(mapsMatch[1])
-    const lng = parseFloat(mapsMatch[2])
-    if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
-      return [lng, lat]
-    }
-  }
-
-  // 3. Use explicit lat/lng columns from the DB (set by skill/backfill for precision).
-  if (coords) return coords
-
-  // 4. Fall back to city name lookup.
+  // 2. Fall back to city name lookup
+  const input = (city || '').toLowerCase().trim()
   if (!input) return null
-  for (const [city, c] of Object.entries(CITY_COORDS)) {
-    if (input.includes(city)) return c
+  for (const [name, c] of Object.entries(CITY_COORDS)) {
+    if (input.includes(name)) return c
   }
 
   return null
 }
 
 interface Location {
-  name: string
+  name: string        // City display name — independent from coordinates
   date: string
   description: string
-  coordinates?: [number, number]
+  coordinates?: string  // Raw value from coordinates DB column ("lat, lng" or Maps URL)
 }
 
 interface ResolvedPoint {
@@ -305,10 +302,6 @@ export function LocationMap({ locations }: LocationMapProps) {
 
   if (!locations || locations.length === 0) return null
 
-  // PERMANENT FIX: Preserve ALL locations with their actual coordinates
-  // - Multiple events in same city = multiple markers (if they have different lat/long)
-  // - Same city, same coordinates = one marker (deduplicated)
-  // - Different coordinates = always shown separately with their unique index number
   const allResolvedPoints: ResolvedPoint[] = locations
     .map((loc, index) => {
       const coords = resolveCoords(loc.name, loc.coordinates)
@@ -316,8 +309,7 @@ export function LocationMap({ locations }: LocationMapProps) {
     })
     .filter(Boolean) as ResolvedPoint[]
 
-  // Deduplicate: if multiple events have EXACT same coordinates, keep only first
-  // This prevents marker stacking at same spot
+  // Deduplicate: if multiple events have exact same coordinates, keep only first
   const coordKey = (coords: [number, number]) => `${coords[0].toFixed(4)},${coords[1].toFixed(4)}`
   const seenCoords = new Set<string>()
   const resolvedPoints: ResolvedPoint[] = allResolvedPoints.filter(point => {
