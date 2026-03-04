@@ -13,8 +13,10 @@ Build complete case artifacts (tagline, notebook summary, briefing, images) for 
 - **`city`** (TEXT, NOT NULL) — Event location city/country (e.g., "Bangkok", "Dubai", "Sydney")
   - **IF MISSING:** Map will not display this event's location
   - **PERMANENT REQUIREMENT:** Every timeline event MUST have a city or the Fraud Trail map is broken
-- **`latitude`** (NUMERIC, optional) — Precise event location latitude
-- **`longitude`** (NUMERIC, optional) — Precise event location longitude
+- **`latitude`** (NUMERIC, **MANDATORY if any two events share the same city**) — Precise event location latitude
+- **`longitude`** (NUMERIC, **MANDATORY if any two events share the same city**) — Precise event location longitude
+  - **WHY:** Events with NULL lat/lng all fall back to the same city-center coordinate → dedup collapses them → map shows 1 marker instead of many
+  - **RULE:** If ALL events are in one city with no lat/lng → map shows exactly 1 pin. This is WRONG. Always populate lat/lng.
 - **`date_or_year`** (TEXT) — Event date/timeframe
 - **`description`** (TEXT) — What happened at this location
 - **`event_type`** (TEXT, optional) — Category of event
@@ -29,8 +31,18 @@ WHERE case_id = 'YOUR_CASE_ID' AND (city IS NULL OR city = '');
 ### If Missing Cities Found
 1. Open the timeline_events for this case
 2. For EVERY event, populate the `city` field with the location
-3. Optionally add `latitude` and `longitude` for precise map placement
+3. **Populate `latitude` and `longitude` for EVERY event** — not optional. Use a script keyed by `date_or_year` (NOT `created_at` order — insertion order ≠ chronological order)
 4. Test the page — Fraud Trail map should now show all locations
+
+### Batch Update Script Pattern (use this, not manual entry)
+```js
+// Key by date_or_year — NEVER by array index or created_at order
+const coordsByDate = {
+  '2025-09-06': { lat: 16.0476743, lng: 108.2496587 },
+  // ... one entry per event date
+}
+// Fetch events ordered by date_or_year, then PATCH each by its id
+```
 
 **DO NOT PROCEED to artifact building until all timeline events have cities.**
 
@@ -296,6 +308,8 @@ npm run dev
 | "summaryImage2Url undefined" | Stale component cache | `rm -rf .next && npm run dev` |
 | Tagline not capitalized | Missing CSS class | Add `capitalize` class to element |
 | File not picked up | Dev server cache | Clear `.next` and full restart |
+| Map shows only 1 marker | All events have NULL lat/lng → same city centroid → deduped to 1 | Populate lat/lng for every timeline event via batch script keyed by date_or_year |
+| Flags huge on cases list | Added inline styles to FlagIcon.tsx (shared component) | NEVER add inline styles to FlagIcon.tsx — put fill styles in the caller (CaseTimeline) via className |
 
 ---
 
@@ -330,9 +344,10 @@ These rules are PERMANENT and apply to ALL case timelines:
 
 ### FlagIcon Component
 - **File:** `src/components/plaintiff-page/FlagIcon.tsx`
-- **Inline styles required:** `style={{ width: '100%', height: '100%', objectFit: 'cover' }}`
-- **SVG aspect ratio:** `preserveAspectRatio="xMidYMid slice"` (fills container, crops if needed)
-- **No className fallback dimensions** — inline styles override and force fill
+- **DO NOT add inline styles to FlagIcon.tsx** — inline styles on a shared component affect ALL callers (cases list, timeline, anywhere else FlagIcon is used)
+- **Fill behavior lives in CaseTimeline, not FlagIcon** — pass `className="w-full h-full object-cover flex-1"` from CaseTimeline to FlagIcon
+- **SVG aspect ratio:** `preserveAspectRatio="xMidYMid slice"` stays on FlagIcon (safe, doesn't affect sizing)
+- **Current FlagIcon.tsx signature:** `FlagIcon({ countryCode, className = 'h-24 w-32 rounded-md' })` — default className is for other callers, CaseTimeline overrides it
 
 ### What NOT To Do
 - ❌ Do NOT add padding to flag container
@@ -378,6 +393,8 @@ These rules are PERMANENT and apply to ALL case timelines:
 - If `latitude` and `longitude` are NULL, the map falls back to city name lookup
 - To show multiple markers in the same city: **provide explicit latitude/longitude for each event**
 - **Missing city field = missing map marker** (this is the #1 reason maps appear incomplete)
+- **NULL lat/lng + same city = 1 marker total** (this is the #2 reason — all events resolve to same city centroid, dedup collapses to 1 pin)
+- **ALWAYS populate lat/lng for every event** — use Google Maps to get precise coordinates per event location
 
 ### What This Fixes
 - ✅ Multiple events in same city with different coordinates: all shown
@@ -391,7 +408,8 @@ These rules are PERMANENT and apply to ALL case timelines:
 
 **DO THIS FIRST BEFORE BUILDING ANYTHING:**
 - [ ] **⚠️ CRITICAL: All timeline_events have `city` field populated** (check browser console: should NOT warn about missing cities)
-- [ ] If events missing cities, populate database → clear cache → restart dev server
+- [ ] **⚠️ CRITICAL: All timeline_events have `latitude` AND `longitude` populated** — run SQL: `SELECT COUNT(*) FROM timeline_events WHERE case_id='X' AND (latitude IS NULL OR longitude IS NULL);` — must return 0
+- [ ] If events missing cities or lat/lng: populate database using batch script keyed by `date_or_year` → clear cache → restart dev server
 
 **Then build artifacts:**
 - [ ] Tagline displays centered, on 1-2 lines max, title case
