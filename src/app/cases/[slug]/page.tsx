@@ -287,6 +287,7 @@ export default async function CaseDetailPage({ params }: PageProps) {
       caseNumber={caseData.case_number}
       status={caseData.status}
       filedAt={caseData.created_at}
+      plaintiffId={caseData.plaintiff_id}
       plaintiffName={plaintiffName}
       plaintiffPhoto={buildPublicUrl(plaintiffProfile?.avatar_url) || null}
       defendantName={getDisplayName(defendant.full_name)}

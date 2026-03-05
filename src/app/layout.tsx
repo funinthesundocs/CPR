@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/lib/theme/theme-provider";
 import { I18nProvider } from "@/i18n";
 import { PermissionsProvider } from "@/components/providers/permissions-provider";
+import { VerificationSync } from "@/components/providers/verification-sync";
 import { SidebarInsetWrapper } from "@/components/layout/sidebar-inset-wrapper";
 import { StickyHeader } from "@/components/layout/sticky-header";
 import { AppSidebar } from "@/components/layout/app-sidebar";
@@ -64,6 +65,7 @@ export default function RootLayout({
         <ThemeProvider>
           <I18nProvider>
             <PermissionsProvider>
+              <VerificationSync />
               <SmartSidebarProvider sidebar={<AppSidebar />}>
                 <SidebarInsetWrapper>
                   <StickyHeader />

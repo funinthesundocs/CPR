@@ -12,6 +12,7 @@ interface HeroSectionProps {
   defendantPhoto: string | null
   status: string
   defendantSlug: string
+  plaintiffId: string
 }
 
 function AvatarPlaceholder({ label, className }: { label: string; className?: string }) {
@@ -22,7 +23,7 @@ function AvatarPlaceholder({ label, className }: { label: string; className?: st
   )
 }
 
-export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defendantPhoto, status, defendantSlug }: HeroSectionProps) {
+export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defendantPhoto, status, defendantSlug, plaintiffId }: HeroSectionProps) {
   const { scrollY } = useScroll()
   const bgY = useTransform(scrollY, [0, 400], [0, 120])
 
@@ -152,7 +153,10 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
         >
           {/* Dark overlay for text readability */}
           <div className="absolute inset-0 bg-black/80" />
-          <div className="relative z-10 flex flex-col items-center justify-center">
+          <Link
+            href={`/users/${plaintiffId}`}
+            className="relative z-10 flex flex-col items-center justify-center group"
+          >
             <motion.div
               animate={{
                 boxShadow: [
@@ -162,21 +166,21 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
                 ],
               }}
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' as const, delay: 0.8 }}
-              className="w-[168px] h-[168px] md:w-[240px] md:h-[240px] rounded-full overflow-hidden border-2 border-blue-500"
+              className="w-[168px] h-[168px] md:w-[240px] md:h-[240px] rounded-full overflow-hidden border-2 border-blue-500 group-hover:border-blue-300 transition-colors"
             >
               {plaintiffPhoto ? (
-                <img src={plaintiffPhoto} alt={plaintiffName} className="w-full h-full object-cover" />
+                <img src={plaintiffPhoto} alt={plaintiffName} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
               ) : (
                 <AvatarPlaceholder label={plaintiffName} className="from-[var(--accent-900)] to-black" />
               )}
             </motion.div>
-            <span className="mt-3 text-[20px] font-bold tracking-[0.05em] uppercase text-[var(--accent-300)]">
+            <span className="mt-3 text-[20px] font-bold tracking-[0.05em] uppercase text-[var(--accent-300)] opacity-70 group-hover:opacity-100 transition-opacity">
               Plaintiff
             </span>
-            <span className="mt-1 text-[28px] font-bold text-white">
+            <span className="mt-1 text-[28px] font-bold text-white/70 group-hover:text-white transition-colors">
               {plaintiffName}
             </span>
-          </div>
+          </Link>
         </div>
       </motion.div>
 

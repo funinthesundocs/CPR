@@ -175,6 +175,13 @@ export default function ProfilePage() {
         if (!user) { router.push('/login'); return }
         setUser(user)
 
+        // Sync email verification status to is_verified
+        try {
+            await fetch('/api/profile/sync-verification', { method: 'POST' })
+        } catch (err) {
+            console.error('Failed to sync verification:', err)
+        }
+
         const { data: profileData } = await supabase
             .from('user_profiles')
             .select('*')
