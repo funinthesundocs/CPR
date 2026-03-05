@@ -49,7 +49,6 @@ Prune in this order — lowest score = first to go:
 | ASCII-only subprocess output | Never use Unicode characters (checkmarks, arrows, emoji) in print() statements that run inside subprocesses — Windows charmap encoding will crash | Established | 2026-02-19 | 0 |
 | Declare OS and path format | Explicitly state the target OS and path style in every skill or instruction — models default to their training bias (usually Linux) and silently produce wrong commands | Established | 2026-02-19 | 0 |
 | PowerShell multi-line -m hangs silently | Never use embedded newlines inside a git commit -m "..." on PowerShell — the shell enters multi-line input mode and the command produces no output while appearing to still run | Seed | 2026-02-20 | 1 |
-| Set PYTHONIOENCODING before third-party CLIs | When running any third-party CLI on Windows that may print Unicode characters, prefix the command with `PYTHONIOENCODING=utf-8` — you cannot control what the CLI prints and Windows cp1252 will crash on any non-ASCII character even if your own code is clean | Seed | 2026-03-04 | 0 |
 
 ## Iterative Refinement
 
@@ -66,12 +65,7 @@ Prune in this order — lowest score = first to go:
 | Pearl | Rule | Maturity | Added | Uses |
 |-------|------|----------|-------|------|
 | Never assume response format | When consuming output from any external system (model API, CLI tool, webhook), parse the structured content out of the raw response before executing — raw output always contains wrapper formatting that will break downstream commands | Confirmed | 2026-02-19 | 0 |
-| MCP wrappers expose subset of underlying tool | When an MCP tool returns "not supported" or fails on a specific operation, immediately check the underlying CLI for that capability before debugging further — MCP wrappers commonly omit async downloads, report exports, and admin operations available in the base CLI | Seed | 2026-03-04 | 0 |
-| Cloud exports create authenticated-only URLs | When an MCP tool exports to Google Docs, Sheets, or another cloud service, the resulting URL requires authentication and cannot be fetched by WebFetch — always retrieve exported content via the service's download CLI or API, not a web fetch | Seed | 2026-03-04 | 0 |
-| Dense formats scale better | When designing a living document with a token budget, choose the densest readable format (tables > heading blocks) because format density determines how much knowledge fits before you hit limits | Seed | 2026-02-19 | 0 |
-| Externalized judgment scales capability | Writing judgment criteria into a document (gates, contrast examples, litmus tests) lets mid-tier models perform tasks that otherwise require frontier models — the quality ceiling shifts with the quality of the framework, not just the model | Seed | 2026-02-19 | 0 |
 | Flat columns over JSONB blobs | Store form submission fields as individual named columns rather than JSONB objects — display pages reference flat columns directly, while JSONB field renames break silently at runtime with no build error | Confirmed | 2026-02-20 | 0 |
-| JSONB fields are TypeScript-invisible | A field name mismatch inside a JSONB column compiles clean with zero TypeScript errors but renders nothing at runtime — grep every display page for JSONB key references after any schema change | Seed | 2026-02-20 | 0 |
 
 ## Frontend & Full-Stack
 
@@ -81,7 +75,6 @@ Prune in this order — lowest score = first to go:
 | HMR skips module-level constants | Any value computed at module load time requires a full dev server restart to reflect source file changes — hot reload only patches component boundaries, not module-scope initialization | Seed | 2026-02-20 | 0 |
 | i18n key mismatches invisible at build time | A missing translation key returns the raw key string at runtime with zero build warnings — grep the translation file for every t() call after adding new keys to a component | Seed | 2026-02-20 | 0 |
 | Dead HMR connection silences all new files | When a dev server's WebSocket HMR connection drops, new source files are never delivered to the browser — always restart the dev server when changes appear absent and the console shows WebSocket failures | Seed | 2026-02-20 | 0 |
-| HTML audio MIME type must be explicit for M4A | Always use `<source src={url} type="audio/mp4">` inside `<audio>` instead of a bare `src` attribute when serving M4A or AAC files — browsers cannot reliably infer container MIME type from file extension and silently fail to decode without a useful error | Seed | 2026-03-04 | 0 |
 | False-default gates hide UI on first render | A React boolean state that gates UI visibility should default to `true` (then disable if unsupported), not `false` (then enable if supported) — the false-default causes a blank first render that persists if the enabling effect never fires | Seed | 2026-02-20 | 0 |
 | Check capability lazily not eagerly | Detect browser capabilities (microphone, camera, geolocation, clipboard) on first user interaction rather than on component mount — eager detection causes blank UI if the async check races with the first render | Seed | 2026-02-20 | 0 |
 | Admin UI/API namespace split | When adding middleware admin route guards, explicitly protect both the UI namespace (/admin/*) and the API namespace (/api/admin/*) — they share no prefix and a guard on one does not cover the other | Seed | 2026-02-28 | 0 |
@@ -92,13 +85,22 @@ Prune in this order — lowest score = first to go:
 | Async useEffect needs cancellation token not init guard | In async useEffect functions with expensive initialization (dynamic imports, third-party lib setup), use a cancellation token checked after every await — React.StrictMode cleanup fires before async resumption, making boolean init-guard flags ineffective | Seed | 2026-03-03 | 0 |
 | Check component layout before parent wrappers | When a component has unexpected spacing or padding, check the component's own layout properties (max-w, mx-auto, p-*, px-*, etc.) FIRST before tracing up to parent providers or wrapper components — the culprit is almost always on the component itself | Seed | 2026-03-05 | 0 |
 
+## Debugging Methodology
+
+| Pearl | Rule | Maturity | Added | Uses |
+|-------|------|----------|-------|------|
+| Debug by distance to symptom | Start debugging closest to where the problem appears, then expand outward — the cause is usually nearest the symptom, not in distant parents or dependencies | Seed | 2026-03-05 | 0 |
+| Assume simplest cause first | When multiple explanations fit the symptoms, the one requiring fewer steps is usually right — apply Occam's Razor to eliminate deep theories before checking simple local issues | Seed | 2026-03-05 | 0 |
+| Change one variable at a time | Fix one thing, verify it caused the difference, then move to the next — never fix five things at once and claim credit for three | Seed | 2026-03-05 | 0 |
+| State assumptions before searching | Declare what you think is broken BEFORE looking for evidence — prevents motivated reasoning where you see confirmation instead of contradiction | Seed | 2026-03-05 | 0 |
+| Stop reading when you have answer | Before opening another file, ask: did my previous reads already answer this question — file-hopping when lost consumes context with zero return | Seed | 2026-03-05 | 0 |
+
 ## Artifact Pipeline
 
 | Pearl | Rule | Maturity | Added | Uses |
 |-------|------|----------|-------|------|
 | Never overwrite curated media with auto-generated | Before downloading any binary artifact (audio, video, image) to a destination that may already contain a manually curated file, confirm with the user which source is authoritative — auto-generated NotebookLM audio is never a substitute for recorded interviews or custom-produced media | Seed | 2026-03-04 | 0 |
 | One canonical folder per entity | When artifacts for the same entity end up in two folders with similar names, stop immediately and ask which to keep before touching either — silent merges lose the authoritative file permanently | Seed | 2026-03-04 | 0 |
-| Verify artifact content not just filename | After placing any media file, confirm the content matches the defendant/entity it serves — the filename and folder name being correct does not guarantee the content is correct | Seed | 2026-03-04 | 0 |
 
 ## Database & Auth
 
