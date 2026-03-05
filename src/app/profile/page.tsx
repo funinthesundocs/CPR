@@ -49,7 +49,7 @@ type UserCase = {
     case_types: string[] | null
     created_at: string
     nominal_damages_claimed: number | null
-    defendants: { full_name: string; slug: string } | null
+    defendants: { full_name: string; slug: string; photo_url: string | null } | null
 }
 
 type Membership = {
@@ -174,7 +174,7 @@ export default function ProfilePage() {
         // Load user's filed cases
         const { data: userCases } = await supabase
             .from('cases')
-            .select('id, case_number, status, case_types, created_at, nominal_damages_claimed, defendants(full_name, slug)')
+            .select('id, case_number, status, case_types, created_at, nominal_damages_claimed, defendants(full_name, slug, photo_url)')
             .eq('plaintiff_id', user.id)
             .order('created_at', { ascending: false })
 
@@ -518,65 +518,67 @@ export default function ProfilePage() {
                             return (
                                 <Card
                                     key={c.id}
-                                    className="hover:shadow-md hover:border-primary/30 transition-all cursor-pointer"
+                                    className="hover:shadow-md transition-all hover:border-primary/30 cursor-pointer py-0"
                                     onClick={() => router.push(`/cases/${c.case_number}`)}
                                 >
-                                    <CardContent className="p-4 space-y-2">
-                                        {/* Line 1: case number + status + type pills */}
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                            <span className="font-mono text-sm font-bold">{c.case_number}</span>
-                                            <Badge variant="outline" className={`text-xs capitalize ${STATUS_COLORS[c.status] || ''}`}>
-                                                {STATUS_LABELS[c.status] || c.status.replace(/_/g, ' ')}
-                                            </Badge>
-                                            {c.case_types?.slice(0, 3).map((type: string) => (
-                                                <span key={type} className="px-2 py-0.5 rounded-full text-xs bg-muted text-muted-foreground capitalize">
-                                                    {type.replace(/_/g, ' ')}
-                                                </span>
-                                            ))}
-                                            {(c.case_types?.length || 0) > 3 && (
-                                                <span className="text-xs text-muted-foreground">+{(c.case_types?.length || 0) - 3}</span>
-                                            )}
-                                        </div>
+                                    <CardContent className="p-0">
+                                        {/* 5-col grid: plaintiff(fixed) | case-info | defendant(fixed) | spacer | right-panel */}
+                                        <div className="grid items-center" style={{ gridTemplateColumns: '9.6rem 1fr 9.6rem auto' }}>
 
-                                        {/* Line 2: both parties */}
-                                        <p className="text-sm font-medium">
-                                            {profile.display_name} <span className="text-muted-foreground font-normal">vs.</span> {c.defendants?.full_name || 'Unknown defendant'}
-                                        </p>
-
-                                        {/* Line 3: stats */}
-                                        <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
-                                            {(c.nominal_damages_claimed || 0) > 0 && (
-                                                <span className="font-medium text-foreground">${c.nominal_damages_claimed!.toLocaleString()} claimed</span>
-                                            )}
-                                            <span className="flex items-center gap-1">
-                                                <UserGroupIcon className="h-3.5 w-3.5" />
-                                                {members} {members === 1 ? 'member' : 'members'}
-                                            </span>
-                                            {evidence > 0 && (
-                                                <span className="flex items-center gap-1">
-                                                    <DocumentTextIcon className="h-3.5 w-3.5" />
-                                                    {evidence} evidence
-                                                </span>
-                                            )}
-                                        </div>
-
-                                        {/* Line 4: vote progress or filed date */}
-                                        {isVoting ? (
-                                            <div className="space-y-1">
-                                                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                                    <span>{votes} / 400 votes</span>
-                                                    <span>Filed {filedDate}</span>
+                                            {/* Col 1 — Plaintiff avatar */}
+                                            {profile.avatar_url ? (
+                                                <img src={profile.avatar_url} alt="" className="h-[9.6rem] w-[9.6rem] rounded-tl-lg object-cover ring-2 ring-border" />
+                                            ) : (
+                                                <div className="h-[9.6rem] w-[9.6rem] rounded-tl-lg bg-muted flex items-center justify-center text-4xl font-bold text-muted-foreground">
+                                                    {profile.display_name?.charAt(0)?.toUpperCase() || '?'}
                                                 </div>
-                                                <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
-                                                    <div
-                                                        className="h-full rounded-full bg-primary transition-all"
-                                                        style={{ width: `${Math.min((votes / 400) * 100, 100)}%` }}
-                                                    />
+                                            )}
+
+                                            {/* Col 2 — Case info */}
+                                            <div className="space-y-1 overflow-hidden px-4 leading-loose">
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    <span className="font-mono text-sm font-bold">{c.case_number}</span>
+                                                    <Badge variant="outline" className={`text-xs capitalize ${STATUS_COLORS[c.status] || ''}`}>
+                                                        {STATUS_LABELS[c.status] || c.status.replace(/_/g, ' ')}
+                                                    </Badge>
+                                                </div>
+                                                <p className="text-base font-semibold truncate">
+                                                    {profile.display_name} vs. {c.defendants?.full_name || 'Unknown defendant'}
+                                                </p>
+                                                {c.case_types && c.case_types.length > 0 && (
+                                                    <div className="flex flex-wrap gap-1 overflow-hidden" style={{ maxHeight: '1.75rem' }}>
+                                                        {c.case_types.slice(0, 3).map((type: string) => (
+                                                            <Badge key={type} variant="secondary" className="text-xs capitalize">
+                                                                {type.replace(/_/g, ' ')}
+                                                            </Badge>
+                                                        ))}
+                                                        {c.case_types.length > 3 && (
+                                                            <Badge variant="secondary" className="text-xs">+{c.case_types.length - 3}</Badge>
+                                                        )}
+                                                    </div>
+                                                )}
+                                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                    {(c.nominal_damages_claimed || 0) > 0 && (
+                                                        <>
+                                                            <span>Damages <span className="font-semibold text-foreground">${c.nominal_damages_claimed!.toLocaleString()}</span></span>
+                                                            <span className="text-muted-foreground/40">|</span>
+                                                        </>
+                                                    )}
+                                                    <span>Filed <span className="font-semibold text-foreground">{filedDate}</span></span>
                                                 </div>
                                             </div>
-                                        ) : (
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-xs text-muted-foreground">Filed {filedDate}</span>
+
+                                            {/* Col 3 — Defendant avatar */}
+                                            {c.defendants?.photo_url ? (
+                                                <img src={c.defendants.photo_url} alt="" className="h-[9.6rem] w-[9.6rem] rounded-none object-cover ring-2 ring-border -translate-x-[10px]" />
+                                            ) : (
+                                                <div className="h-[9.6rem] w-[9.6rem] rounded-none bg-muted flex items-center justify-center text-4xl font-bold text-muted-foreground -translate-x-[10px]">
+                                                    {c.defendants?.full_name?.charAt(0)?.toUpperCase() || '?'}
+                                                </div>
+                                            )}
+
+                                            {/* Col 4 — Right panel */}
+                                            <div className="flex flex-col justify-between h-[9.6rem] px-4 py-3 items-end">
                                                 {EDITABLE_STATUSES.includes(c.status) && (
                                                     <a
                                                         href={`/cases/${c.case_number}/edit`}
@@ -587,6 +589,34 @@ export default function ProfilePage() {
                                                         Edit
                                                     </a>
                                                 )}
+                                                <div className="flex flex-col items-end gap-1 text-xs text-muted-foreground">
+                                                    <span className="flex items-center gap-1">
+                                                        <UserGroupIcon className="h-3.5 w-3.5" />
+                                                        {members} {members === 1 ? 'member' : 'members'}
+                                                    </span>
+                                                    {evidence > 0 && (
+                                                        <span className="flex items-center gap-1">
+                                                            <DocumentTextIcon className="h-3.5 w-3.5" />
+                                                            {evidence} evidence
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Vote bar — own compartment, separated by divider */}
+                                        {isVoting && (
+                                            <div className="border-t px-4 py-3 space-y-1.5">
+                                                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                                    <span className="font-medium text-foreground">{votes} / 400 votes</span>
+                                                    <span>{Math.round((votes / 400) * 100)}% participation</span>
+                                                </div>
+                                                <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
+                                                    <div
+                                                        className="h-full rounded-full bg-primary transition-all"
+                                                        style={{ width: `${Math.min((votes / 400) * 100, 100)}%` }}
+                                                    />
+                                                </div>
                                             </div>
                                         )}
                                     </CardContent>
