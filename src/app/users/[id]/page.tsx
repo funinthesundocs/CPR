@@ -239,10 +239,10 @@ export default function PublicUserProfile() {
                 </div>
             </div>
 
-            {/* ── Profile Progress ── */}
+            {/* ── Participation Score ── */}
             <div className={`rounded-xl border p-4 ${progress.bg} ${progress.border}`}>
                 <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-muted-foreground uppercase">Profile Progress</span>
+                    <span className="text-xs font-semibold text-muted-foreground uppercase">Participation Score</span>
                     <span className={`text-xl font-bold ${progress.color}`}>
                         {profile.profile_progress}
                         <span className="text-sm font-normal text-muted-foreground">/100</span>

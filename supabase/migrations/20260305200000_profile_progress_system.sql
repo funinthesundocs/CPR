@@ -66,6 +66,11 @@ BEGIN
     score := score + 10;
   END IF;
 
+  -- Rule 6: Email verified = +30 pts
+  IF (SELECT is_verified FROM user_profiles WHERE id = user_id) THEN
+    score := score + 30;
+  END IF;
+
   RETURN LEAST(score, 100);
 END;
 $$ LANGUAGE plpgsql IMMUTABLE;

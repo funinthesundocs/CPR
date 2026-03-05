@@ -484,7 +484,7 @@ export default function ProfilePage() {
 
             {/* ── Reputation & Stats ── */}
             <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto] gap-3">
-                {/* Hero stat: Profile Progress */}
+                {/* Hero stat: Participation Score */}
                 <div className={`rounded-xl border p-4 ${progress.bg} ${progress.border}`}>
                     <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t('profile.progressScore')}</span>
