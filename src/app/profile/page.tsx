@@ -3,18 +3,24 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Progress } from '@/components/ui/progress'
-import { Separator } from '@/components/ui/separator'
 import type { User } from '@supabase/supabase-js'
 import { useTranslation } from '@/i18n'
-import { PencilSquareIcon } from '@heroicons/react/24/outline'
+import {
+    PencilSquareIcon,
+    CheckBadgeIcon,
+    EnvelopeIcon,
+    GlobeAltIcon,
+    ClockIcon,
+    CalendarDaysIcon,
+    UserGroupIcon,
+    ScaleIcon,
+} from '@heroicons/react/24/outline'
 
 type Profile = {
     id: string
@@ -35,6 +41,71 @@ type Profile = {
     last_active_at: string
 }
 
+type Membership = {
+    case_id: string
+    role: string
+    status: string
+    cases: {
+        case_number: string
+        status: string
+        defendants: { full_name: string } | null
+    } | null
+}
+
+const LANGUAGE_LABELS: Record<string, string> = {
+    en: 'English', es: 'Español', pt: 'Português',
+    fr: 'Français', de: 'Deutsch', ja: '日本語', ar: 'العربية',
+}
+
+const STATUS_LABELS: Record<string, string> = {
+    pending_convergence: 'Pending 2nd Plaintiff',
+}
+
+const STATUS_COLORS: Record<string, string> = {
+    pending: 'bg-orange-500/10 text-orange-600 border-orange-500/20',
+    pending_convergence: 'bg-orange-500/10 text-orange-600 border-orange-500/20',
+    admin_review: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
+    investigation: 'bg-green-500/10 text-green-600 border-green-500/20',
+    judgment: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
+    verdict_guilty: 'bg-red-500/10 text-red-600 border-red-500/20',
+    verdict_innocent: 'bg-green-500/10 text-green-600 border-green-500/20',
+    resolved: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+    draft: 'bg-muted text-muted-foreground border-border',
+}
+
+const EDITABLE_STATUSES = ['draft', 'pending', 'pending_convergence', 'admin_review', 'investigation']
+
+function getTrustInfo(score: number) {
+    if (score >= 80) return {
+        label: 'Trusted contributor',
+        color: 'text-green-600 dark:text-green-400',
+        barColor: 'bg-green-500',
+        border: 'border-green-500/20',
+        bg: 'bg-green-500/5',
+    }
+    if (score >= 50) return {
+        label: 'Active contributor',
+        color: 'text-yellow-600 dark:text-yellow-400',
+        barColor: 'bg-yellow-500',
+        border: 'border-yellow-500/20',
+        bg: 'bg-yellow-500/5',
+    }
+    if (score >= 20) return {
+        label: 'New member',
+        color: 'text-muted-foreground',
+        barColor: 'bg-muted-foreground',
+        border: 'border-border',
+        bg: 'bg-muted/30',
+    }
+    return {
+        label: 'Getting started',
+        color: 'text-muted-foreground',
+        barColor: 'bg-muted-foreground',
+        border: 'border-border',
+        bg: 'bg-muted/30',
+    }
+}
+
 export default function ProfilePage() {
     const router = useRouter()
     const supabase = createClient()
@@ -47,7 +118,7 @@ export default function ProfilePage() {
     const [success, setSuccess] = useState<string | null>(null)
     const [error, setError] = useState<string | null>(null)
     const [cases, setCases] = useState<any[]>([])
-    const [posts, setPosts] = useState<any[]>([])
+    const [memberships, setMemberships] = useState<Membership[]>([])
 
     // Editable fields
     const [editName, setEditName] = useState('')
@@ -74,7 +145,7 @@ export default function ProfilePage() {
             setEditBio(profileData.bio || '')
         }
 
-        // Load user's cases
+        // Load user's filed cases
         const { data: userCases } = await supabase
             .from('cases')
             .select('id, case_number, status, case_types, created_at, defendants(full_name, slug)')
@@ -83,14 +154,14 @@ export default function ProfilePage() {
 
         setCases(userCases || [])
 
-        // Load user's posts
-        const { data: userPosts } = await supabase
-            .from('posts')
-            .select('id, title, content, created_at, upvote_count, downvote_count')
-            .eq('author_id', user.id)
-            .order('created_at', { ascending: false })
+        // Load case memberships (joined as jury, witness, etc.)
+        const { data: membershipData } = await supabase
+            .from('case_roles')
+            .select('case_id, role, status, cases(case_number, status, defendants(full_name))')
+            .eq('user_id', user.id)
+            .order('case_id', { ascending: false })
 
-        setPosts(userPosts || [])
+        setMemberships((membershipData || []) as Membership[])
         setLoading(false)
     }, [supabase, router])
 
@@ -105,7 +176,6 @@ export default function ProfilePage() {
         try {
             let avatarUrl = profile.avatar_url
 
-            // Upload new avatar via API (service role bypasses storage RLS)
             if (avatarFile) {
                 const uploadForm = new FormData()
                 uploadForm.append('file', avatarFile)
@@ -122,7 +192,6 @@ export default function ProfilePage() {
                 }
             }
 
-            // Calculate profile completion
             let completion = 0
             if (editName.trim()) completion += 20
             if (editBio.trim()) completion += 20
@@ -146,7 +215,7 @@ export default function ProfilePage() {
             setEditing(false)
             setAvatarFile(null)
             setAvatarPreview(null)
-            setSuccess('Profile updated!')
+            setSuccess('Profile updated successfully.')
             await loadProfile()
         } catch (err: any) {
             setError(err.message || 'Failed to save')
@@ -171,70 +240,81 @@ export default function ProfilePage() {
         )
     }
 
-    const EDITABLE_STATUSES = ['draft', 'pending', 'pending_convergence', 'admin_review', 'investigation']
-
-    const statusColors: Record<string, string> = {
-        draft: 'bg-muted text-muted-foreground',
-        pending_convergence: 'bg-yellow-500/10 text-yellow-600',
-        admin_review: 'bg-blue-500/10 text-blue-600',
-        investigation: 'bg-purple-500/10 text-purple-600',
-        judgment: 'bg-orange-500/10 text-orange-600',
-        verdict_guilty: 'bg-red-500/10 text-red-700',
-        verdict_innocent: 'bg-green-500/10 text-green-600',
-    }
+    const trust = getTrustInfo(profile.trust_score)
+    const uniqueRoles = [...new Set(memberships.map(m => m.role))]
 
     return (
-        <div className="px-[10%] space-y-6">
-            {/* Profile Header */}
-            <div className="relative rounded-2xl border overflow-hidden">
-                {/* Cover photo */}
-                <div className="h-32 sm:h-40 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/5" />
+        <div className="px-[10%] space-y-5">
 
-                <div className="px-6 pb-6">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 -mt-10 sm:-mt-12">
-                        {/* Avatar */}
-                        <div className="relative">
-                            {(avatarPreview || profile.avatar_url) ? (
-                                <img
-                                    src={avatarPreview || profile.avatar_url!}
-                                    alt={profile.display_name}
-                                    className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl object-cover ring-4 ring-background shadow-lg"
-                                />
-                            ) : (
-                                <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl bg-muted flex items-center justify-center text-2xl font-bold text-muted-foreground ring-4 ring-background shadow-lg">
-                                    {profile.display_name?.charAt(0)?.toUpperCase() || '?'}
-                                </div>
-                            )}
-                            {profile.is_verified && (
-                                <div className="absolute -bottom-1 -right-1 bg-primary rounded-full p-0.5">
-                                    <span className="text-xs">✓</span>
-                                </div>
-                            )}
-                        </div>
+            {/* ── Hero Card ── */}
+            <div className="rounded-2xl border bg-card p-6">
+                <div className="flex flex-col sm:flex-row items-start gap-5">
 
-                        <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                                <h1 className="text-xl sm:text-2xl font-bold">{profile.display_name}</h1>
-                                {profile.is_verified && <Badge className="bg-blue-500/10 text-blue-600 text-xs">{t('profile.verified')}</Badge>}
+                    {/* Avatar */}
+                    <div className="relative flex-shrink-0">
+                        {(avatarPreview || profile.avatar_url) ? (
+                            <img
+                                src={avatarPreview || profile.avatar_url!}
+                                alt={profile.display_name}
+                                className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl object-cover ring-2 ring-border shadow-md"
+                            />
+                        ) : (
+                            <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl bg-muted flex items-center justify-center text-3xl font-bold text-muted-foreground shadow-md">
+                                {profile.display_name?.charAt(0)?.toUpperCase() || '?'}
                             </div>
-                            {profile.tagline && <p className="text-sm text-muted-foreground">{profile.tagline}</p>}
-                            <p className="text-xs text-muted-foreground mt-1">
-                                {t('profile.joined')} {new Date(profile.joined_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                            </p>
-                        </div>
+                        )}
+                    </div>
 
-                        <Button
-                            variant={editing ? 'default' : 'outline'}
-                            size="sm"
-                            onClick={() => editing ? handleSave() : setEditing(true)}
-                            disabled={saving}
-                        >
-                            {saving ? t('profile.saving') : editing ? t('profile.saveChanges') : t('profile.editProfile')}
-                        </Button>
+                    {/* Identity */}
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                                {/* Name + Verified */}
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <h1 className="text-2xl font-bold">{profile.display_name}</h1>
+                                    {profile.is_verified && (
+                                        <CheckBadgeIcon className="h-6 w-6 text-blue-500 flex-shrink-0" title="Verified" />
+                                    )}
+                                </div>
+
+                                {/* Role badges from joined cases */}
+                                {uniqueRoles.length > 0 && (
+                                    <div className="flex gap-1.5 flex-wrap mt-2">
+                                        {uniqueRoles.map(role => (
+                                            <span key={role} className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary capitalize">
+                                                {role.replace(/_/g, ' ')}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Tagline */}
+                                {profile.tagline && (
+                                    <p className="text-sm text-muted-foreground mt-2 italic">"{profile.tagline}"</p>
+                                )}
+
+                                {/* Join date */}
+                                <p className="text-xs text-muted-foreground mt-1.5">
+                                    {t('profile.joined')} {new Date(profile.joined_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                                </p>
+                            </div>
+
+                            {/* Edit button */}
+                            {!editing && (
+                                <button
+                                    onClick={() => setEditing(true)}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-muted/50 text-foreground/80 hover:bg-primary hover:text-primary-foreground transition-colors flex-shrink-0"
+                                >
+                                    <PencilSquareIcon className="h-3.5 w-3.5" />
+                                    {t('profile.editProfile')}
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
 
+            {/* ── Feedback ── */}
             {success && (
                 <div className="rounded-lg border border-green-500/50 bg-green-500/5 p-3">
                     <p className="text-sm text-green-600 dark:text-green-400">{success}</p>
@@ -246,22 +326,15 @@ export default function ProfilePage() {
                 </div>
             )}
 
-            {/* Stats Bar */}
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                <StatCard label={t('profile.trustScore')} value={`${profile.trust_score}/100`} />
-                <StatCard label={t('profile.casesFiled')} value={profile.case_count.toString()} />
-                <StatCard label={t('profile.followers')} value={profile.follower_count.toString()} />
-                <StatCard label={t('profile.following')} value={profile.following_count.toString()} />
-                <StatCard label={t('profile.completion')} value={`${profile.profile_completion}%`} extra={
-                    <Progress value={profile.profile_completion} className="h-1 mt-1" />
-                } />
-            </div>
-
-            {/* Editing Form */}
+            {/* ── Edit Form ── */}
             {editing && (
-                <Card>
-                    <CardHeader><CardTitle className="text-lg">{t('profile.editProfile')}</CardTitle></CardHeader>
-                    <CardContent className="space-y-4">
+                <div className="rounded-2xl border-2 border-primary/30 bg-primary/5 p-6">
+                    <div className="flex items-center gap-2 mb-5 pb-4 border-b border-primary/20">
+                        <PencilSquareIcon className="h-4 w-4 text-primary" />
+                        <span className="text-sm font-semibold text-primary">{t('profile.editProfile')}</span>
+                    </div>
+
+                    <div className="space-y-4">
                         <div className="space-y-2">
                             <Label>{t('profile.displayName')} *</Label>
                             <Input value={editName} onChange={e => setEditName(e.target.value)} maxLength={50} />
@@ -289,54 +362,105 @@ export default function ProfilePage() {
                                 }}
                             />
                         </div>
-                        <div className="flex gap-3">
-                            <Button variant="outline" onClick={() => { setEditing(false); setAvatarFile(null); setAvatarPreview(null) }}>
-                                {t('common.cancel')}
-                            </Button>
-                            <Button onClick={handleSave} disabled={saving}>
-                                {saving ? t('profile.saving') : t('profile.saveChanges')}
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
+                    </div>
+
+                    {/* Actions inside card — no page-sticky tricks */}
+                    <div className="flex gap-3 pt-5 mt-5 border-t border-primary/20">
+                        <button
+                            onClick={() => { setEditing(false); setAvatarFile(null); setAvatarPreview(null) }}
+                            className="px-4 py-2 rounded-md text-sm font-medium bg-muted/50 text-foreground/80 hover:bg-primary hover:text-primary-foreground transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleSave}
+                            disabled={saving}
+                            className="px-4 py-2 rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                        >
+                            {saving ? t('profile.saving') : t('profile.saveChanges')}
+                        </button>
+                    </div>
+                </div>
             )}
 
-            {/* Bio */}
+            {/* ── Reputation & Stats ── */}
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto] gap-3">
+                {/* Hero stat: Trust Score */}
+                <div className={`rounded-xl border p-4 ${trust.bg} ${trust.border}`}>
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t('profile.trustScore')}</span>
+                        <span className={`text-xl font-bold ${trust.color}`}>
+                            {profile.trust_score}
+                            <span className="text-sm font-normal text-muted-foreground">/100</span>
+                        </span>
+                    </div>
+                    <div className="w-full h-1.5 rounded-full bg-black/10 dark:bg-white/10 overflow-hidden">
+                        <div
+                            className={`h-full rounded-full transition-all ${trust.barColor}`}
+                            style={{ width: `${profile.trust_score}%` }}
+                        />
+                    </div>
+                    <p className={`text-xs mt-1.5 font-medium ${trust.color}`}>{trust.label}</p>
+                </div>
+
+                {/* Cases Filed */}
+                <div className="rounded-xl border bg-card p-4 flex flex-col items-center justify-center min-w-[88px]">
+                    <ScaleIcon className="h-4 w-4 text-muted-foreground mb-1" />
+                    <p className="text-xl font-bold">{profile.case_count}</p>
+                    <p className="text-xs text-muted-foreground text-center">{t('profile.casesFiled')}</p>
+                </div>
+
+                {/* Followers */}
+                <div className="rounded-xl border bg-card p-4 flex flex-col items-center justify-center min-w-[88px]">
+                    <UserGroupIcon className="h-4 w-4 text-muted-foreground mb-1" />
+                    <p className="text-xl font-bold">{profile.follower_count}</p>
+                    <p className="text-xs text-muted-foreground text-center">{t('profile.followers')}</p>
+                </div>
+
+                {/* Following */}
+                <div className="rounded-xl border bg-card p-4 flex flex-col items-center justify-center min-w-[88px]">
+                    <UserGroupIcon className="h-4 w-4 text-muted-foreground mb-1" />
+                    <p className="text-xl font-bold">{profile.following_count}</p>
+                    <p className="text-xs text-muted-foreground text-center">{t('profile.following')}</p>
+                </div>
+            </div>
+
+            {/* ── Bio ── */}
             {!editing && profile.bio && (
-                <Card>
-                    <CardContent className="p-5">
-                        <p className="text-sm whitespace-pre-wrap">{profile.bio}</p>
-                    </CardContent>
-                </Card>
+                <div className="rounded-xl border bg-card px-5 py-4">
+                    <p className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">{profile.bio}</p>
+                </div>
             )}
 
-            <Separator />
-
-            {/* Tabs: Cases & Posts */}
+            {/* ── Cases & Roles Tabs ── */}
             <Tabs defaultValue="cases" className="space-y-4">
                 <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="cases">{t('profile.myCases')} ({cases.length})</TabsTrigger>
-                    <TabsTrigger value="posts">{t('profile.myPosts')} ({posts.length})</TabsTrigger>
+                    <TabsTrigger value="roles">{t('profile.myRoles')} ({memberships.length})</TabsTrigger>
                 </TabsList>
 
+                {/* My Cases */}
                 <TabsContent value="cases" className="space-y-3">
                     {cases.length === 0 ? (
                         <EmptyCard message={t('profile.noCases')} cta={t('cases.fileCase')} href="/cases/new" />
                     ) : (
                         cases.map((c: any) => (
-                            <Card key={c.id} className="hover:shadow-sm transition-shadow cursor-pointer"
-                                onClick={() => router.push(`/cases/${c.case_number}`)}>
+                            <Card
+                                key={c.id}
+                                className="hover:shadow-md hover:border-primary/30 transition-all cursor-pointer"
+                                onClick={() => router.push(`/cases/${c.case_number}`)}
+                            >
                                 <CardContent className="p-4 flex items-center justify-between">
                                     <div>
-                                        <div className="flex items-center gap-2 mb-1">
+                                        <div className="flex items-center gap-2 mb-1 flex-wrap">
                                             <span className="font-mono text-sm font-bold">{c.case_number}</span>
-                                            <Badge variant="outline" className={`text-xs capitalize ${statusColors[c.status] || ''}`}>
-                                                {c.status.replace(/_/g, ' ')}
+                                            <Badge variant="outline" className={`text-xs capitalize ${STATUS_COLORS[c.status] || ''}`}>
+                                                {STATUS_LABELS[c.status] || c.status.replace(/_/g, ' ')}
                                             </Badge>
                                         </div>
-                                        <p className="text-sm">vs. {c.defendants?.full_name || 'Unknown'}</p>
+                                        <p className="text-sm text-muted-foreground">vs. {c.defendants?.full_name || 'Unknown'}</p>
                                     </div>
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-3 flex-shrink-0">
                                         {EDITABLE_STATUSES.includes(c.status) && (
                                             <a
                                                 href={`/cases/${c.case_number}/edit`}
@@ -348,7 +472,7 @@ export default function ProfilePage() {
                                             </a>
                                         )}
                                         <p className="text-xs text-muted-foreground">
-                                            {new Date(c.created_at).toLocaleDateString()}
+                                            {new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                         </p>
                                     </div>
                                 </CardContent>
@@ -357,20 +481,39 @@ export default function ProfilePage() {
                     )}
                 </TabsContent>
 
-                <TabsContent value="posts" className="space-y-3">
-                    {posts.length === 0 ? (
-                        <EmptyCard message={t('profile.noPosts')} />
+                {/* My Roles (case memberships) */}
+                <TabsContent value="roles" className="space-y-3">
+                    {memberships.length === 0 ? (
+                        <EmptyCard message={t('profile.noRoles')} cta="Browse Cases" href="/cases" />
                     ) : (
-                        posts.map((post: any) => (
-                            <Card key={post.id}>
-                                <CardContent className="p-4">
-                                    <h3 className="font-semibold text-sm">{post.title}</h3>
-                                    <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{post.content}</p>
-                                    <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-                                        <span>👍 {post.upvote_count || 0}</span>
-                                        <span>👎 {post.downvote_count || 0}</span>
-                                        <span>{new Date(post.created_at).toLocaleDateString()}</span>
+                        memberships.map((m: Membership) => (
+                            <Card
+                                key={`${m.case_id}-${m.role}`}
+                                className="hover:shadow-md hover:border-primary/30 transition-all cursor-pointer"
+                                onClick={() => m.cases?.case_number && router.push(`/cases/${m.cases.case_number}`)}
+                            >
+                                <CardContent className="p-4 flex items-center justify-between">
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                            <span className="font-mono text-sm font-bold">{m.cases?.case_number || '—'}</span>
+                                            <Badge variant="outline" className="text-xs capitalize bg-primary/10 text-primary border-primary/20">
+                                                {m.role.replace(/_/g, ' ')}
+                                            </Badge>
+                                            {m.status === 'pending' && (
+                                                <Badge variant="outline" className="text-xs bg-yellow-500/10 text-yellow-600 border-yellow-500/20">
+                                                    Pending approval
+                                                </Badge>
+                                            )}
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">
+                                            vs. {(m.cases?.defendants as any)?.full_name || 'Unknown'}
+                                        </p>
                                     </div>
+                                    {m.cases?.status && (
+                                        <Badge variant="outline" className={`text-xs capitalize flex-shrink-0 ${STATUS_COLORS[m.cases.status] || ''}`}>
+                                            {STATUS_LABELS[m.cases.status] || m.cases.status.replace(/_/g, ' ')}
+                                        </Badge>
+                                    )}
                                 </CardContent>
                             </Card>
                         ))
@@ -378,45 +521,55 @@ export default function ProfilePage() {
                 </TabsContent>
             </Tabs>
 
-            {/* Account Info */}
+            {/* ── Account & Activity ── */}
             <Card>
-                <CardHeader><CardTitle className="text-base">Account</CardTitle></CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">{t('auth.email')}</span>
-                        <span>{user.email}</span>
+                <CardContent className="p-5 space-y-5">
+                    {/* Account section */}
+                    <div>
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Account</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="flex items-center gap-2.5 text-sm">
+                                <EnvelopeIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                <span className="truncate">{user.email}</span>
+                            </div>
+                            <div className="flex items-center gap-2.5 text-sm">
+                                <GlobeAltIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                <span>{LANGUAGE_LABELS[profile.language || 'en'] || profile.language?.toUpperCase() || 'English'}</span>
+                            </div>
+                        </div>
                     </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">{t('onboarding.language')}</span>
-                        <span className="uppercase">{profile.language || 'en'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">{t('profile.lastActive')}</span>
-                        <span>{new Date(profile.last_active_at).toLocaleDateString()}</span>
+
+                    {/* Activity section */}
+                    <div className="border-t pt-5">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Activity</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="flex items-center gap-2.5 text-sm">
+                                <ClockIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                <span>Active {new Date(profile.last_active_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                            </div>
+                            <div className="flex items-center gap-2.5 text-sm">
+                                <CalendarDaysIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                <span>Joined {new Date(profile.joined_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
+                            </div>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
-        </div>
-    )
-}
 
-function StatCard({ label, value, extra }: { label: string; value: string; extra?: React.ReactNode }) {
-    return (
-        <div className="rounded-xl border bg-card p-3 text-center">
-            <p className="text-lg font-bold">{value}</p>
-            <p className="text-xs text-muted-foreground">{label}</p>
-            {extra}
         </div>
     )
 }
 
 function EmptyCard({ message, cta, href }: { message: string; cta?: string; href?: string }) {
     return (
-        <div className="rounded-xl border border-dashed p-8 text-center">
+        <div className="rounded-xl border border-dashed p-10 text-center">
             <p className="text-sm text-muted-foreground">{message}</p>
             {cta && href && (
-                <a href={href}>
-                    <Button variant="outline" size="sm" className="mt-3">{cta}</Button>
+                <a
+                    href={href}
+                    className="inline-flex items-center gap-1.5 mt-4 px-4 py-2 rounded-md text-sm font-medium bg-muted/50 text-foreground/80 hover:bg-primary hover:text-primary-foreground transition-colors"
+                >
+                    {cta}
                 </a>
             )}
         </div>

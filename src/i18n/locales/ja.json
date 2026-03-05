@@ -195,6 +195,8 @@
         "completion": "プロフィール完成度",
         "noCases": "まだ事件を提出していません。",
         "noPosts": "まだ投稿していません。",
+        "myRoles": "マイ役割",
+        "noRoles": "まだどのケースにも参加していません。",
         "fileFirst": "最初の事件を提出",
         "startDiscussion": "議論を開始"
     },
