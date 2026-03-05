@@ -628,17 +628,17 @@ export default function ProfilePage() {
 
                                             {/* Col 4 — Members stat box */}
                                             <div className="rounded-xl border bg-card p-4 flex flex-col items-center justify-center min-w-[130px] ml-[15px] mr-[15px]">
-                                                <UserGroupIcon className="h-5 w-5 text-muted-foreground mb-2" />
+                                                <ShieldCheckIcon className="h-7 w-7 text-muted-foreground mb-2" />
                                                 <p className="text-2xl font-bold">{members}</p>
-                                                <p className="text-xs text-muted-foreground text-center">{members === 1 ? 'member' : 'members'}</p>
+                                                <p className="text-xs text-muted-foreground text-center">{members === 1 ? 'Member' : 'Members'}</p>
                                             </div>
 
                                             {/* Col 5 — Evidence stat box */}
                                             {evidence > 0 && (
                                                 <div className="rounded-xl border bg-card p-4 flex flex-col items-center justify-center min-w-[130px]">
-                                                    <DocumentTextIcon className="h-5 w-5 text-muted-foreground mb-2" />
+                                                    <ScaleIcon className="h-7 w-7 text-muted-foreground mb-2" />
                                                     <p className="text-2xl font-bold">{evidence}</p>
-                                                    <p className="text-xs text-muted-foreground text-center">evidence</p>
+                                                    <p className="text-xs text-muted-foreground text-center">Evidence</p>
                                                 </div>
                                             )}
 
