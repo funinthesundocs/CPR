@@ -15,12 +15,10 @@
 ALTER TABLE user_profiles RENAME COLUMN trust_score TO profile_progress;
 
 -- 2. Add tracking columns
-ALTER TABLE user_profiles ADD COLUMN (
-  last_login_at TIMESTAMP DEFAULT NULL,
-  last_vote_at TIMESTAMP DEFAULT NULL,
-  has_joined_case BOOLEAN DEFAULT FALSE,
-  first_vote_correct BOOLEAN DEFAULT NULL
-);
+ALTER TABLE user_profiles ADD COLUMN last_login_at TIMESTAMP DEFAULT NULL;
+ALTER TABLE user_profiles ADD COLUMN last_vote_at TIMESTAMP DEFAULT NULL;
+ALTER TABLE user_profiles ADD COLUMN has_joined_case BOOLEAN DEFAULT FALSE;
+ALTER TABLE user_profiles ADD COLUMN first_vote_correct BOOLEAN DEFAULT NULL;
 
 -- 3. Create calculation function
 CREATE OR REPLACE FUNCTION calculate_profile_progress(user_id UUID)
