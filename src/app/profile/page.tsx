@@ -22,6 +22,10 @@ import {
     UserGroupIcon,
     ScaleIcon,
     DocumentTextIcon,
+    SparklesIcon,
+    UserIcon,
+    ShieldCheckIcon,
+    ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline'
 
 type Profile = {
@@ -97,6 +101,16 @@ const ROLE_DESCRIPTIONS: Record<string, string> = {
     expert_witness:    'Provide professional expertise',
     attorney:          'Legal counsel for a party',
     law_enforcement:   'Submit official records or actions',
+}
+
+const ROLE_ICONS: Record<string, { icon: React.ReactNode; color: string }> = {
+    plaintiff:         { icon: <ScaleIcon className="h-5 w-5" />, color: 'text-red-500' },
+    jury_member:       { icon: <ScaleIcon className="h-5 w-5" />, color: 'text-blue-500' },
+    witness:           { icon: <UserIcon className="h-5 w-5" />, color: 'text-purple-500' },
+    investigator:      { icon: <SparklesIcon className="h-5 w-5" />, color: 'text-green-500' },
+    expert_witness:    { icon: <ShieldCheckIcon className="h-5 w-5" />, color: 'text-cyan-500' },
+    attorney:          { icon: <ShieldCheckIcon className="h-5 w-5" />, color: 'text-indigo-500' },
+    law_enforcement:   { icon: <ExclamationTriangleIcon className="h-5 w-5" />, color: 'text-orange-500' },
 }
 
 function getTrustInfo(score: number) {
@@ -641,44 +655,84 @@ export default function ProfilePage() {
                     {memberships.length === 0 ? (
                         <EmptyCard message="No roles yet" cta="Browse Cases" href="/cases" />
                     ) : (
-                        memberships.map((m: Membership) => (
-                            <Card
-                                key={`${m.case_id}-${m.role}`}
-                                className="hover:shadow-md hover:border-primary/30 transition-all cursor-pointer"
-                                onClick={() => m.cases?.case_number && router.push(`/cases/${m.cases.case_number}`)}
-                            >
-                                <CardContent className="p-4 space-y-2">
-                                    {/* Line 1: case number + role badge + status badge */}
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                        <span className="font-mono text-sm font-bold">{m.cases?.case_number || '—'}</span>
-                                        <Badge variant="outline" className="text-xs capitalize bg-primary/10 text-primary border-primary/20">
-                                            {m.role.replace(/_/g, ' ')}
-                                        </Badge>
-                                        {m.status === 'pending' && (
-                                            <Badge variant="outline" className="text-xs bg-yellow-500/10 text-yellow-600 border-yellow-500/20">
-                                                Pending approval
-                                            </Badge>
-                                        )}
-                                        {m.cases?.status && (
-                                            <Badge variant="outline" className={`text-xs capitalize ${STATUS_COLORS[m.cases.status] || ''}`}>
-                                                {STATUS_LABELS[m.cases.status] || m.cases.status.replace(/_/g, ' ')}
-                                            </Badge>
-                                        )}
-                                    </div>
+                        memberships.map((m: Membership) => {
+                            const joinedDate = m.created_at ? new Date(m.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'
+                            const isActive = m.status !== 'pending'
+                            const roleConfig = ROLE_ICONS[m.role] || { icon: <UserIcon className="h-5 w-5" />, color: 'text-muted-foreground' }
+                            return (
+                                <Card
+                                    key={`${m.case_id}-${m.role}`}
+                                    className="hover:shadow-md hover:border-primary/30 transition-all cursor-pointer"
+                                    onClick={() => m.cases?.case_number && router.push(`/cases/${m.cases.case_number}`)}
+                                >
+                                    <CardContent className="p-4">
+                                        {/* Desktop layout: grid, mobile: flex stack */}
+                                        <div className="hidden sm:grid items-center" style={{ gridTemplateColumns: 'auto 1fr auto auto' }}>
+                                            {/* Col 1 — Role icon + case header */}
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <div className={`flex-shrink-0 ${roleConfig.color}`}>
+                                                    {roleConfig.icon}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-bold">
+                                                        {m.cases?.case_number} · {(m.cases?.defendants as any)?.full_name || 'Unknown defendant'}
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground capitalize">
+                                                        {m.role.replace(/_/g, ' ')} · Joined {joinedDate}
+                                                    </p>
+                                                </div>
+                                            </div>
 
-                                    {/* Line 2: vs defendant */}
-                                    <p className="text-sm text-muted-foreground">
-                                        vs. {(m.cases?.defendants as any)?.full_name || 'Unknown defendant'}
-                                    </p>
+                                            {/* Col 2 — Spacer */}
+                                            <div />
 
-                                    {/* Line 3: role description + joined date */}
-                                    <p className="text-xs text-muted-foreground">
-                                        {ROLE_DESCRIPTIONS[m.role] || m.role.replace(/_/g, ' ')}
-                                        {m.created_at && ` · ${new Date(m.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`}
-                                    </p>
-                                </CardContent>
-                            </Card>
-                        ))
+                                            {/* Col 3 — Status indicator */}
+                                            <div className="pl-3">
+                                                {!isActive ? (
+                                                    <Badge variant="outline" className="text-xs bg-yellow-500/10 text-yellow-600 border-yellow-500/20">
+                                                        Pending
+                                                    </Badge>
+                                                ) : (
+                                                    <Badge variant="outline" className="text-xs bg-green-500/10 text-green-600 border-green-500/20">
+                                                        Active
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Mobile layout */}
+                                        <div className="sm:hidden space-y-2">
+                                            <div className="flex items-start justify-between gap-2">
+                                                <div className="flex items-start gap-2 flex-1 min-w-0">
+                                                    <div className={`flex-shrink-0 mt-0.5 ${roleConfig.color}`}>
+                                                        {roleConfig.icon}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-sm font-bold">
+                                                            {m.cases?.case_number} · {(m.cases?.defendants as any)?.full_name || 'Unknown defendant'}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground capitalize">
+                                                            {m.role.replace(/_/g, ' ')} · Joined {joinedDate}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex-shrink-0">
+                                                    {!isActive ? (
+                                                        <Badge variant="outline" className="text-xs bg-yellow-500/10 text-yellow-600 border-yellow-500/20">
+                                                            Pending
+                                                        </Badge>
+                                                    ) : (
+                                                        <Badge variant="outline" className="text-xs bg-green-500/10 text-green-600 border-green-500/20">
+                                                            Active
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )
+                        })
                     )}
                 </TabsContent>
             </Tabs>
