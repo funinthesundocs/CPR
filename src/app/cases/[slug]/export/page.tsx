@@ -95,7 +95,7 @@ export default async function CaseExportPage({ params }: PageProps) {
                 {caseData.story_narrative && (
                     <div className="mt-3">
                         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Full Narrative</p>
-                        <p className="text-sm whitespace-pre-wrap">{(caseData.story_narrative as any)?.full_story || String(caseData.story_narrative)}</p>
+                        <p className="text-sm whitespace-pre-wrap text-justify">{(caseData.story_narrative as any)?.full_story || String(caseData.story_narrative)}</p>
                     </div>
                 )}
             </Section>

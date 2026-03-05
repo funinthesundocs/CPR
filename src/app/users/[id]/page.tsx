@@ -276,7 +276,7 @@ export default function PublicUserProfile() {
             {/* ── Bio ── */}
             {profile.bio && (
                 <div className="rounded-xl border bg-card px-5 py-4">
-                    <p className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">{profile.bio}</p>
+                    <p className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed text-justify">{profile.bio}</p>
                 </div>
             )}
 
