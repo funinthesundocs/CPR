@@ -20,6 +20,7 @@ import {
     CalendarDaysIcon,
     UserGroupIcon,
     ScaleIcon,
+    DocumentTextIcon,
 } from '@heroicons/react/24/outline'
 
 type Profile = {
@@ -41,10 +42,21 @@ type Profile = {
     last_active_at: string
 }
 
+type UserCase = {
+    id: string
+    case_number: string
+    status: string
+    case_types: string[] | null
+    created_at: string
+    nominal_damages_claimed: number | null
+    defendants: { full_name: string; slug: string } | null
+}
+
 type Membership = {
     case_id: string
     role: string
     status: string
+    created_at: string | null
     cases: {
         case_number: string
         status: string
@@ -74,6 +86,17 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 const EDITABLE_STATUSES = ['draft', 'pending', 'pending_convergence', 'admin_review', 'investigation']
+const VOTING_STATUSES = ['judgment', 'investigation']
+
+const ROLE_DESCRIPTIONS: Record<string, string> = {
+    plaintiff:         'You filed this case',
+    jury_member:       'Review evidence and cast your verdict',
+    witness:           'Your testimony is on record',
+    investigator:      'Document findings for this case',
+    expert_witness:    'Provide professional expertise',
+    attorney:          'Legal counsel for a party',
+    law_enforcement:   'Submit official records or actions',
+}
 
 function getTrustInfo(score: number) {
     if (score >= 80) return {
@@ -117,8 +140,11 @@ export default function ProfilePage() {
     const [editing, setEditing] = useState(false)
     const [success, setSuccess] = useState<string | null>(null)
     const [error, setError] = useState<string | null>(null)
-    const [cases, setCases] = useState<any[]>([])
+    const [cases, setCases] = useState<UserCase[]>([])
     const [memberships, setMemberships] = useState<Membership[]>([])
+    const [voteCounts, setVoteCounts] = useState<Record<string, number>>({})
+    const [evidenceCounts, setEvidenceCounts] = useState<Record<string, number>>({})
+    const [memberCounts, setMemberCounts] = useState<Record<string, number>>({})
 
     // Editable fields
     const [editName, setEditName] = useState('')
@@ -148,20 +174,59 @@ export default function ProfilePage() {
         // Load user's filed cases
         const { data: userCases } = await supabase
             .from('cases')
-            .select('id, case_number, status, case_types, created_at, defendants(full_name, slug)')
+            .select('id, case_number, status, case_types, created_at, nominal_damages_claimed, defendants(full_name, slug)')
             .eq('plaintiff_id', user.id)
             .order('created_at', { ascending: false })
 
-        setCases(userCases || [])
+        const typedCases = (userCases || []) as unknown as UserCase[]
+        setCases(typedCases)
 
         // Load case memberships (joined as jury, witness, etc.)
         const { data: membershipData } = await supabase
             .from('case_roles')
-            .select('case_id, role, status, cases(case_number, status, defendants(full_name))')
+            .select('case_id, role, status, created_at, cases(case_number, status, defendants(full_name))')
             .eq('user_id', user.id)
             .order('case_id', { ascending: false })
 
-        setMemberships((membershipData || []) as Membership[])
+        // Synthesize plaintiff entries from filed cases and merge
+        const plaintiffEntries: Membership[] = typedCases.map(c => ({
+            case_id: c.id,
+            role: 'plaintiff',
+            status: 'approved',
+            created_at: c.created_at,
+            cases: {
+                case_number: c.case_number,
+                status: c.status,
+                defendants: c.defendants ? { full_name: c.defendants.full_name } : null,
+            }
+        }))
+        setMemberships([...plaintiffEntries, ...((membershipData || []) as unknown as Membership[])])
+
+        // Load activity counts per case (non-fatal — show 0 on failure)
+        if (typedCases.length > 0) {
+            const caseIds = typedCases.map(c => c.id)
+            const toCountMap = (rows: { case_id: string }[] | null) => {
+                const map: Record<string, number> = {}
+                rows?.forEach(r => { map[r.case_id] = (map[r.case_id] || 0) + 1 })
+                return map
+            }
+            try {
+                const [votesRes, evidenceRes, membersRes] = await Promise.all([
+                    supabase.from('votes').select('case_id').in('case_id', caseIds),
+                    supabase.from('evidence').select('case_id').in('case_id', caseIds),
+                    supabase.from('case_roles').select('case_id').in('case_id', caseIds),
+                ])
+                setVoteCounts(toCountMap(votesRes.data))
+                setEvidenceCounts(toCountMap(evidenceRes.data))
+                // +1 per case for the original plaintiff
+                const rawMembers = toCountMap(membersRes.data)
+                const withPlaintiff: Record<string, number> = {}
+                caseIds.forEach(id => { withPlaintiff[id] = (rawMembers[id] || 0) + 1 })
+                setMemberCounts(withPlaintiff)
+            } catch {
+                // non-fatal — counts remain 0
+            }
+        }
         setLoading(false)
     }, [supabase, router])
 
@@ -444,47 +509,97 @@ export default function ProfilePage() {
                     {cases.length === 0 ? (
                         <EmptyCard message={t('profile.noCases')} cta={t('cases.fileCase')} href="/cases/new" />
                     ) : (
-                        cases.map((c: any) => (
-                            <Card
-                                key={c.id}
-                                className="hover:shadow-md hover:border-primary/30 transition-all cursor-pointer"
-                                onClick={() => router.push(`/cases/${c.case_number}`)}
-                            >
-                                <CardContent className="p-4 flex items-center justify-between">
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        cases.map((c: UserCase) => {
+                            const members = memberCounts[c.id] || 1
+                            const evidence = evidenceCounts[c.id] || 0
+                            const votes = voteCounts[c.id] || 0
+                            const isVoting = VOTING_STATUSES.includes(c.status)
+                            const filedDate = new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                            return (
+                                <Card
+                                    key={c.id}
+                                    className="hover:shadow-md hover:border-primary/30 transition-all cursor-pointer"
+                                    onClick={() => router.push(`/cases/${c.case_number}`)}
+                                >
+                                    <CardContent className="p-4 space-y-2">
+                                        {/* Line 1: case number + status + type pills */}
+                                        <div className="flex items-center gap-2 flex-wrap">
                                             <span className="font-mono text-sm font-bold">{c.case_number}</span>
                                             <Badge variant="outline" className={`text-xs capitalize ${STATUS_COLORS[c.status] || ''}`}>
                                                 {STATUS_LABELS[c.status] || c.status.replace(/_/g, ' ')}
                                             </Badge>
+                                            {c.case_types?.slice(0, 3).map((type: string) => (
+                                                <span key={type} className="px-2 py-0.5 rounded-full text-xs bg-muted text-muted-foreground capitalize">
+                                                    {type.replace(/_/g, ' ')}
+                                                </span>
+                                            ))}
+                                            {(c.case_types?.length || 0) > 3 && (
+                                                <span className="text-xs text-muted-foreground">+{(c.case_types?.length || 0) - 3}</span>
+                                            )}
                                         </div>
-                                        <p className="text-sm text-muted-foreground">vs. {c.defendants?.full_name || 'Unknown'}</p>
-                                    </div>
-                                    <div className="flex items-center gap-3 flex-shrink-0">
-                                        {EDITABLE_STATUSES.includes(c.status) && (
-                                            <a
-                                                href={`/cases/${c.case_number}/edit`}
-                                                onClick={(e) => e.stopPropagation()}
-                                                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
-                                            >
-                                                <PencilSquareIcon className="h-3.5 w-3.5" />
-                                                Edit
-                                            </a>
-                                        )}
-                                        <p className="text-xs text-muted-foreground">
-                                            {new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+
+                                        {/* Line 2: both parties */}
+                                        <p className="text-sm font-medium">
+                                            {profile.display_name} <span className="text-muted-foreground font-normal">vs.</span> {c.defendants?.full_name || 'Unknown defendant'}
                                         </p>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))
+
+                                        {/* Line 3: stats */}
+                                        <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+                                            {(c.nominal_damages_claimed || 0) > 0 && (
+                                                <span className="font-medium text-foreground">${c.nominal_damages_claimed!.toLocaleString()} claimed</span>
+                                            )}
+                                            <span className="flex items-center gap-1">
+                                                <UserGroupIcon className="h-3.5 w-3.5" />
+                                                {members} {members === 1 ? 'member' : 'members'}
+                                            </span>
+                                            {evidence > 0 && (
+                                                <span className="flex items-center gap-1">
+                                                    <DocumentTextIcon className="h-3.5 w-3.5" />
+                                                    {evidence} evidence
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {/* Line 4: vote progress or filed date */}
+                                        {isVoting ? (
+                                            <div className="space-y-1">
+                                                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                                    <span>{votes} / 400 votes</span>
+                                                    <span>Filed {filedDate}</span>
+                                                </div>
+                                                <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
+                                                    <div
+                                                        className="h-full rounded-full bg-primary transition-all"
+                                                        style={{ width: `${Math.min((votes / 400) * 100, 100)}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs text-muted-foreground">Filed {filedDate}</span>
+                                                {EDITABLE_STATUSES.includes(c.status) && (
+                                                    <a
+                                                        href={`/cases/${c.case_number}/edit`}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
+                                                    >
+                                                        <PencilSquareIcon className="h-3.5 w-3.5" />
+                                                        Edit
+                                                    </a>
+                                                )}
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            )
+                        })
                     )}
                 </TabsContent>
 
                 {/* My Roles (case memberships) */}
                 <TabsContent value="roles" className="space-y-3">
                     {memberships.length === 0 ? (
-                        <EmptyCard message={t('profile.noRoles')} cta="Browse Cases" href="/cases" />
+                        <EmptyCard message="No roles yet" cta="Browse Cases" href="/cases" />
                     ) : (
                         memberships.map((m: Membership) => (
                             <Card
@@ -492,28 +607,35 @@ export default function ProfilePage() {
                                 className="hover:shadow-md hover:border-primary/30 transition-all cursor-pointer"
                                 onClick={() => m.cases?.case_number && router.push(`/cases/${m.cases.case_number}`)}
                             >
-                                <CardContent className="p-4 flex items-center justify-between">
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                            <span className="font-mono text-sm font-bold">{m.cases?.case_number || '—'}</span>
-                                            <Badge variant="outline" className="text-xs capitalize bg-primary/10 text-primary border-primary/20">
-                                                {m.role.replace(/_/g, ' ')}
-                                            </Badge>
-                                            {m.status === 'pending' && (
-                                                <Badge variant="outline" className="text-xs bg-yellow-500/10 text-yellow-600 border-yellow-500/20">
-                                                    Pending approval
-                                                </Badge>
-                                            )}
-                                        </div>
-                                        <p className="text-sm text-muted-foreground">
-                                            vs. {(m.cases?.defendants as any)?.full_name || 'Unknown'}
-                                        </p>
-                                    </div>
-                                    {m.cases?.status && (
-                                        <Badge variant="outline" className={`text-xs capitalize flex-shrink-0 ${STATUS_COLORS[m.cases.status] || ''}`}>
-                                            {STATUS_LABELS[m.cases.status] || m.cases.status.replace(/_/g, ' ')}
+                                <CardContent className="p-4 space-y-2">
+                                    {/* Line 1: case number + role badge + status badge */}
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="font-mono text-sm font-bold">{m.cases?.case_number || '—'}</span>
+                                        <Badge variant="outline" className="text-xs capitalize bg-primary/10 text-primary border-primary/20">
+                                            {m.role.replace(/_/g, ' ')}
                                         </Badge>
-                                    )}
+                                        {m.status === 'pending' && (
+                                            <Badge variant="outline" className="text-xs bg-yellow-500/10 text-yellow-600 border-yellow-500/20">
+                                                Pending approval
+                                            </Badge>
+                                        )}
+                                        {m.cases?.status && (
+                                            <Badge variant="outline" className={`text-xs capitalize ${STATUS_COLORS[m.cases.status] || ''}`}>
+                                                {STATUS_LABELS[m.cases.status] || m.cases.status.replace(/_/g, ' ')}
+                                            </Badge>
+                                        )}
+                                    </div>
+
+                                    {/* Line 2: vs defendant */}
+                                    <p className="text-sm text-muted-foreground">
+                                        vs. {(m.cases?.defendants as any)?.full_name || 'Unknown defendant'}
+                                    </p>
+
+                                    {/* Line 3: role description + joined date */}
+                                    <p className="text-xs text-muted-foreground">
+                                        {ROLE_DESCRIPTIONS[m.role] || m.role.replace(/_/g, ' ')}
+                                        {m.created_at && ` · ${new Date(m.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`}
+                                    </p>
                                 </CardContent>
                             </Card>
                         ))
