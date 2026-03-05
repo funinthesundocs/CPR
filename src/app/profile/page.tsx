@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Input } from '@/components/ui/input'
@@ -167,6 +167,7 @@ export default function ProfilePage() {
     const [editBio, setEditBio] = useState('')
     const [avatarFile, setAvatarFile] = useState<File | null>(null)
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+    const fileInputRef = useRef<HTMLInputElement>(null)
 
     const loadProfile = useCallback(async () => {
         const { data: { user } } = await supabase.auth.getUser()
@@ -430,7 +431,8 @@ export default function ProfilePage() {
                         </div>
                         <div className="space-y-2">
                             <Label>Avatar</Label>
-                            <Input
+                            <input
+                                ref={fileInputRef}
                                 type="file"
                                 accept="image/*"
                                 onChange={e => {
@@ -440,7 +442,16 @@ export default function ProfilePage() {
                                         setAvatarPreview(URL.createObjectURL(file))
                                     }
                                 }}
+                                className="hidden"
                             />
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                Choose Image
+                            </Button>
+                            {avatarFile && <p className="text-xs text-muted-foreground">{avatarFile.name}</p>}
                         </div>
                     </div>
 
