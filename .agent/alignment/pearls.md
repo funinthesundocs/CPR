@@ -59,6 +59,7 @@ Prune in this order — lowest score = first to go:
 | Additive enhancement only | After each test or iteration, add what you learned to the documentation — never remove existing rules, only add new ones | Established | 2026-02-19 | 0 |
 | Consistency grep after every change | After modifying any code or documentation, grep the entire file for stale references to the old approach — one contradictory line wastes more debugging time than no documentation | Established | 2026-02-19 | 0 |
 | Trace data through full pipeline | Before assuming data is missing or a feature broken, trace a single record through the complete pipeline (input → storage → retrieval → display) — the actual failure is often in a different layer than suspected | Confirmed | 2026-03-02 | 0 |
+| Don't ask false-choice questions | If you can complete the sentence "Option X is better because [principle]", then X is not a choice, it's the answer — asking "which do you prefer" when you already know the technical winner is just deferring your own reasoning to the user | Seed | 2026-03-05 | 0 |
 
 ## General Engineering
 
