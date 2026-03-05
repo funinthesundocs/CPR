@@ -737,40 +737,44 @@ export default function ProfilePage() {
                 </TabsContent>
             </Tabs>
 
-            {/* ── Account & Activity ── */}
-            <Card>
-                <CardContent className="p-5 space-y-5">
-                    {/* Account section */}
-                    <div>
-                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Account</p>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div className="flex items-center gap-2.5 text-sm">
-                                <EnvelopeIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                                <span className="truncate">{user.email}</span>
-                            </div>
-                            <div className="flex items-center gap-2.5 text-sm">
-                                <GlobeAltIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                                <span>{LANGUAGE_LABELS[profile.language || 'en'] || profile.language?.toUpperCase() || 'English'}</span>
-                            </div>
-                        </div>
-                    </div>
+            {/* ── Account & Activity (Stat Boxes) ── */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {/* Email box */}
+                <div className="rounded-xl border bg-card p-4 flex flex-col items-center justify-center min-w-[100px] hover:shadow-md hover:border-primary/30 transition-all">
+                    <EnvelopeIcon className="h-4 w-4 text-primary mb-2" />
+                    <p className="text-sm font-bold text-center overflow-hidden text-ellipsis whitespace-nowrap max-w-full" title={user.email}>
+                        {user.email}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Account</p>
+                </div>
 
-                    {/* Activity section */}
-                    <div className="border-t pt-5">
-                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Activity</p>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div className="flex items-center gap-2.5 text-sm">
-                                <ClockIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                                <span>Active {new Date(profile.last_active_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                            </div>
-                            <div className="flex items-center gap-2.5 text-sm">
-                                <CalendarDaysIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                                <span>Joined {new Date(profile.joined_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
-                            </div>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
+                {/* Language box */}
+                <div className="rounded-xl border bg-card p-4 flex flex-col items-center justify-center min-w-[100px] hover:shadow-md hover:border-primary/30 transition-all">
+                    <GlobeAltIcon className="h-4 w-4 text-emerald-500 mb-2" />
+                    <p className="text-sm font-bold text-center">
+                        {LANGUAGE_LABELS[profile.language || 'en'] || profile.language?.toUpperCase() || 'English'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Language</p>
+                </div>
+
+                {/* Last Active box */}
+                <div className="rounded-xl border bg-card p-4 flex flex-col items-center justify-center min-w-[100px] hover:shadow-md hover:border-primary/30 transition-all">
+                    <ClockIcon className="h-4 w-4 text-sky-500 mb-2" />
+                    <p className="text-sm font-bold text-center">
+                        {new Date(profile.last_active_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Last Active</p>
+                </div>
+
+                {/* Joined box */}
+                <div className="rounded-xl border bg-card p-4 flex flex-col items-center justify-center min-w-[100px] hover:shadow-md hover:border-primary/30 transition-all">
+                    <CalendarDaysIcon className="h-4 w-4 text-amber-500 mb-2" />
+                    <p className="text-sm font-bold text-center">
+                        {new Date(profile.joined_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Member Since</p>
+                </div>
+            </div>
 
         </div>
     )
