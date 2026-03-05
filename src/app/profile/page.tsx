@@ -757,11 +757,11 @@ export default function ProfilePage() {
                     <p className="text-xs text-muted-foreground">Language</p>
                 </div>
 
-                {/* Last Active box */}
+                {/* Last Active box — uses live auth data, not stale profile column */}
                 <div className="rounded-xl border bg-card p-4 flex flex-col items-center justify-center min-w-[100px] hover:shadow-md hover:border-primary/30 transition-all">
                     <ClockIcon className="h-4 w-4 text-sky-500 mb-2" />
                     <p className="text-sm font-bold text-center">
-                        {new Date(profile.last_active_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—'}
                     </p>
                     <p className="text-xs text-muted-foreground">Last Active</p>
                 </div>
