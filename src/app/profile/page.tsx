@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { User } from '@supabase/supabase-js'
 import { useTranslation } from '@/i18n'
@@ -521,9 +522,9 @@ export default function ProfilePage() {
                                     className="hover:shadow-md transition-all hover:border-primary/30 cursor-pointer py-0"
                                     onClick={() => router.push(`/cases/${c.case_number}`)}
                                 >
-                                    <CardContent className="p-0">
-                                        {/* 5-col grid: plaintiff(fixed) | case-info | defendant(fixed) | spacer | right-panel */}
-                                        <div className="grid items-center" style={{ gridTemplateColumns: '9.6rem 1fr 9.6rem auto' }}>
+                                    <CardContent className="p-0 pr-4">
+                                        {/* 7-col grid: plaintiff(fixed) | case-info(fixed) | defendant(fixed) | members-box(auto) | evidence-box(auto) | spacer(fills) | edit(auto) */}
+                                        <div className="grid items-center" style={{ gridTemplateColumns: '9.6rem 22rem 9.6rem auto auto 1fr auto' }}>
 
                                             {/* Col 1 — Plaintiff avatar */}
                                             {profile.avatar_url ? (
@@ -577,31 +578,40 @@ export default function ProfilePage() {
                                                 </div>
                                             )}
 
-                                            {/* Col 4 — Right panel */}
-                                            <div className="flex flex-col justify-between h-[9.6rem] px-4 py-3 items-end">
-                                                {EDITABLE_STATUSES.includes(c.status) && (
-                                                    <a
-                                                        href={`/cases/${c.case_number}/edit`}
-                                                        onClick={(e) => e.stopPropagation()}
-                                                        className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
-                                                    >
-                                                        <PencilSquareIcon className="h-3.5 w-3.5" />
-                                                        Edit
-                                                    </a>
-                                                )}
-                                                <div className="flex flex-col items-end gap-1 text-xs text-muted-foreground">
-                                                    <span className="flex items-center gap-1">
-                                                        <UserGroupIcon className="h-3.5 w-3.5" />
-                                                        {members} {members === 1 ? 'member' : 'members'}
-                                                    </span>
-                                                    {evidence > 0 && (
-                                                        <span className="flex items-center gap-1">
-                                                            <DocumentTextIcon className="h-3.5 w-3.5" />
-                                                            {evidence} evidence
-                                                        </span>
-                                                    )}
-                                                </div>
+                                            {/* Col 4 — Members stat box */}
+                                            <div className="rounded-xl border bg-card p-3 flex flex-col items-center justify-center min-w-[100px] ml-[15px] mr-[15px]">
+                                                <UserGroupIcon className="h-4 w-4 text-muted-foreground mb-1" />
+                                                <p className="text-lg font-bold">{members}</p>
+                                                <p className="text-xs text-muted-foreground text-center">{members === 1 ? 'member' : 'members'}</p>
                                             </div>
+
+                                            {/* Col 5 — Evidence stat box */}
+                                            {evidence > 0 && (
+                                                <div className="rounded-xl border bg-card p-3 flex flex-col items-center justify-center min-w-[100px]">
+                                                    <DocumentTextIcon className="h-4 w-4 text-muted-foreground mb-1" />
+                                                    <p className="text-lg font-bold">{evidence}</p>
+                                                    <p className="text-xs text-muted-foreground text-center">evidence</p>
+                                                </div>
+                                            )}
+
+                                            {/* Col 6 — Spacer */}
+                                            <div />
+
+                                            {/* Col 7 — Edit button */}
+                                            {EDITABLE_STATUSES.includes(c.status) && (
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="justify-self-end"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        router.push(`/cases/${c.case_number}/edit`)
+                                                    }}
+                                                >
+                                                    <PencilSquareIcon className="h-4 w-4 mr-1.5" />
+                                                    Edit
+                                                </Button>
+                                            )}
                                         </div>
 
                                         {/* Vote bar — own compartment, separated by divider */}
