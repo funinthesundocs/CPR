@@ -186,7 +186,7 @@ Exact word-for-word capture of what the plaintiff submitted.
 - **Layout**: Hard diagonal split — left half plaintiff, right half defendant
   - Diagonal divider cuts through center at ~15° angle (CSS clip-path)
   - Left side: plaintiff photo, labeled "PLAINTIFF" in uppercase
-  - Right side: defendant photo, labeled "DEFENDANT" in uppercase
+  - Right side: defendant photo, labeled "DEFENDANT" in uppercase — **entire right panel (avatar + label + name) is a `<Link href="/defendants/[slug]">` to the defendant's page**
   - Both sides tinted with infographic-extracted accent color
 - **All 4 animations active**:
   1. **Entrance**: Each photo slides in from its edge on page load — 0.6s ease-out, staggered 0.2s

@@ -201,17 +201,77 @@ export function CaseSummaryModule({ notebookSummary, briefingDocContent, testimo
             {/* Content */}
             <div className="overflow-y-auto p-8 flex-1">
               {activeTab === 'analysis' && (
-                <div className="space-y-4">
+                <div className="max-w-4xl mx-auto">
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   components={{
-                    h2: ({ children }) => <h2 className="text-lg font-bold text-white mt-6 mb-3 pb-2 border-b border-[var(--accent-500)]/30">{children}</h2>,
-                    p: ({ children }) => <p className="text-[16px] leading-relaxed text-white/75 mb-3 text-justify">{children}</p>,
-                    strong: ({ children }) => <strong className="text-white font-semibold">{children}</strong>,
-                    ul: ({ children }) => <ul className="list-none space-y-1 mb-3 pl-4">{children}</ul>,
-                    ol: ({ children }) => <ol className="list-none space-y-1 mb-3 pl-4">{children}</ol>,
-                    li: ({ children }) => <li className="leading-relaxed text-white/75 flex gap-2 before:content-['•'] before:text-[var(--accent-500)] before:font-bold before:flex-shrink-0">{children}</li>,
-                    hr: () => <hr className="border-t border-dashed border-white/20 my-4" />,
+                    h1: ({ children }) => (
+                      <div className="mb-8 pb-6 border-b-2 border-[var(--accent-500)]/40">
+                        <h1 className="text-[28px] md:text-[34px] font-black text-white leading-tight tracking-tight mb-3">{children}</h1>
+                      </div>
+                    ),
+                    h2: ({ children }) => (
+                      <h2 className="text-[20px] font-bold text-white mt-10 mb-4 pb-2 border-b border-[var(--accent-500)]/40 flex items-center gap-3">
+                        <span className="w-1 h-6 bg-[var(--accent-500)] rounded-full shrink-0 inline-block" />
+                        {children}
+                      </h2>
+                    ),
+                    h3: ({ children }) => (
+                      <h3 className="text-[15px] font-bold text-[var(--accent-300)] uppercase tracking-widest mt-6 mb-3">{children}</h3>
+                    ),
+                    h4: ({ children }) => (
+                      <h4 className="text-[14px] font-semibold text-white/60 uppercase tracking-wider mt-4 mb-2">{children}</h4>
+                    ),
+                    p: ({ children }) => (
+                      <p className="text-[15px] leading-[1.85] text-white/75 mb-4">{children}</p>
+                    ),
+                    strong: ({ children }) => (
+                      <strong className="text-white font-semibold">{children}</strong>
+                    ),
+                    em: ({ children }) => (
+                      <em className="text-[var(--accent-300)] not-italic font-medium">{children}</em>
+                    ),
+                    ul: ({ children }) => (
+                      <ul className="space-y-2 mb-5 pl-2">{children}</ul>
+                    ),
+                    ol: ({ children }) => (
+                      <ol className="space-y-2 mb-5 pl-2 list-none counter-reset-[item]">{children}</ol>
+                    ),
+                    li: ({ children, ...props }) => {
+                      const isOrdered = (props as any).node?.parent?.type === 'list' && (props as any).node?.parent?.ordered
+                      return (
+                        <li className="flex gap-3 text-[15px] leading-[1.75] text-white/70">
+                          <span className="text-[var(--accent-500)] font-bold shrink-0 mt-[2px]">
+                            {isOrdered ? '›' : '•'}
+                          </span>
+                          <span>{children}</span>
+                        </li>
+                      )
+                    },
+                    hr: () => (
+                      <div className="my-8 flex items-center gap-4">
+                        <div className="flex-1 border-t border-white/10" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent-500)]/50" />
+                        <div className="flex-1 border-t border-white/10" />
+                      </div>
+                    ),
+                    blockquote: ({ children }) => (
+                      <blockquote className="border-l-4 border-[var(--accent-500)]/60 pl-5 my-4 text-white/60 italic text-[15px] leading-relaxed">{children}</blockquote>
+                    ),
+                    code: ({ children }) => (
+                      <code className="bg-white/10 text-[var(--accent-300)] text-[13px] px-1.5 py-0.5 rounded font-mono">{children}</code>
+                    ),
+                    table: ({ children }) => (
+                      <div className="overflow-x-auto mb-5">
+                        <table className="w-full text-[14px] border-collapse">{children}</table>
+                      </div>
+                    ),
+                    th: ({ children }) => (
+                      <th className="text-left text-xs uppercase tracking-widest text-white/40 font-semibold py-2 px-3 border-b border-white/10">{children}</th>
+                    ),
+                    td: ({ children }) => (
+                      <td className="py-2.5 px-3 text-white/70 border-b border-white/5">{children}</td>
+                    ),
                   }}
                 >
                   {briefingDocContent}

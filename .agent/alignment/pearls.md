@@ -87,6 +87,14 @@ Prune in this order — lowest score = first to go:
 | Audit shared component callers before style changes | Before modifying default styles or adding inline overrides to a shared UI component, check every caller — a change that fixes one use case silently breaks all others | Seed | 2026-03-03 | 0 |
 | Async useEffect needs cancellation token not init guard | In async useEffect functions with expensive initialization (dynamic imports, third-party lib setup), use a cancellation token checked after every await — React.StrictMode cleanup fires before async resumption, making boolean init-guard flags ineffective | Seed | 2026-03-03 | 0 |
 
+## Artifact Pipeline
+
+| Pearl | Rule | Maturity | Added | Uses |
+|-------|------|----------|-------|------|
+| Never overwrite curated media with auto-generated | Before downloading any binary artifact (audio, video, image) to a destination that may already contain a manually curated file, confirm with the user which source is authoritative — auto-generated NotebookLM audio is never a substitute for recorded interviews or custom-produced media | Seed | 2026-03-04 | 0 |
+| One canonical folder per entity | When artifacts for the same entity end up in two folders with similar names, stop immediately and ask which to keep before touching either — silent merges lose the authoritative file permanently | Seed | 2026-03-04 | 0 |
+| Verify artifact content not just filename | After placing any media file, confirm the content matches the defendant/entity it serves — the filename and folder name being correct does not guarantee the content is correct | Seed | 2026-03-04 | 0 |
+
 ## Database & Auth
 
 | Pearl | Rule | Maturity | Added | Uses |

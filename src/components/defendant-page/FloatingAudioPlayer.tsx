@@ -9,8 +9,24 @@ interface FloatingAudioPlayerProps {
   onClose: () => void
 }
 
+const MIME_MAP: Record<string, string> = {
+  '.mp3': 'audio/mpeg',
+  '.m4a': 'audio/mp4',
+  '.mp4': 'audio/mp4',
+  '.ogg': 'audio/ogg',
+  '.wav': 'audio/wav',
+  '.webm': 'audio/webm',
+  '.aac': 'audio/aac',
+}
+
+function mimeFromUrl(url: string): string | undefined {
+  const ext = url.slice(url.lastIndexOf('.')).toLowerCase().split('?')[0]
+  return MIME_MAP[ext]
+}
+
 export function FloatingAudioPlayer({ audioUrl, caseTitle, onClose }: FloatingAudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null)
+  const audioType = mimeFromUrl(audioUrl)
   const [playing, setPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
@@ -61,7 +77,9 @@ export function FloatingAudioPlayer({ audioUrl, caseTitle, onClose }: FloatingAu
   if (minimized) {
     return (
       <div className="fixed bottom-6 right-6 z-50">
-        <audio ref={audioRef} src={audioUrl} preload="metadata" />
+        <audio ref={audioRef} preload="metadata">
+          <source src={audioUrl} type={audioType} />
+        </audio>
         <button
           onClick={() => setMinimized(false)}
           className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-700)] text-white rounded-full shadow-lg hover:bg-[var(--accent-500)] transition-colors"

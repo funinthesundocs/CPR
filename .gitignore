@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# large media — serve via CDN or local storage, not git
+public/artifacts/**/*.mp3
+public/artifacts/**/*.m4a
+public/artifacts/**/*.mp4
+.agent/artifacts/**/*.mp3
+.agent/artifacts/**/*.m4a
+.agent/artifacts/**/*.mp4

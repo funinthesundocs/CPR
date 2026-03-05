@@ -7,7 +7,9 @@
 ## 1. Notebook Summary (`notebook-summary.txt`)
 
 ```
-Write a 3-paragraph summary of this case for a public accountability platform.
+Write a summary of this case for a public accountability platform. It has two parts:
+
+PART 1 — NARRATIVE SUMMARY (150 words exactly):
 
 Paragraph 1 — The Hook: Open with a single powerful sentence that captures who this
 person is and what they are accused of doing. Follow with 2-3 sentences establishing
@@ -19,15 +21,22 @@ manipulation, the geography, the scale. Name the pattern of behavior across mult
 victims. This is where the reader realizes this was not a mistake — it was deliberate
 and repeated.
 
-Paragraph 3 — The Stakes: Why this case matters beyond the individual victims. What
-it reveals about the defendant's character. Where things stand now and what the public
-record shows. End with a sentence that makes the reader want to keep reading.
-
 Tone: Journalistic. Factual. Serious weight without sensationalism. Write in third
 person. No legal disclaimers, no hedging language like "allegedly" or "claims." This
 is a summary of documented testimony and evidence, not a news article.
 
-Length: 220-260 words total. No headers. Plain paragraphs only.
+Length: 150 words total. No headers. Plain paragraphs only.
+
+PART 2 — SUPPORTING DOCUMENTATION:
+
+After the narrative, add a bulletized list of key supporting documentation from the
+sources. Each bullet should be a single line identifying a specific document, filing,
+testimony, record, or piece of evidence that substantiates the case. Format:
+
+• [Document or evidence type]: [One-sentence description of what it establishes]
+
+Include 6-10 bullets. Be specific — name the actual documents, dates, amounts, or
+parties where known. No vague entries.
 ```
 
 ---

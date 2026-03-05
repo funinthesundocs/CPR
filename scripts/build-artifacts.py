@@ -209,8 +209,21 @@ async def build(notebook_id: str, slug: str, root: Path):
         # ── Step 4: Download all artifacts ────────────────────────────────────
         step(4, 5, "Downloading artifacts to disk...")
 
-        await client.artifacts.download_audio(notebook_id, str(audio_path))
-        ok(f"public/artifacts/{slug}/podcast.mp3               ({fmt_size(audio_path)})")
+        # Safety check: never silently overwrite a manually-curated audio file.
+        # If podcast.mp3 already exists, require explicit --force-audio flag.
+        if audio_path.exists() and not getattr(args, 'force_audio', False):
+            warn(f"podcast.mp3 already exists ({fmt_size(audio_path)}) — skipping audio download.")
+            warn("The existing file may be a manually curated recording (e.g. an interview).")
+            warn("Pass --force-audio to overwrite it with the NotebookLM generated audio.")
+            skip_audio = True
+        else:
+            skip_audio = False
+
+        if not skip_audio:
+            await client.artifacts.download_audio(notebook_id, str(audio_path))
+            ok(f"public/artifacts/{slug}/podcast.mp3               ({fmt_size(audio_path)})")
+        else:
+            ok(f"public/artifacts/{slug}/podcast.mp3               (kept existing — skipped)")
 
         await client.artifacts.download_infographic(notebook_id, str(infographic_path))
         ok(f"public/artifacts/{slug}/infographic-landscape.png ({fmt_size(infographic_path)})")
@@ -262,6 +275,11 @@ examples:
     parser.add_argument(
         "--root", default=None, metavar="PATH",
         help="CPR project root directory (auto-detected from CLAUDE.md if omitted)",
+    )
+    parser.add_argument(
+        "--force-audio", action="store_true", default=False,
+        dest="force_audio",
+        help="Overwrite existing podcast.mp3 even if it already exists (default: skip to protect manually curated recordings)",
     )
     args = parser.parse_args()
 

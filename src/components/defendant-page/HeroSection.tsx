@@ -10,6 +10,7 @@ interface HeroSectionProps {
   plaintiffPhoto: string | null
   defendantPhoto: string | null
   status: string
+  tagline?: string
 }
 
 function AvatarPlaceholder({ label, className }: { label: string; className?: string }) {
@@ -20,7 +21,7 @@ function AvatarPlaceholder({ label, className }: { label: string; className?: st
   )
 }
 
-export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defendantPhoto, status }: HeroSectionProps) {
+export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defendantPhoto, status, tagline }: HeroSectionProps) {
   const { scrollY } = useScroll()
   const bgY = useTransform(scrollY, [0, 400], [0, 120])
 
@@ -206,6 +207,11 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
         <span className="mt-1 text-[33px] md:text-[39px] font-black text-white text-center leading-tight px-4">
           {defendantName}
         </span>
+        {tagline && (
+          <span className="mt-3 text-[20px] font-medium italic text-white/55 text-center px-6 leading-snug">
+            {tagline}
+          </span>
+        )}
       </motion.div>
 
 

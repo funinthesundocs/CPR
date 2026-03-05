@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { HeroSection } from '@/components/defendant-page/HeroSection'
-import { HeroText } from '@/components/defendant-page/HeroText'
 import { StoryInfographic } from '@/components/defendant-page/StoryInfographic'
 import { InfoBoxes } from '@/components/defendant-page/InfoBoxes'
 import { CaseSummaryModule } from '@/components/defendant-page/CaseSummaryModule'
@@ -117,6 +116,7 @@ export function PlaintiffPageClient(props: PlaintiffPageClientProps) {
           plaintiffPhoto={props.plaintiffPhoto}
           defendantPhoto={props.defendantPhoto}
           status={props.status}
+          tagline={props.tagline}
         />
 
         {/* SECTION 02 — Cases & Accusers */}

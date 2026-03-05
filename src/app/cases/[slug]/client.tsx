@@ -22,6 +22,7 @@ interface PlaintiffPageClientProps {
   plaintiffPhoto: string | null
   defendantName: string
   defendantPhoto: string | null
+  defendantSlug: string
   tagline: string
   notebookSummary: string
   briefingContent: string
@@ -89,6 +90,7 @@ export function PlaintiffPageClient(props: PlaintiffPageClientProps) {
           plaintiffPhoto={props.plaintiffPhoto}
           defendantPhoto={props.defendantPhoto}
           status={props.status}
+          defendantSlug={props.defendantSlug}
         />
 
         {/* SECTION 02 — Hero Text */}

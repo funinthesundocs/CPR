@@ -291,6 +291,7 @@ export default async function CaseDetailPage({ params }: PageProps) {
       plaintiffPhoto={buildPublicUrl(plaintiffProfile?.avatar_url) || null}
       defendantName={getDisplayName(defendant.full_name)}
       defendantPhoto={defendant.photo_url || null}
+      defendantSlug={defendant.slug}
       tagline={tagline}
       notebookSummary={notebookSummary}
       briefingContent={briefingContent}
