@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -21,7 +21,7 @@ type PublicProfile = {
     avatar_url: string | null
     bio: string
     profile_completion: number
-    trust_score: number
+    profile_progress: number
     joined_at: string
     is_verified: boolean
 }
@@ -53,15 +53,16 @@ const STATUS_COLORS: Record<string, string> = {
     draft: 'bg-muted text-muted-foreground border-border',
 }
 
-function getTrustInfo(score: number) {
+function getProgressInfo(score: number) {
     if (score >= 80) return { label: 'Excellent', color: 'text-green-600', barColor: 'bg-green-500', bg: 'bg-green-500/10', border: 'border-green-500/20' }
     if (score >= 60) return { label: 'Good', color: 'text-blue-600', barColor: 'bg-blue-500', bg: 'bg-blue-500/10', border: 'border-blue-500/20' }
     if (score >= 40) return { label: 'Fair', color: 'text-yellow-600', barColor: 'bg-yellow-500', bg: 'bg-yellow-500/10', border: 'border-yellow-500/20' }
     return { label: 'Low', color: 'text-red-600', barColor: 'bg-red-500', bg: 'bg-red-500/10', border: 'border-red-500/20' }
 }
 
-export default function PublicUserProfile({ params }: { params: { id: string } }) {
+export default function PublicUserProfile() {
     const router = useRouter()
+    const params = useParams() as { id: string }
     const supabase = createClient()
     const [profile, setProfile] = useState<PublicProfile | null>(null)
     const [userCases, setUserCases] = useState<UserCase[]>([])
@@ -87,7 +88,7 @@ export default function PublicUserProfile({ params }: { params: { id: string } }
                 // Fetch user profile
                 const { data: profileData, error: profileError } = await supabase
                     .from('user_profiles')
-                    .select('id, display_name, tagline, avatar_url, bio, profile_completion, trust_score, joined_at, is_verified')
+                    .select('id, display_name, tagline, avatar_url, bio, profile_completion, profile_progress, joined_at, is_verified')
                     .eq('id', params.id)
                     .single()
 
@@ -189,7 +190,7 @@ export default function PublicUserProfile({ params }: { params: { id: string } }
         )
     }
 
-    const trust = getTrustInfo(profile.trust_score)
+    const progress = getProgressInfo(profile.profile_progress)
     const joinedDate = new Date(profile.joined_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 
     return (
@@ -238,19 +239,19 @@ export default function PublicUserProfile({ params }: { params: { id: string } }
                 </div>
             </div>
 
-            {/* ── Trust Score ── */}
-            <div className={`rounded-xl border p-4 ${trust.bg} ${trust.border}`}>
+            {/* ── Profile Progress ── */}
+            <div className={`rounded-xl border p-4 ${progress.bg} ${progress.border}`}>
                 <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-muted-foreground uppercase">Trust Score</span>
-                    <span className={`text-xl font-bold ${trust.color}`}>
-                        {profile.trust_score}
+                    <span className="text-xs font-semibold text-muted-foreground uppercase">Profile Progress</span>
+                    <span className={`text-xl font-bold ${progress.color}`}>
+                        {profile.profile_progress}
                         <span className="text-sm font-normal text-muted-foreground">/100</span>
                     </span>
                 </div>
                 <div className="w-full h-2 rounded-full bg-black/10 dark:bg-white/10 overflow-hidden">
-                    <div className={`h-full rounded-full transition-all ${trust.barColor}`} style={{ width: `${profile.trust_score}%` }} />
+                    <div className={`h-full rounded-full transition-all ${progress.barColor}`} style={{ width: `${profile.profile_progress}%` }} />
                 </div>
-                <p className={`text-xs mt-2 font-medium ${trust.color}`}>{trust.label}</p>
+                <p className={`text-xs mt-2 font-medium ${progress.color}`}>{progress.label}</p>
             </div>
 
             {/* ── Member Info ── */}

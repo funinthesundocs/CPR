@@ -26,6 +26,7 @@ import {
     UserIcon,
     ShieldCheckIcon,
     ExclamationTriangleIcon,
+    ChatBubbleLeftIcon,
 } from '@heroicons/react/24/outline'
 
 type Profile = {
@@ -38,7 +39,7 @@ type Profile = {
     language: string
     is_verified: boolean
     profile_completion: number
-    trust_score: number
+    profile_progress: number
     follower_count: number
     following_count: number
     case_count: number
@@ -113,32 +114,32 @@ const ROLE_ICONS: Record<string, { icon: React.ReactNode; color: string }> = {
     law_enforcement:   { icon: <ExclamationTriangleIcon className="h-5 w-5" />, color: 'text-orange-500' },
 }
 
-function getTrustInfo(score: number) {
+function getProgressInfo(score: number) {
     if (score >= 80) return {
-        label: 'Trusted contributor',
+        label: 'Fully engaged',
         color: 'text-green-600 dark:text-green-400',
         barColor: 'bg-green-500',
         border: 'border-green-500/20',
         bg: 'bg-green-500/5',
     }
     if (score >= 50) return {
-        label: 'Active contributor',
+        label: 'Active participant',
         color: 'text-yellow-600 dark:text-yellow-400',
         barColor: 'bg-yellow-500',
         border: 'border-yellow-500/20',
         bg: 'bg-yellow-500/5',
     }
     if (score >= 20) return {
-        label: 'New member',
-        color: 'text-muted-foreground',
-        barColor: 'bg-muted-foreground',
-        border: 'border-border',
-        bg: 'bg-muted/30',
+        label: 'Getting started',
+        color: 'text-orange-600 dark:text-orange-400',
+        barColor: 'bg-orange-500',
+        border: 'border-orange-500/20',
+        bg: 'bg-orange-500/5',
     }
     return {
-        label: 'Getting started',
-        color: 'text-muted-foreground',
-        barColor: 'bg-muted-foreground',
+        label: 'Profile incomplete',
+        color: 'text-red-600 dark:text-red-400',
+        barColor: 'bg-red-500',
         border: 'border-border',
         bg: 'bg-muted/30',
     }
@@ -321,7 +322,7 @@ export default function ProfilePage() {
         )
     }
 
-    const trust = getTrustInfo(profile.trust_score)
+    const progress = getProgressInfo(profile.profile_progress)
     const uniqueRoles = [...new Set(memberships.map(m => m.role))]
 
     return (
@@ -476,22 +477,22 @@ export default function ProfilePage() {
 
             {/* ── Reputation & Stats ── */}
             <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto] gap-3">
-                {/* Hero stat: Trust Score */}
-                <div className={`rounded-xl border p-4 ${trust.bg} ${trust.border}`}>
+                {/* Hero stat: Profile Progress */}
+                <div className={`rounded-xl border p-4 ${progress.bg} ${progress.border}`}>
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t('profile.trustScore')}</span>
-                        <span className={`text-xl font-bold ${trust.color}`}>
-                            {profile.trust_score}
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t('profile.progressScore')}</span>
+                        <span className={`text-xl font-bold ${progress.color}`}>
+                            {profile.profile_progress}
                             <span className="text-sm font-normal text-muted-foreground">/100</span>
                         </span>
                     </div>
                     <div className="w-full h-1.5 rounded-full bg-black/10 dark:bg-white/10 overflow-hidden">
                         <div
-                            className={`h-full rounded-full transition-all ${trust.barColor}`}
-                            style={{ width: `${profile.trust_score}%` }}
+                            className={`h-full rounded-full transition-all ${progress.barColor}`}
+                            style={{ width: `${profile.profile_progress}%` }}
                         />
                     </div>
-                    <p className={`text-xs mt-1.5 font-medium ${trust.color}`}>{trust.label}</p>
+                    <p className={`text-xs mt-1.5 font-medium ${progress.color}`}>{progress.label}</p>
                 </div>
 
                 {/* Cases Filed */}
@@ -523,12 +524,27 @@ export default function ProfilePage() {
                 </div>
             )}
 
-            {/* ── Cases & Roles Tabs ── */}
-            <Tabs defaultValue="cases" className="space-y-4">
-                <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="cases">{t('profile.myCases')} ({cases.length})</TabsTrigger>
-                    <TabsTrigger value="roles">{t('profile.myRoles')} ({memberships.length})</TabsTrigger>
-                </TabsList>
+            {/* ── Cases & Roles & Chats Tabs ── */}
+            <div className="space-y-4">
+                <Tabs defaultValue="cases" className="w-full" onValueChange={(value) => {
+                  if (value === 'chats') {
+                    try {
+                      console.log('[Profile] Navigating to messages...')
+                      router.push('/messages')
+                      // Reset tab after a brief delay to prevent visual confusion
+                      setTimeout(() => {
+                        // Tab will remain on 'chats' during navigation which is expected
+                      }, 100)
+                    } catch (error) {
+                      console.error('[Profile] Failed to navigate to messages:', error)
+                    }
+                  }
+                }}>
+                        <TabsList className="grid w-full grid-cols-3">
+                            <TabsTrigger value="cases">{t('profile.myCases')} ({cases.length})</TabsTrigger>
+                            <TabsTrigger value="roles">{t('profile.myRoles')} ({memberships.length})</TabsTrigger>
+                            <TabsTrigger value="chats">{t('profile.myChats')}</TabsTrigger>
+                        </TabsList>
 
                 {/* My Cases */}
                 <TabsContent value="cases" className="space-y-3">
@@ -604,17 +620,17 @@ export default function ProfilePage() {
                                             )}
 
                                             {/* Col 4 — Members stat box */}
-                                            <div className="rounded-xl border bg-card p-3 flex flex-col items-center justify-center min-w-[100px] ml-[15px] mr-[15px]">
-                                                <UserGroupIcon className="h-4 w-4 text-muted-foreground mb-1" />
-                                                <p className="text-lg font-bold">{members}</p>
+                                            <div className="rounded-xl border bg-card p-4 flex flex-col items-center justify-center min-w-[130px] ml-[15px] mr-[15px]">
+                                                <UserGroupIcon className="h-5 w-5 text-muted-foreground mb-2" />
+                                                <p className="text-2xl font-bold">{members}</p>
                                                 <p className="text-xs text-muted-foreground text-center">{members === 1 ? 'member' : 'members'}</p>
                                             </div>
 
                                             {/* Col 5 — Evidence stat box */}
                                             {evidence > 0 && (
-                                                <div className="rounded-xl border bg-card p-3 flex flex-col items-center justify-center min-w-[100px]">
-                                                    <DocumentTextIcon className="h-4 w-4 text-muted-foreground mb-1" />
-                                                    <p className="text-lg font-bold">{evidence}</p>
+                                                <div className="rounded-xl border bg-card p-4 flex flex-col items-center justify-center min-w-[130px]">
+                                                    <DocumentTextIcon className="h-5 w-5 text-muted-foreground mb-2" />
+                                                    <p className="text-2xl font-bold">{evidence}</p>
                                                     <p className="text-xs text-muted-foreground text-center">evidence</p>
                                                 </div>
                                             )}
@@ -626,14 +642,13 @@ export default function ProfilePage() {
                                             {EDITABLE_STATUSES.includes(c.status) && (
                                                 <Button
                                                     variant="outline"
-                                                    size="sm"
-                                                    className="justify-self-end"
+                                                    className="justify-self-end px-10 py-2 hover:border-primary hover:ring-2 hover:ring-primary/60 hover:ring-offset-0 transition-all duration-200"
                                                     onClick={(e) => {
                                                         e.stopPropagation()
                                                         router.push(`/cases/${c.case_number}/edit`)
                                                     }}
                                                 >
-                                                    <PencilSquareIcon className="h-4 w-4 mr-1.5" />
+                                                    <PencilSquareIcon className="h-4 w-4 mr-2" />
                                                     Edit
                                                 </Button>
                                             )}
@@ -746,7 +761,11 @@ export default function ProfilePage() {
                         })
                     )}
                 </TabsContent>
+
+                {/* My Chats — redirects to /messages */}
+                <TabsContent value="chats" />
             </Tabs>
+            </div>
 
             {/* ── Account & Activity (Stat Boxes) ── */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
