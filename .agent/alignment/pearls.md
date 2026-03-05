@@ -90,6 +90,7 @@ Prune in this order — lowest score = first to go:
 | Sticky needs an explicit scroll container | When `position: sticky` fails inside a sidebar layout, make the scrollable column a proper scroll container (`h-svh overflow-y-auto`) — a flex child with only `min-h-svh` and no defined height has no scroll context, so sticky silently degrades to relative | Seed | 2026-03-04 | 0 |
 | Audit shared component callers before style changes | Before modifying default styles or adding inline overrides to a shared UI component, check every caller — a change that fixes one use case silently breaks all others | Seed | 2026-03-03 | 0 |
 | Async useEffect needs cancellation token not init guard | In async useEffect functions with expensive initialization (dynamic imports, third-party lib setup), use a cancellation token checked after every await — React.StrictMode cleanup fires before async resumption, making boolean init-guard flags ineffective | Seed | 2026-03-03 | 0 |
+| Check component layout before parent wrappers | When a component has unexpected spacing or padding, check the component's own layout properties (max-w, mx-auto, p-*, px-*, etc.) FIRST before tracing up to parent providers or wrapper components — the culprit is almost always on the component itself | Seed | 2026-03-05 | 0 |
 
 ## Artifact Pipeline
 

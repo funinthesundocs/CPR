@@ -27,6 +27,7 @@ type Plaintiff = {
     id: string
     email: string
     full_name: string | null
+    avatar_url: string | null
 }
 
 type Case = {
@@ -256,10 +257,10 @@ export default function AdminCasesPage() {
                                                     <img
                                                         src={c.defendants.photo_url}
                                                         alt=""
-                                                        className="h-7 w-7 rounded-full object-cover flex-shrink-0"
+                                                        className="h-[1.925rem] w-[1.925rem] rounded-full object-cover flex-shrink-0"
                                                     />
                                                 ) : (
-                                                    <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                                                    <div className="h-[1.925rem] w-[1.925rem] rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                                                         <UserIcon className="h-4 w-4 text-muted-foreground" />
                                                     </div>
                                                 )}
@@ -270,9 +271,13 @@ export default function AdminCasesPage() {
                                         {/* Plaintiff */}
                                         <td className="p-3 border-b">
                                             <div className="flex items-center gap-2">
-                                                <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                                    <ScaleIcon className="h-4 w-4 text-primary" />
-                                                </div>
+                                                {c.plaintiff?.avatar_url ? (
+                                                    <img src={c.plaintiff.avatar_url} alt="" className="h-[1.925rem] w-[1.925rem] rounded-full object-cover flex-shrink-0" />
+                                                ) : (
+                                                    <div className="h-[1.925rem] w-[1.925rem] rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                                        <ScaleIcon className="h-4 w-4 text-primary" />
+                                                    </div>
+                                                )}
                                                 <div>
                                                     <p className="text-sm font-medium leading-none">{c.plaintiff?.full_name || '—'}</p>
                                                     <p className="text-xs text-muted-foreground mt-0.5">{c.plaintiff?.email}</p>
@@ -392,9 +397,13 @@ export default function AdminCasesPage() {
                                 <div className="rounded-lg border bg-background p-3">
                                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Plaintiff</p>
                                     <div className="flex items-center gap-2">
-                                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                            <ScaleIcon className="h-4 w-4 text-primary" />
-                                        </div>
+                                        {selectedCase.plaintiff?.avatar_url ? (
+                                            <img src={selectedCase.plaintiff.avatar_url} alt="" className="h-[2.2rem] w-[2.2rem] rounded-full object-cover flex-shrink-0" />
+                                        ) : (
+                                            <div className="h-[2.2rem] w-[2.2rem] rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                                <ScaleIcon className="h-4 w-4 text-primary" />
+                                            </div>
+                                        )}
                                         <div>
                                             <p className="text-sm font-medium">{selectedCase.plaintiff?.full_name || '—'}</p>
                                             <p className="text-xs text-muted-foreground">{selectedCase.plaintiff?.email}</p>
@@ -405,9 +414,9 @@ export default function AdminCasesPage() {
                                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Defendant</p>
                                     <div className="flex items-center gap-2">
                                         {selectedCase.defendants?.photo_url ? (
-                                            <img src={selectedCase.defendants.photo_url} alt="" className="h-8 w-8 rounded-full object-cover flex-shrink-0" />
+                                            <img src={selectedCase.defendants.photo_url} alt="" className="h-[2.2rem] w-[2.2rem] rounded-full object-cover flex-shrink-0" />
                                         ) : (
-                                            <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                                            <div className="h-[2.2rem] w-[2.2rem] rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                                                 <UserIcon className="h-4 w-4 text-muted-foreground" />
                                             </div>
                                         )}

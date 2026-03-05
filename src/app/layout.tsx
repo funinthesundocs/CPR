@@ -67,7 +67,7 @@ export default function RootLayout({
               <SmartSidebarProvider sidebar={<AppSidebar />}>
                 <SidebarInsetWrapper>
                   <StickyHeader />
-                  <main className="flex-1 p-6">
+                  <main className="flex-1 p-7">
                     {children}
                   </main>
                   <ConditionalFooter />

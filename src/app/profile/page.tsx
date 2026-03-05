@@ -184,7 +184,7 @@ export default function ProfilePage() {
     }
 
     return (
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="px-[10%] space-y-6">
             {/* Profile Header */}
             <div className="relative rounded-2xl border overflow-hidden">
                 {/* Cover photo */}

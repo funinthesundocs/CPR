@@ -44,15 +44,18 @@ export async function GET(request: NextRequest) {
 
         if (casesError) throw casesError
 
-        // Collect unique plaintiff IDs and fetch their profiles
+        // Collect unique plaintiff IDs and fetch their profiles + avatars
         const plaintiffIds = [...new Set((cases || []).map(c => c.plaintiff_id).filter(Boolean))]
-        const { data: plaintiffProfiles } = await admin
-            .from('profiles')
-            .select('id, email, full_name')
-            .in('id', plaintiffIds)
+        const [{ data: plaintiffProfiles }, { data: plaintiffUserProfiles }] = await Promise.all([
+            admin.from('profiles').select('id, email, full_name').in('id', plaintiffIds),
+            admin.from('user_profiles').select('id, avatar_url').in('id', plaintiffIds),
+        ])
 
-        const profileMap: Record<string, { email: string; full_name: string | null }> = {}
-        plaintiffProfiles?.forEach(p => { profileMap[p.id] = p })
+        const avatarMap: Record<string, string | null> = {}
+        plaintiffUserProfiles?.forEach(p => { avatarMap[p.id] = p.avatar_url })
+
+        const profileMap: Record<string, { email: string; full_name: string | null; avatar_url: string | null }> = {}
+        plaintiffProfiles?.forEach(p => { profileMap[p.id] = { ...p, avatar_url: avatarMap[p.id] ?? null } })
 
         // Merge plaintiff data
         let result = (cases || []).map(c => ({
