@@ -80,40 +80,16 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE TRIGGER on_case_membership_insert
-AFTER INSERT ON user_case_memberships
+AFTER INSERT ON case_roles
 FOR EACH ROW
 EXECUTE FUNCTION mark_user_joined_case();
 
--- 5. Trigger for vote submission (track vote timestamp and verdict correctness)
+-- 5. Trigger for vote submission (track vote timestamp)
 CREATE OR REPLACE FUNCTION track_vote_submission()
 RETURNS TRIGGER AS $$
-DECLARE
-  final_verdict TEXT;
-  user_vote_correct BOOLEAN;
-  vote_count INTEGER;
 BEGIN
-  -- Track vote timestamp
-  UPDATE user_profiles SET last_vote_at = NOW() WHERE id = NEW.user_id;
-
-  -- Check if this case has a verdict
-  SELECT verdict_direction INTO final_verdict
-  FROM verdict_results WHERE case_id = NEW.case_id;
-
-  IF final_verdict IS NOT NULL THEN
-    -- Determine if user vote was correct (guilt_score >= 6 = guilty, < 6 = not guilty)
-    user_vote_correct :=
-      (NEW.guilt_score >= 6 AND final_verdict = 'guilty') OR
-      (NEW.guilt_score < 6 AND final_verdict = 'not_guilty');
-
-    -- Only update if this is their FIRST vote on this case
-    SELECT COUNT(*) INTO vote_count
-    FROM votes WHERE user_id = NEW.user_id AND case_id = NEW.case_id;
-
-    IF vote_count = 1 THEN
-      UPDATE user_profiles SET first_vote_correct = user_vote_correct WHERE id = NEW.user_id;
-    END IF;
-  END IF;
-
+  -- Track vote timestamp using voter_id column from votes table
+  UPDATE user_profiles SET last_vote_at = NOW() WHERE id = NEW.voter_id;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
