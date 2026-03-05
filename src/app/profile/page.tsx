@@ -406,7 +406,7 @@ export default function ProfilePage() {
                 {/* Cases Filed */}
                 <div className="rounded-xl border bg-card p-4 flex flex-col items-center justify-center min-w-[88px]">
                     <ScaleIcon className="h-4 w-4 text-muted-foreground mb-1" />
-                    <p className="text-xl font-bold">{profile.case_count}</p>
+                    <p className="text-xl font-bold">{cases.length}</p>
                     <p className="text-xs text-muted-foreground text-center">{t('profile.casesFiled')}</p>
                 </div>
 

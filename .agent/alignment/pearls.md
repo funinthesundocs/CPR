@@ -84,6 +84,7 @@ Prune in this order — lowest score = first to go:
 | Audit shared component callers before style changes | Before modifying default styles or adding inline overrides to a shared UI component, check every caller — a change that fixes one use case silently breaks all others | Seed | 2026-03-03 | 0 |
 | Async useEffect needs cancellation token not init guard | In async useEffect functions with expensive initialization (dynamic imports, third-party lib setup), use a cancellation token checked after every await — React.StrictMode cleanup fires before async resumption, making boolean init-guard flags ineffective | Seed | 2026-03-03 | 0 |
 | Check component layout before parent wrappers | When a component has unexpected spacing or padding, check the component's own layout properties (max-w, mx-auto, p-*, px-*, etc.) FIRST before tracing up to parent providers or wrapper components — the culprit is almost always on the component itself | Seed | 2026-03-05 | 0 |
+| Stat cards need live query data, not stale columns | Any UI stat that displays a count must explicitly trace to a live query result — never read from a DB profile column (e.g. case_count) that has no trigger updating it; use the array already fetched in state instead | Seed | 2026-03-05 | 1 |
 
 ## Debugging Methodology
 
