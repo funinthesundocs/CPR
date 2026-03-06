@@ -547,14 +547,14 @@ export default function ProfilePage() {
                     }
                   }
                 }}>
-                        <TabsList className="grid w-full grid-cols-3">
+                        <TabsList className="grid w-full grid-cols-3 min-h-[52px]">
                             <TabsTrigger value="cases">{t('profile.myCases')} ({cases.length})</TabsTrigger>
                             <TabsTrigger value="roles">{t('profile.myRoles')} ({memberships.length})</TabsTrigger>
                             <TabsTrigger value="chats">{t('profile.myChats')}</TabsTrigger>
                         </TabsList>
 
                 {/* My Cases */}
-                <TabsContent value="cases" className="space-y-3">
+                <TabsContent value="cases" className="space-y-5 pt-[10px]">
                     {cases.length === 0 ? (
                         <EmptyCard message={t('profile.noCases')} cta={t('cases.fileCase')} href="/cases/new" />
                     ) : (
@@ -684,7 +684,7 @@ export default function ProfilePage() {
                 </TabsContent>
 
                 {/* My Roles (case memberships) */}
-                <TabsContent value="roles" className="space-y-3">
+                <TabsContent value="roles" className="space-y-5">
                     {memberships.length === 0 ? (
                         <EmptyCard message="No roles yet" cta="Browse Cases" href="/cases" />
                     ) : (

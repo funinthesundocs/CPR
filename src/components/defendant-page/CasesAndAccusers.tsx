@@ -39,7 +39,7 @@ function AccuserCard({ card }: { card: CaseCard }) {
   const status = STATUS_LABELS[card.status] || { label: card.status, color: 'bg-white/10 text-white/40' }
 
   return (
-    <Link href={`/cases/${card.caseNumber}`} className="block bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col gap-4 h-full hover:border-[var(--accent-500)]/40 hover:bg-white/[0.07] transition-all duration-300">
+    <Link href={`/cases/${card.caseNumber}`} className="group block bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col gap-4 h-full hover:border-[var(--accent-500)]/40 hover:bg-white/[0.07] transition-all duration-300">
 
       {/* Plaintiff identity */}
       <div className="flex items-center gap-3">
@@ -103,13 +103,10 @@ function AccuserCard({ card }: { card: CaseCard }) {
             <span>Locations: {card.countries.join(' | ')}</span>
           )}
         </div>
-        <Link
-          href={`/cases/${card.caseNumber}`}
-          className="text-[16px] font-semibold text-[var(--accent-300)] hover:text-white transition-colors flex items-center gap-1"
-        >
+        <div className="text-[16px] font-semibold text-[var(--accent-300)] group-hover:text-white transition-colors flex items-center gap-1">
           View Full Case
           <ChevronRightIcon className="w-3.5 h-3.5" />
-        </Link>
+        </div>
       </div>
     </Link>
   )

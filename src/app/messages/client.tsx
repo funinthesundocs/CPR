@@ -172,11 +172,19 @@ export function MessagesPageClient() {
         } md:flex w-full md:w-96 flex-shrink-0 border-r border-border/50 pr-6`}
       >
         {/* Header */}
-        <div className="flex items-center gap-2 pt-2">
-          <div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
-            💬
+        <div className="flex items-center justify-between gap-2 pt-2">
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
+              💬
+            </div>
+            <h1 className="text-2xl font-bold">My Chats</h1>
           </div>
-          <h1 className="text-2xl font-bold">My Chats</h1>
+          <button
+            onClick={() => router.push('/profile')}
+            className="px-3 py-1.5 rounded-md text-xs font-medium bg-muted/50 text-foreground/80 hover:bg-primary hover:text-primary-foreground transition-colors flex-shrink-0"
+          >
+            Back to Profile
+          </button>
         </div>
 
         {/* Search */}
