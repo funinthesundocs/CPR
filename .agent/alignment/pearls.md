@@ -73,7 +73,7 @@ Prune in this order — lowest score = first to go:
 | Pearl | Rule | Maturity | Added | Uses |
 |-------|------|----------|-------|------|
 | Audit display pages after form redesign | Whenever a data entry form's schema is redesigned, immediately audit every page that reads its submitted data — stale field references render nothing silently with no compile-time error | Seed | 2026-02-20 | 0 |
-| HMR skips module-level constants | Any value computed at module load time requires a full dev server restart to reflect source file changes — hot reload only patches component boundaries, not module-scope initialization | Seed | 2026-02-20 | 0 |
+| HMR skips module-level constants | Any value computed at module load time requires a full dev server restart to reflect source file changes — hot reload only patches component boundaries, not module-scope initialization | Seed | 2026-02-20 | 1 |
 | i18n key mismatches invisible at build time | A missing translation key returns the raw key string at runtime with zero build warnings — grep the translation file for every t() call after adding new keys to a component | Seed | 2026-02-20 | 0 |
 | Dead HMR connection silences all new files | When a dev server's WebSocket HMR connection drops, new source files are never delivered to the browser — always restart the dev server when changes appear absent and the console shows WebSocket failures | Seed | 2026-02-20 | 0 |
 | False-default gates hide UI on first render | A React boolean state that gates UI visibility should default to `true` (then disable if unsupported), not `false` (then enable if supported) — the false-default causes a blank first render that persists if the enabling effect never fires | Seed | 2026-02-20 | 0 |
