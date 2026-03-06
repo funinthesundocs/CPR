@@ -43,6 +43,7 @@ interface PlaintiffPageClientProps {
   votingOpen: boolean
   caseNarratives: Record<string, any>
   caseCards: CaseCard[]
+  verdict: { verdict: string; average_guilt_score: number | null; total_votes: number; total_restitution_awarded: number } | null
 }
 
 export function PlaintiffPageClient(props: PlaintiffPageClientProps) {
@@ -172,6 +173,7 @@ export function PlaintiffPageClient(props: PlaintiffPageClientProps) {
           caseId={props.caseId}
           votingOpen={props.votingOpen}
           status={props.status}
+          verdict={props.verdict}
         />
 
         {/* Footer spacer */}

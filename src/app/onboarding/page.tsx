@@ -63,11 +63,11 @@ export default function OnboardingPage() {
     const handleComplete = async () => {
         if (!user) return
         if (!displayName.trim()) {
-            setError('Display name is required')
+            setError(t('onboarding.nameRequired'))
             return
         }
         if (!bio.trim()) {
-            setError('Please write a short bio')
+            setError(t('onboarding.bioRequired'))
             return
         }
 
@@ -115,7 +115,7 @@ export default function OnboardingPage() {
             router.push('/')
             router.refresh()
         } catch (err: any) {
-            setError(err.message || 'Something went wrong')
+            setError(err.message || t('common.error'))
             setSaving(false)
         }
     }
@@ -156,10 +156,10 @@ export default function OnboardingPage() {
                                 id="displayName"
                                 value={displayName}
                                 onChange={e => setDisplayName(e.target.value)}
-                                placeholder="How should we address you?"
+                                placeholder={t('onboarding.namePlaceholder')}
                                 maxLength={50}
                             />
-                            <p className="text-xs text-muted-foreground">{displayName.length}/50 characters</p>
+                            <p className="text-xs text-muted-foreground">{displayName.length}/50 {t('onboarding.characters')}</p>
                         </div>
 
                         <div className="space-y-2">
@@ -168,7 +168,7 @@ export default function OnboardingPage() {
                                 id="tagline"
                                 value={tagline}
                                 onChange={e => setTagline(e.target.value)}
-                                placeholder="e.g. Justice advocate · Fraud researcher"
+                                placeholder={t('onboarding.taglinePlaceholder')}
                                 maxLength={100}
                             />
                         </div>
@@ -176,7 +176,7 @@ export default function OnboardingPage() {
                         <Button
                             className="w-full"
                             onClick={() => {
-                                if (!displayName.trim()) { setError('Display name is required'); return }
+                                if (!displayName.trim()) { setError(t('onboarding.nameRequired')); return }
                                 setError(null)
                                 setStep(2)
                             }}
@@ -204,7 +204,7 @@ export default function OnboardingPage() {
                                 rows={4}
                                 maxLength={500}
                             />
-                            <p className="text-xs text-muted-foreground">{bio.length}/500 characters</p>
+                            <p className="text-xs text-muted-foreground">{bio.length}/500 {t('onboarding.characters')}</p>
                         </div>
 
                         <div className="space-y-2">
@@ -233,7 +233,7 @@ export default function OnboardingPage() {
                             <Button
                                 className="flex-1"
                                 onClick={() => {
-                                    if (!bio.trim()) { setError('Please write a short bio'); return }
+                                    if (!bio.trim()) { setError(t('onboarding.bioRequired')); return }
                                     setError(null)
                                     setStep(3)
                                 }}
@@ -267,7 +267,7 @@ export default function OnboardingPage() {
                         </div>
 
                         <div className="p-4 rounded-lg bg-muted/30">
-                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Bio</p>
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{t('onboarding.bioLabel')}</p>
                             <p className="text-sm">{bio}</p>
                         </div>
 
@@ -286,7 +286,7 @@ export default function OnboardingPage() {
                                         {t('profile.saving')}
                                     </span>
                                 ) : (
-                                    `✅ ${t('onboarding.finish')}`
+                                    t('onboarding.finish')
                                 )}
                             </Button>
                         </div>

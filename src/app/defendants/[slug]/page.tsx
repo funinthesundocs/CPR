@@ -75,6 +75,7 @@ export default async function DefendantDetailPage({ params }: PageProps) {
     { data: allPlaintiffProfiles },
     { data: allTimelineEvents },
     { data: allEvidence },
+    verdictResult,
   ] = await Promise.all([
     supabase.from('timeline_events').select('*').eq('case_id', caseData.id).order('created_at'),
     supabase.from('evidence').select('*').eq('case_id', caseData.id).order('created_at'),
@@ -93,7 +94,19 @@ export default async function DefendantDetailPage({ params }: PageProps) {
     supabase.from('timeline_events').select('*').in('case_id', caseIds),
     // All evidence across all cases
     supabase.from('evidence').select('*').in('case_id', caseIds).order('created_at'),
+    // Verdict for primary case with error handling
+    (async () => {
+      try {
+        const res = await supabase.from('verdict_results').select('verdict, average_guilt_score, total_votes, total_restitution_awarded').eq('case_id', caseData.id).maybeSingle()
+        return res.data || null
+      } catch (err) {
+        console.warn('Failed to fetch verdict results:', err)
+        return null
+      }
+    })(),
   ])
+
+  const verdictData = verdictResult
 
   const relationship = (caseData.relationship_narrative as any) || {}
   const promise = (caseData.promise_narrative as any) || {}
@@ -396,6 +409,7 @@ export default async function DefendantDetailPage({ params }: PageProps) {
       votingOpen={votingOpen}
       caseNarratives={caseNarratives}
       caseCards={caseCards}
+      verdict={verdictData ?? null}
     />
   )
 }

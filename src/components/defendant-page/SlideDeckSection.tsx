@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useTranslation } from '@/i18n'
 import { motion } from 'framer-motion'
 import { ArrowsPointingOutIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { ComingSoonPlaceholder } from './ComingSoonPlaceholder'
@@ -15,6 +16,7 @@ interface SlideDeckSectionProps {
 }
 
 export function SlideDeckSection({ pdfUrl }: SlideDeckSectionProps) {
+  const { t } = useTranslation()
   const [visible, setVisible] = useState(false)
   const [fullscreen, setFullscreen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -30,7 +32,7 @@ export function SlideDeckSection({ pdfUrl }: SlideDeckSectionProps) {
     return () => observer.disconnect()
   }, [])
 
-  if (!pdfUrl) return <ComingSoonPlaceholder section="Slide Deck" />
+  if (!pdfUrl) return <ComingSoonPlaceholder section={t('casePage.slideDeck')} />
 
   return (
     <>
@@ -44,13 +46,13 @@ export function SlideDeckSection({ pdfUrl }: SlideDeckSectionProps) {
       >
         <div className="max-w-[1340px] mx-auto">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-[38px] font-semibold text-white">Case Slide Deck</h2>
+            <h2 className="text-[38px] font-semibold text-white">{t('casePage.caseSlideDeck')}</h2>
             <button
               onClick={() => setFullscreen(true)}
               className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium bg-white/10 text-white/70 hover:bg-white/20 transition-colors"
             >
               <ArrowsPointingOutIcon className="h-4 w-4" />
-              Fullscreen
+              {t('casePage.fullscreen')}
             </button>
           </div>
 

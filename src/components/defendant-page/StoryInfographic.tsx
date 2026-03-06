@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslation } from '@/i18n'
 import { motion } from 'framer-motion'
 import { PlayCircleIcon } from '@heroicons/react/24/outline'
 import { FloatingAudioPlayer } from './FloatingAudioPlayer'
@@ -18,6 +19,7 @@ interface StoryInfographicProps {
 }
 
 export function StoryInfographic({ infographicUrl, audioUrl, caseTitle }: StoryInfographicProps) {
+  const { t } = useTranslation()
   const [playerOpen, setPlayerOpen] = useState(false)
 
   return (
@@ -43,13 +45,13 @@ export function StoryInfographic({ infographicUrl, audioUrl, caseTitle }: StoryI
               }}
             >
               <PlayCircleIcon className="h-5 w-5" />
-              Listen to Defendant Summary
+              {t('casePage.listenToSummary')}
             </button>
           )}
 
           <MagnifyLens
             imageUrl={infographicUrl}
-            alt="Case Infographic"
+            alt={t('casePage.caseInfographic')}
           />
         </div>
       </motion.section>

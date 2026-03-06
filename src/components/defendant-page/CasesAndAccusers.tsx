@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback } from 'react'
+import { useTranslation } from '@/i18n'
 import useEmblaCarousel from 'embla-carousel-react'
 import { motion } from 'framer-motion'
 import { ChevronLeftIcon, ChevronRightIcon, UserIcon } from '@heroicons/react/24/outline'
@@ -19,23 +20,26 @@ export interface CaseCard {
   caseTypes: string[]
 }
 
-const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  draft:                { label: 'Draft',              color: 'bg-white/10 text-white/40' },
-  pending:              { label: 'Pending',            color: 'bg-yellow-500/20 text-yellow-400' },
-  admin_review:         { label: 'Under Review',       color: 'bg-blue-500/20 text-blue-400' },
-  investigation:        { label: 'Investigation',      color: 'bg-orange-500/20 text-orange-400' },
-  judgment:             { label: 'Judgment',           color: 'bg-purple-500/20 text-purple-400' },
-  pending_convergence:  { label: 'Convergence',        color: 'bg-cyan-500/20 text-cyan-400' },
-  verdict:              { label: 'Verdict',            color: 'bg-red-500/20 text-red-400' },
-  restitution:          { label: 'Restitution',        color: 'bg-green-500/20 text-green-400' },
+function getStatusLabels(t: (key: string) => string): Record<string, { label: string; color: string }> {
+  return {
+    draft:                { label: t('casePage.statusDraft'),              color: 'bg-white/10 text-white/40' },
+    pending:              { label: t('casePage.statusPendingShort'),       color: 'bg-yellow-500/20 text-yellow-400' },
+    admin_review:         { label: t('casePage.statusUnderReview'),        color: 'bg-blue-500/20 text-blue-400' },
+    investigation:        { label: t('casePage.statusInvestigationShort'), color: 'bg-orange-500/20 text-orange-400' },
+    judgment:             { label: t('casePage.statusJudgmentShort'),      color: 'bg-purple-500/20 text-purple-400' },
+    pending_convergence:  { label: t('casePage.statusConvergence'),        color: 'bg-cyan-500/20 text-cyan-400' },
+    verdict:              { label: t('casePage.statusVerdictShort'),       color: 'bg-red-500/20 text-red-400' },
+    restitution:          { label: t('casePage.statusRestitutionShort'),   color: 'bg-green-500/20 text-green-400' },
+  }
 }
 
-function formatDamages(amount: number) {
-  if (!amount) return 'Unspecified'
+function formatDamages(amount: number, t: (key: string) => string) {
+  if (!amount) return t('casePage.unspecified')
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount)
 }
 
-function AccuserCard({ card }: { card: CaseCard }) {
+function AccuserCard({ card, t }: { card: CaseCard; t: (key: string) => string }) {
+  const STATUS_LABELS = getStatusLabels(t)
   const status = STATUS_LABELS[card.status] || { label: card.status, color: 'bg-white/10 text-white/40' }
 
   return (
@@ -54,7 +58,7 @@ function AccuserCard({ card }: { card: CaseCard }) {
           )}
         </div>
         <div>
-          <p className="text-[13px] font-bold uppercase tracking-widest text-[var(--accent-300)]">Plaintiff</p>
+          <p className="text-[13px] font-bold uppercase tracking-widest text-[var(--accent-300)]">{t('casePage.plaintiff')}</p>
           <p className="text-[16px] font-bold text-white leading-tight">{card.plaintiffName}</p>
         </div>
 
@@ -69,16 +73,16 @@ function AccuserCard({ card }: { card: CaseCard }) {
 
       {/* Synopsis */}
       <p className="text-[16px] text-white/60 leading-relaxed line-clamp-6 flex-1 text-justify" style={{ letterSpacing: '-1px' }}>
-        {card.synopsis || 'Case details pending.'}
+        {card.synopsis || t('casePage.caseDetailsPending')}
       </p>
 
       {/* Damages */}
       <div>
         <p className="text-[10px] uppercase tracking-widest text-white/30 mb-0.5">
-          {card.damagesAwarded ? 'Damages Awarded' : 'Damages Requested'}
+          {card.damagesAwarded ? t('casePage.damagesAwarded') : t('casePage.damagesRequested')}
         </p>
         <p className="text-[22px] font-black text-[var(--accent-500)] leading-none">
-          {formatDamages(card.damages)}
+          {formatDamages(card.damages, t)}
         </p>
       </div>
 
@@ -100,11 +104,11 @@ function AccuserCard({ card }: { card: CaseCard }) {
       <div className="flex items-center justify-between mt-auto pt-2">
         <div className="text-[16px] text-white/40">
           {card.countries.length > 0 && (
-            <span>Locations: {card.countries.join(' | ')}</span>
+            <span>{t('casePage.locations')} {card.countries.join(' | ')}</span>
           )}
         </div>
         <div className="text-[16px] font-semibold text-[var(--accent-300)] group-hover:text-white transition-colors flex items-center gap-1">
-          View Full Case
+          {t('casePage.viewFullCase')}
           <ChevronRightIcon className="w-3.5 h-3.5" />
         </div>
       </div>
@@ -113,6 +117,7 @@ function AccuserCard({ card }: { card: CaseCard }) {
 }
 
 export function CasesAndAccusers({ cards }: { cards: CaseCard[] }) {
+  const { t } = useTranslation()
   const useCarousel = cards.length >= 3
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
@@ -137,13 +142,13 @@ export function CasesAndAccusers({ cards }: { cards: CaseCard[] }) {
         <div className="flex items-end justify-between mb-8">
           <div>
             <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--accent-300)] mb-1">
-              Public Record
+              {t('casePage.publicRecord')}
             </p>
             <h2 className="text-[28px] md:text-[36px] font-black text-white leading-none">
-              Cases &amp; Accusers
+              {t('casePage.casesAndAccusers')}
             </h2>
             <p className="text-[14px] text-white/40 mt-2">
-              {cards.length} {cards.length === 1 ? 'case' : 'cases'} filed against this defendant
+              {t('casePage.casesFiledCount').replace('{count}', String(cards.length))}
             </p>
           </div>
 
@@ -170,7 +175,7 @@ export function CasesAndAccusers({ cards }: { cards: CaseCard[] }) {
         {!useCarousel && (
           <div className={`grid gap-6 ${cards.length === 2 ? 'grid-cols-2' : 'grid-cols-1 max-w-md'}`}>
             {cards.map(card => (
-              <AccuserCard key={card.caseNumber} card={card} />
+              <AccuserCard key={card.caseNumber} card={card} t={t} />
             ))}
           </div>
         )}
@@ -184,7 +189,7 @@ export function CasesAndAccusers({ cards }: { cards: CaseCard[] }) {
                   key={card.caseNumber}
                   className="flex-none w-full md:w-[calc(33.333%-1rem)]"
                 >
-                  <AccuserCard card={card} />
+                  <AccuserCard card={card} t={t} />
                 </div>
               ))}
             </div>

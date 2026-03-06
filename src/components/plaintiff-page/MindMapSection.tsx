@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { ComingSoonPlaceholder } from './ComingSoonPlaceholder'
+import { useTranslation } from '@/i18n'
 
 const sectionVariants = {
   hidden: { opacity: 0, y: 24 },
@@ -43,20 +44,24 @@ const NODE_TYPE_STYLES: Record<string, { bg: string; border: string; text: strin
   'ex-wife': { bg: 'bg-pink-900/40', border: 'border-pink-500/30', text: 'text-pink-300' },
 }
 
-const TYPE_LABELS: Record<string, string> = {
-  defendant: 'Defendant',
-  plaintiff: 'Plaintiff',
-  victim: 'Victim',
-  investigator: 'Investigator',
-  witness: 'Witness',
-  location: 'Location',
-  company: 'Business',
-  deception: 'Deception',
-  financial_impact: 'Financial Impact',
-  'ex-wife': 'Ex-Partner',
+function getTypeLabels(t: (key: string) => string): Record<string, string> {
+  return {
+    defendant: t('casePage.typeDefendant'),
+    plaintiff: t('casePage.typePlaintiff'),
+    victim: t('casePage.typeVictim'),
+    investigator: t('casePage.typeInvestigator'),
+    witness: t('casePage.typeWitness'),
+    location: t('casePage.typeLocation'),
+    company: t('casePage.typeBusiness'),
+    deception: t('casePage.typeDeception'),
+    financial_impact: t('casePage.typeFinancialImpact'),
+    'ex-wife': t('casePage.typeExPartner'),
+  }
 }
 
 export function MindMapSection({ mindMapData }: MindMapSectionProps) {
+  const { t } = useTranslation()
+  const TYPE_LABELS = getTypeLabels(t)
   const [visible, setVisible] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -71,7 +76,7 @@ export function MindMapSection({ mindMapData }: MindMapSectionProps) {
     return () => observer.disconnect()
   }, [])
 
-  if (!mindMapData) return <ComingSoonPlaceholder section="Mind Map" />
+  if (!mindMapData) return <ComingSoonPlaceholder section={t('casePage.mindMap')} />
 
   // Group nodes by type for a clean grid display
   const nodesByType = mindMapData.nodes.reduce<Record<string, MindMapNode[]>>((acc, node) => {
@@ -82,7 +87,7 @@ export function MindMapSection({ mindMapData }: MindMapSectionProps) {
 
   // Order types for display
   const typeOrder = ['defendant', 'plaintiff', 'victim', 'investigator', 'witness', 'location', 'company', 'deception', 'financial_impact', 'ex-wife']
-  const orderedTypes = typeOrder.filter(t => nodesByType[t])
+  const orderedTypes = typeOrder.filter(tp => nodesByType[tp])
 
   return (
     <motion.section
@@ -94,9 +99,9 @@ export function MindMapSection({ mindMapData }: MindMapSectionProps) {
       ref={ref}
     >
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-[38px] font-semibold mb-2 text-white">Case Network</h2>
+        <h2 className="text-[38px] font-semibold mb-2 text-white">{t('casePage.caseNetwork')}</h2>
         <p className="text-sm text-white/40 mb-8">
-          {mindMapData.nodes.length} entities, {mindMapData.links.length} connections
+          {mindMapData.nodes.length} {t('casePage.entities')}, {mindMapData.links.length} {t('casePage.connections')}
         </p>
 
         {visible && (

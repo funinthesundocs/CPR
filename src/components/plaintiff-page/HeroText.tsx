@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { useTranslation } from '@/i18n'
 
 interface HeroTextProps {
   plaintiffName: string
@@ -11,6 +12,7 @@ interface HeroTextProps {
 }
 
 export function HeroText({ plaintiffName, defendantName, tagline, caseNumber, filedAt }: HeroTextProps) {
+  const { t } = useTranslation()
   return (
     <motion.div
       className="text-center py-12 md:py-16 px-6 bg-black"
@@ -20,13 +22,13 @@ export function HeroText({ plaintiffName, defendantName, tagline, caseNumber, fi
     >
       <div className="max-w-3xl mx-auto">
         <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-white mb-4">
-          {plaintiffName} <span className="text-[var(--accent-500)]">vs.</span> {defendantName}
+          {plaintiffName} <span className="text-[var(--accent-500)]">{t('casePage.vsLower')}</span> {defendantName}
         </h1>
         <p className="text-lg md:text-xl font-normal text-white/60 italic capitalize text-center mb-6">
           {tagline}
         </p>
         <p className="text-sm text-white/40">
-          Case {caseNumber} &middot; Filed {new Date(filedAt).toLocaleDateString('en-AU', { year: 'numeric', month: 'long' })}
+          {t('casePage.caseLabel')} {caseNumber} &middot; {t('casePage.filed')} {new Date(filedAt).toLocaleDateString('en-AU', { year: 'numeric', month: 'long' })}
         </p>
       </div>
     </motion.div>

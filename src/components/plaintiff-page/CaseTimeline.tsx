@@ -5,6 +5,7 @@ import { motion, useAnimate } from 'framer-motion'
 import { MapPinIcon } from '@heroicons/react/24/outline'
 import { Bars3Icon, ListBulletIcon } from '@heroicons/react/24/outline'
 import { FlagIcon } from './FlagIcon'
+import { useTranslation } from '@/i18n'
 
 const sectionVariants = {
   hidden: { opacity: 0, y: 24 },
@@ -203,7 +204,7 @@ const formatDate = (dateStr: string): string => {
 const fallbackTitle = (description: string): string =>
   'THE ' + (description.trim().split(/\s+/)[0] || 'EVENT').toUpperCase()
 
-function FlipCard({ event }: { event: TimelineEvent }) {
+function FlipCard({ event, t }: { event: TimelineEvent; t: (key: string) => string }) {
   const [flipped, setFlipped] = useState(false)
   const [animating, setAnimating] = useState(false)
   const [scope, animateFlip] = useAnimate()
@@ -257,7 +258,7 @@ function FlipCard({ event }: { event: TimelineEvent }) {
             onClick={() => flip(true)}
             className="mt-1 w-full px-6 py-2 text-[12px] font-semibold rounded-md bg-[var(--accent-500)]/20 hover:bg-[var(--accent-500)]/50 border border-[var(--accent-500)]/40 hover:border-[var(--accent-500)]/80 text-[var(--accent-300)] hover:text-white transition-all tracking-widest uppercase"
           >
-            Flip Card
+            {t('casePage.flipCard')}
           </button>
         </div>
 
@@ -291,7 +292,7 @@ function FlipCard({ event }: { event: TimelineEvent }) {
             onClick={() => flip(false)}
             className="mt-3 px-3 py-1 text-[11px] font-semibold rounded-md bg-[var(--accent-500)]/20 hover:bg-[var(--accent-500)]/50 border border-[var(--accent-500)]/40 hover:border-[var(--accent-500)]/80 text-[var(--accent-300)] hover:text-white transition-all tracking-wide"
           >
-            ← Back
+            &larr; {t('casePage.back')}
           </button>
         </div>
       </div>
@@ -300,6 +301,7 @@ function FlipCard({ event }: { event: TimelineEvent }) {
 }
 
 export function CaseTimeline({ events }: CaseTimelineProps) {
+  const { t } = useTranslation()
   const scrollRef = useRef<HTMLDivElement>(null)
   const [viewMode, setViewMode] = useState<'horizontal' | 'vertical'>('horizontal')
   const [isDragging, setIsDragging] = useState(false)
@@ -341,7 +343,7 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
     >
       {/* Header with title and view toggle */}
       <div className="flex items-center justify-end gap-6 px-6 mb-8 max-w-[1340px] mx-auto">
-        <h2 className="text-[38px] font-semibold text-white mr-auto">Case Timeline</h2>
+        <h2 className="text-[38px] font-semibold text-white mr-auto">{t('casePage.caseTimeline')}</h2>
 
         {/* View toggle buttons */}
         <div className="flex gap-2">
@@ -354,7 +356,7 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
             }`}
           >
             <Bars3Icon className="h-4 w-4" />
-            Horizontal
+            {t('casePage.horizontal')}
           </button>
           <button
             onClick={() => setViewMode('vertical')}
@@ -365,7 +367,7 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
             }`}
           >
             <ListBulletIcon className="h-4 w-4" />
-            Vertical
+            {t('casePage.vertical')}
           </button>
         </div>
       </div>
@@ -419,7 +421,7 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
                     <div
                       className={`absolute ${isAbove ? 'bottom-[calc(50%+90px)]' : 'top-[calc(50%+90px)]'}`}
                     >
-                      <FlipCard event={event} />
+                      <FlipCard event={event} t={t} />
                     </div>
                   </div>
                 )
@@ -447,7 +449,7 @@ export function CaseTimeline({ events }: CaseTimelineProps) {
                   <FlagIcon countryCode={countryCode} className="w-full h-full object-cover flex-1" />
                 ) : (
                   <div className="w-full h-full bg-white/20 flex items-center justify-center text-white/40 text-sm flex-1">
-                    Unknown
+                    {t('casePage.unknown')}
                   </div>
                 )}
               </div>

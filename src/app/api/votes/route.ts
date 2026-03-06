@@ -25,7 +25,7 @@ async function hasVotePermission(supabase: any, userId: string): Promise<boolean
 
 const VOTABLE_STATUSES = ['judgment', 'investigation', 'pending_convergence']
 
-// GET /api/votes?case_id=xxx — fetch current user's vote for a case
+// GET /api/votes?case_id=xxx — fetch current user's vote and total vote count
 export async function GET(request: NextRequest) {
     const supabase = await createClient()
     const { searchParams } = new URL(request.url)
@@ -40,6 +40,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
 
+    // Fetch user's vote
     const { data: vote, error } = await supabase
         .from('votes')
         .select('*')
@@ -51,7 +52,17 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ vote })
+    // Fetch vote count for this case
+    const { count: voteCount, error: countError } = await supabase
+        .from('votes')
+        .select('*', { count: 'exact', head: true })
+        .eq('case_id', caseId)
+
+    if (countError) {
+        return NextResponse.json({ error: countError.message }, { status: 500 })
+    }
+
+    return NextResponse.json({ vote, count: voteCount ?? 0 })
 }
 
 // POST /api/votes — create or update a vote
@@ -94,6 +105,14 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Case not found' }, { status: 404 })
     }
 
+    // 5b. Block votes on sealed cases
+    if (['verdict_guilty', 'verdict_innocent'].includes(caseData.status)) {
+        return NextResponse.json(
+            { error: 'Voting is closed — verdict has been sealed' },
+            { status: 400 }
+        )
+    }
+
     if (!VOTABLE_STATUSES.includes(caseData.status)) {
         return NextResponse.json(
             { error: `Voting is not open for cases in '${caseData.status}' status` },
@@ -111,7 +130,30 @@ export async function POST(request: NextRequest) {
         )
     }
 
-    // 7. Build vote data
+    // 7. Check for existing vote (upsert)
+    const { data: existingVote } = await supabase
+        .from('votes')
+        .select('id')
+        .eq('case_id', case_id)
+        .eq('voter_id', user.id)
+        .maybeSingle()
+
+    // 7b. 400-vote cap — only blocks NEW votes, not updates
+    if (!existingVote) {
+        const { count: currentVoteCount } = await supabase
+            .from('votes')
+            .select('*', { count: 'exact', head: true })
+            .eq('case_id', case_id)
+
+        if (currentVoteCount !== null && currentVoteCount >= 400) {
+            return NextResponse.json(
+                { error: 'Voting has closed — 400 votes reached' },
+                { status: 400 }
+            )
+        }
+    }
+
+    // 8. Build vote data
     const voteData = {
         case_id,
         voter_id: user.id,
@@ -120,14 +162,6 @@ export async function POST(request: NextRequest) {
         punitive_amount: punitive || null,
         justification: justification?.trim() || null,
     }
-
-    // 8. Check for existing vote (upsert)
-    const { data: existingVote } = await supabase
-        .from('votes')
-        .select('id')
-        .eq('case_id', case_id)
-        .eq('voter_id', user.id)
-        .maybeSingle()
 
     if (existingVote) {
         const { error: updateErr } = await supabase

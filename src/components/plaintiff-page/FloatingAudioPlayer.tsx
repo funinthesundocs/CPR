@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react'
 import { XMarkIcon, SpeakerWaveIcon, PlayIcon, PauseIcon } from '@heroicons/react/24/outline'
+import { useTranslation } from '@/i18n'
 
 interface FloatingAudioPlayerProps {
   audioUrl: string
@@ -10,6 +11,7 @@ interface FloatingAudioPlayerProps {
 }
 
 export function FloatingAudioPlayer({ audioUrl, caseTitle, onClose }: FloatingAudioPlayerProps) {
+  const { t } = useTranslation()
   const audioRef = useRef<HTMLAudioElement>(null)
   const [playing, setPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
@@ -67,7 +69,7 @@ export function FloatingAudioPlayer({ audioUrl, caseTitle, onClose }: FloatingAu
           className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-700)] text-white rounded-full shadow-lg hover:bg-[var(--accent-500)] transition-colors"
         >
           <SpeakerWaveIcon className="h-4 w-4" />
-          <span className="text-xs font-medium">{playing ? 'Playing...' : 'Paused'}</span>
+          <span className="text-xs font-medium">{playing ? t('casePage.playing') : t('casePage.paused')}</span>
         </button>
       </div>
     )

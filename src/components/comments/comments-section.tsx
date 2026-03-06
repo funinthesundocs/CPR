@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
+import { HandThumbUpIcon, HandThumbDownIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/outline'
+import { useTranslation } from '@/i18n'
 import type { User } from '@supabase/supabase-js'
 
 type Comment = {
@@ -27,6 +29,7 @@ type Props = {
 
 export function CommentsSection({ commentableType, commentableId }: Props) {
     const supabase = createClient()
+    const { t } = useTranslation()
     const [user, setUser] = useState<User | null>(null)
     const [comments, setComments] = useState<Comment[]>([])
     const [newComment, setNewComment] = useState('')
@@ -142,7 +145,7 @@ export function CommentsSection({ commentableType, commentableId }: Props) {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">
-                    Discussion ({comments.reduce((acc, c) => acc + 1 + (c.replies?.length || 0), 0)})
+                    {t('comments.discussion')} ({comments.reduce((acc, c) => acc + 1 + (c.replies?.length || 0), 0)})
                 </h3>
             </div>
 
@@ -152,7 +155,7 @@ export function CommentsSection({ commentableType, commentableId }: Props) {
                     <Textarea
                         value={newComment}
                         onChange={e => setNewComment(e.target.value)}
-                        placeholder="Share your thoughts on this case..."
+                        placeholder={t('comments.sharePlaceholder')}
                         rows={3}
                         maxLength={2000}
                     />
@@ -163,14 +166,14 @@ export function CommentsSection({ commentableType, commentableId }: Props) {
                             onClick={() => postComment(newComment)}
                             disabled={posting || !newComment.trim()}
                         >
-                            {posting ? 'Posting...' : 'Post Comment'}
+                            {posting ? t('comments.posting') : t('comments.postComment')}
                         </Button>
                     </div>
                 </div>
             ) : (
                 <div className="rounded-lg border border-dashed p-4 text-center">
                     <p className="text-sm text-muted-foreground">
-                        <a href="/login" className="text-primary hover:underline">Sign in</a> to join the discussion
+                        <a href="/login" className="text-primary hover:underline">{t('common.login')}</a> {t('comments.joinDiscussion')}
                     </p>
                 </div>
             )}
@@ -182,7 +185,7 @@ export function CommentsSection({ commentableType, commentableId }: Props) {
                 </div>
             ) : comments.length === 0 ? (
                 <div className="rounded-lg border border-dashed p-8 text-center">
-                    <p className="text-sm text-muted-foreground">No comments yet. Be the first to share your thoughts.</p>
+                    <p className="text-sm text-muted-foreground">{t('comments.noComments')}</p>
                 </div>
             ) : (
                 <div className="space-y-4">
@@ -216,20 +219,20 @@ export function CommentsSection({ commentableType, commentableId }: Props) {
                                     <Textarea
                                         value={replyText}
                                         onChange={e => setReplyText(e.target.value)}
-                                        placeholder="Write a reply..."
+                                        placeholder={t('comments.replyPlaceholder')}
                                         rows={2}
                                         maxLength={2000}
                                     />
                                     <div className="flex gap-2 justify-end">
                                         <Button variant="ghost" size="sm" onClick={() => { setReplyTo(null); setReplyText('') }}>
-                                            Cancel
+                                            {t('common.cancel')}
                                         </Button>
                                         <Button
                                             size="sm"
                                             onClick={() => postComment(replyText, comment.id)}
                                             disabled={posting || !replyText.trim()}
                                         >
-                                            Reply
+                                            {t('comments.reply')}
                                         </Button>
                                     </div>
                                 </div>
@@ -255,6 +258,7 @@ function CommentCard({
     onVote: (id: string, type: 'upvote' | 'downvote') => void
     isReply?: boolean
 }) {
+    const { t } = useTranslation()
     const profile = comment.user_profiles as any
     const score = (comment.upvote_count || 0) - (comment.downvote_count || 0)
 
@@ -269,12 +273,12 @@ function CommentCard({
                             {profile?.display_name?.charAt(0)?.toUpperCase() || '?'}
                         </div>
                     )}
-                    <span className="text-sm font-medium">{profile?.display_name || 'Anonymous'}</span>
+                    <span className="text-sm font-medium">{profile?.display_name || t('comments.anonymous')}</span>
                     <span className="text-xs text-muted-foreground">
-                        {timeAgo(comment.created_at)}
+                        {timeAgo(comment.created_at, t)}
                     </span>
                 </div>
-                {comment.is_flagged && <Badge variant="outline" className="text-xs text-amber-500">Flagged</Badge>}
+                {comment.is_flagged && <Badge variant="outline" className="text-xs text-amber-500">{t('comments.flagged')}</Badge>}
             </div>
 
             <p className="text-sm whitespace-pre-wrap">{comment.body}</p>
@@ -284,15 +288,15 @@ function CommentCard({
                     <>
                         <button
                             onClick={() => onVote(comment.id, 'upvote')}
-                            className="text-xs text-muted-foreground hover:text-green-500 transition-colors"
+                            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-green-500 transition-colors"
                         >
-                            👍 {comment.upvote_count || 0}
+                            <HandThumbUpIcon className="h-3.5 w-3.5" /> {comment.upvote_count || 0}
                         </button>
                         <button
                             onClick={() => onVote(comment.id, 'downvote')}
-                            className="text-xs text-muted-foreground hover:text-red-500 transition-colors"
+                            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-red-500 transition-colors"
                         >
-                            👎 {comment.downvote_count || 0}
+                            <HandThumbDownIcon className="h-3.5 w-3.5" /> {comment.downvote_count || 0}
                         </button>
                     </>
                 )}
@@ -304,9 +308,9 @@ function CommentCard({
                 {onReply && user && !isReply && (
                     <button
                         onClick={onReply}
-                        className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                        className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
                     >
-                        💬 Reply
+                        <ChatBubbleLeftIcon className="h-3.5 w-3.5" /> {t('comments.reply')}
                     </button>
                 )}
             </div>
@@ -314,11 +318,11 @@ function CommentCard({
     )
 }
 
-function timeAgo(dateStr: string): string {
+function timeAgo(dateStr: string, t: (key: string) => string): string {
     const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000)
-    if (seconds < 60) return 'just now'
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`
-    if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`
+    if (seconds < 60) return t('comments.justNow')
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}${t('comments.minutesAgo')}`
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}${t('comments.hoursAgo')}`
+    if (seconds < 604800) return `${Math.floor(seconds / 86400)}${t('comments.daysAgo')}`
     return new Date(dateStr).toLocaleDateString()
 }

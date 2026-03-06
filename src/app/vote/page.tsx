@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { PermissionGate } from '@/components/auth/PermissionGate'
+import { LockClosedIcon, ScaleIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import type { User } from '@supabase/supabase-js'
 import { useTranslation } from '@/i18n'
 
@@ -22,7 +23,7 @@ export default function VotePage() {
             permission="vote"
             fallback={
                 <div className="max-w-lg mx-auto text-center py-20 space-y-4">
-                    <div className="text-6xl">🔒</div>
+                    <LockClosedIcon className="h-16 w-16 mx-auto text-muted-foreground" />
                     <h1 className="text-2xl font-bold">{t('voting.accessDenied')}</h1>
                     <p className="text-muted-foreground">
                         {t('voting.loginRequired')}
@@ -151,7 +152,7 @@ function VoteForm() {
     if (submitted) {
         return (
             <div className="max-w-lg mx-auto text-center space-y-6 py-20">
-                <div className="text-6xl">⚖️</div>
+                <ScaleIcon className="h-16 w-16 mx-auto text-primary" />
                 <h1 className="text-2xl font-bold">{existingVote ? t('voting.voteUpdated') : t('voting.voteRecorded')}</h1>
                 <p className="text-muted-foreground">
                     {t('voting.voteSealed')}
@@ -180,7 +181,7 @@ function VoteForm() {
     const nominalDamages = caseData.nominal_damages_claimed || 0
     const maxPunitive = nominalDamages * 2
 
-    const guiltLabel = guiltScore <= 2 ? t('voting.innocent') : guiltScore <= 4 ? t('voting.innocent') : guiltScore <= 6 ? t('voting.uncertain') : guiltScore <= 8 ? t('voting.guilty') : t('voting.guilty')
+    const guiltLabel = guiltScore <= 2 ? t('voting.clearlyInnocent') : guiltScore <= 4 ? t('voting.leaningInnocent') : guiltScore <= 6 ? t('voting.uncertain') : guiltScore <= 8 ? t('voting.leaningGuilty') : t('voting.clearlyGuilty')
     const guiltColor = guiltScore <= 2 ? 'text-green-500' : guiltScore <= 4 ? 'text-emerald-500' : guiltScore <= 6 ? 'text-yellow-500' : guiltScore <= 8 ? 'text-orange-500' : 'text-red-500'
 
     return (
@@ -238,17 +239,19 @@ function VoteForm() {
                     <div className="flex gap-3">
                         <Button
                             variant={nominalApproved ? 'default' : 'outline'}
-                            className={`flex-1 ${nominalApproved ? 'bg-green-600 hover:bg-green-700' : ''}`}
+                            className={`flex-1 gap-2 ${nominalApproved ? 'bg-green-600 hover:bg-green-700' : ''}`}
                             onClick={() => setNominalApproved(true)}
                         >
-                            ✅ {t('voting.approve')}
+                            <CheckIcon className="h-4 w-4" />
+                            {t('voting.approve')}
                         </Button>
                         <Button
                             variant={!nominalApproved ? 'default' : 'outline'}
-                            className={`flex-1 ${!nominalApproved ? 'bg-red-600 hover:bg-red-700' : ''}`}
+                            className={`flex-1 gap-2 ${!nominalApproved ? 'bg-red-600 hover:bg-red-700' : ''}`}
                             onClick={() => setNominalApproved(false)}
                         >
-                            ❌ {t('voting.deny')}
+                            <XMarkIcon className="h-4 w-4" />
+                            {t('voting.deny')}
                         </Button>
                     </div>
                 </CardContent>
@@ -321,8 +324,12 @@ function VoteForm() {
                             <p className="text-xs text-muted-foreground">{t('voting.guilt')}</p>
                         </div>
                         <div>
-                            <p className="text-2xl font-bold">{nominalApproved ? '✅' : '❌'}</p>
-                            <p className="text-xs text-muted-foreground">{t('voting.nominal')}</p>
+                            {nominalApproved ? (
+                                <CheckIcon className="h-6 w-6 text-green-600 mx-auto" />
+                            ) : (
+                                <XMarkIcon className="h-6 w-6 text-red-600 mx-auto" />
+                            )}
+                            <p className="text-xs text-muted-foreground mt-1">{t('voting.nominal')}</p>
                         </div>
                         <div>
                             <p className="text-2xl font-bold">${punitiveAmount ? parseFloat(punitiveAmount).toLocaleString() : '0'}</p>
@@ -347,19 +354,20 @@ function VoteForm() {
                     {t('common.cancel')}
                 </Button>
                 <Button
-                    className="flex-1"
+                    className="flex-1 gap-2"
                     onClick={handleSubmit}
                     disabled={submitting}
                 >
                     {submitting ? (
-                        <span className="flex items-center gap-2">
+                        <>
                             <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                             {t('common.loading')}
-                        </span>
-                    ) : existingVote ? (
-                        `⚖️ ${t('voting.updateVote')}`
+                        </>
                     ) : (
-                        `⚖️ ${t('voting.submitVote')}`
+                        <>
+                            <ScaleIcon className="h-4 w-4" />
+                            {existingVote ? t('voting.updateVote') : t('voting.submitVote')}
+                        </>
                     )}
                 </Button>
             </div>

@@ -72,6 +72,7 @@ export default async function CaseDetailPage({ params }: PageProps) {
     { data: witnesses },
     { data: financialImpacts },
     { data: plaintiffProfile },
+    verdictResult,
   ] = await Promise.all([
     supabase.from('timeline_events').select('*').eq('case_id', caseData.id).order('created_at'),
     supabase.from('evidence').select('*').eq('case_id', caseData.id).order('created_at'),
@@ -80,7 +81,19 @@ export default async function CaseDetailPage({ params }: PageProps) {
     plaintiffId
       ? supabase.from('user_profiles').select('display_name, avatar_url').eq('id', plaintiffId).maybeSingle()
       : Promise.resolve({ data: null }),
+    // Verdict fetch with error handling - non-blocking
+    (async () => {
+      try {
+        const res = await supabase.from('verdict_results').select('verdict, average_guilt_score, total_votes, total_restitution_awarded').eq('case_id', caseData.id).maybeSingle()
+        return res.data || null
+      } catch (err) {
+        console.warn('Failed to fetch verdict results:', err)
+        return null
+      }
+    })(),
   ])
+
+  const verdictData = verdictResult
 
   const defendant = caseData.defendants as any
   const relationship = (caseData.relationship_narrative as any) || {}
@@ -311,6 +324,7 @@ export default async function CaseDetailPage({ params }: PageProps) {
       caseId={caseData.id}
       votingOpen={votingOpen}
       caseNarratives={caseNarratives}
+      verdict={verdictData ?? null}
     />
   )
 }

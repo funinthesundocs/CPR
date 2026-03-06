@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslation } from '@/i18n'
 import { motion } from 'framer-motion'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import ReactMarkdown from 'react-markdown'
@@ -47,6 +48,7 @@ interface CaseSummaryModuleProps {
 }
 
 export function CaseSummaryModule({ notebookSummary, briefingDocContent, testimonyFields, financialTotal, caseNarratives, evidenceInventory, evidence, summaryImage1Url, summaryImage2Url }: CaseSummaryModuleProps) {
+  const { t } = useTranslation()
   const [modalOpen, setModalOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'analysis' | 'testimony'>('analysis')
 
@@ -67,19 +69,19 @@ export function CaseSummaryModule({ notebookSummary, briefingDocContent, testimo
       >
         <div className="max-w-[1340px] mx-auto bg-white/5 border border-white/10 rounded-lg p-8 pb-0">
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-[38px] font-semibold text-white">Defendant Summary</h2>
+            <h2 className="text-[38px] font-semibold text-white">{t('casePage.caseSummary')}</h2>
             <div className="flex flex-wrap gap-3">
               <button
                 onClick={() => { setActiveTab('analysis'); setModalOpen(true) }}
                 className="bg-[var(--accent-500)] text-white px-6 py-2 rounded-md text-sm font-medium hover:bg-[var(--accent-300)] transition-colors"
               >
-                View Full Report
+                {t('casePage.viewFullReport')}
               </button>
               <button
                 onClick={() => { setActiveTab('testimony'); setModalOpen(true) }}
                 className="bg-white/10 text-white/80 hover:bg-[var(--accent-500)] hover:text-white px-6 py-2 rounded-md text-sm font-medium transition-colors"
               >
-                Original Testimony
+                {t('casePage.originalTestimony')}
               </button>
             </div>
           </div>
@@ -106,7 +108,7 @@ export function CaseSummaryModule({ notebookSummary, briefingDocContent, testimo
               {/* Supporting Documentation */}
               {evidenceInventory.length > 0 && (
                 <div className="mt-6">
-                  <h3 className="text-lg font-bold text-white mb-3 pb-2 border-b border-[var(--accent-500)]/30">Supporting Documentation</h3>
+                  <h3 className="text-lg font-bold text-white mb-3 pb-2 border-b border-[var(--accent-500)]/30">{t('casePage.supportingDocumentation')}</h3>
                   <ul className="space-y-2 text-[16px] text-white/70">
                     {evidenceInventory.slice(0, 5).map((item, i) => (
                       <li key={i} className="flex gap-2">
@@ -121,7 +123,7 @@ export function CaseSummaryModule({ notebookSummary, briefingDocContent, testimo
               {/* Closing Statement */}
               <div className="mt-6 pt-4 border-t border-white/10">
                 <p className="text-[16px] text-white/60 italic leading-relaxed text-justify">
-                  These files serve as a formal testimony and evidentiary record intended for a "Court of Public Record" to warn future victims.
+                  {t('casePage.closingStatement')}
                 </p>
               </div>
             </div>
@@ -177,7 +179,7 @@ export function CaseSummaryModule({ notebookSummary, briefingDocContent, testimo
                     : 'text-white/50 hover:text-white/80'
                 }`}
               >
-                Detailed Analysis
+                {t('casePage.detailedAnalysis')}
               </button>
               <button
                 onClick={() => setActiveTab('testimony')}
@@ -187,7 +189,7 @@ export function CaseSummaryModule({ notebookSummary, briefingDocContent, testimo
                     : 'text-white/50 hover:text-white/80'
                 }`}
               >
-                Original Testimony
+                {t('casePage.originalTestimony')}
               </button>
               <button
                 onClick={() => setModalOpen(false)}
@@ -281,21 +283,21 @@ export function CaseSummaryModule({ notebookSummary, briefingDocContent, testimo
               {activeTab === 'testimony' && (
                 <div>
                   <p className="text-xs text-white/40 mb-6 italic">
-                    Sacred record — exact words submitted by the plaintiff. No AI interpretation. Read-only.
+                    {t('casePage.sacredRecord')}
                   </p>
 
                   {/* Horizontally scrollable step tabs */}
                   <div className="flex gap-2 overflow-x-auto pb-3 mb-8 border-b border-white/10 no-scrollbar">
                     {[
-                      { id: 'step1', label: 'Accused' },
-                      { id: 'step2', label: 'Connection' },
-                      { id: 'step3', label: 'Trust' },
-                      { id: 'step4', label: 'Incident' },
-                      { id: 'step5', label: 'Timeline' },
-                      { id: 'step6', label: 'Summary' },
-                      { id: 'step7', label: 'Impact' },
-                      { id: 'step8', label: 'Evidence' },
-                      { id: 'step10', label: 'Legal' },
+                      { id: 'step1', label: t('casePage.stepAccused') },
+                      { id: 'step2', label: t('casePage.stepConnection') },
+                      { id: 'step3', label: t('casePage.stepTrust') },
+                      { id: 'step4', label: t('casePage.stepIncident') },
+                      { id: 'step5', label: t('casePage.stepTimeline') },
+                      { id: 'step6', label: t('casePage.stepSummary') },
+                      { id: 'step7', label: t('casePage.stepImpact') },
+                      { id: 'step8', label: t('casePage.stepEvidence') },
+                      { id: 'step10', label: t('casePage.stepLegal') },
                     ].map(s => (
                       <a key={s.id} href={`#testimony-${s.id}`}
                         className="shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-white/10 text-white/60 hover:bg-[var(--accent-500)] hover:text-white transition-colors">
@@ -309,88 +311,88 @@ export function CaseSummaryModule({ notebookSummary, briefingDocContent, testimo
                     {/* Step 1 — Accused */}
                     <section id="testimony-step1">
                       <h3 className="text-xs uppercase tracking-widest text-[var(--accent-300)] font-bold mb-4 pb-2 border-b border-white/10">
-                        Step 1 — Identifying the Accused
+                        {t('casePage.step1Title')}
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <ReadOnlyField label="Full Name" value={caseNarratives.defendant_name} />
-                        <ReadOnlyField label="Known Location" value={caseNarratives.defendant_location} />
-                        <ReadOnlyField label="Known Aliases" value={Array.isArray(caseNarratives.defendant_aliases) ? caseNarratives.defendant_aliases.join(', ') : caseNarratives.defendant_aliases} />
+                        <ReadOnlyField label={t('casePage.fullName')} value={caseNarratives.defendant_name} />
+                        <ReadOnlyField label={t('casePage.knownLocation')} value={caseNarratives.defendant_location} />
+                        <ReadOnlyField label={t('casePage.knownAliases')} value={Array.isArray(caseNarratives.defendant_aliases) ? caseNarratives.defendant_aliases.join(', ') : caseNarratives.defendant_aliases} />
                       </div>
                     </section>
 
                     {/* Step 2 — Connection */}
                     <section id="testimony-step2">
                       <h3 className="text-xs uppercase tracking-widest text-[var(--accent-300)] font-bold mb-4 pb-2 border-b border-white/10">
-                        Step 2 — Your Connection
+                        {t('casePage.step2Title')}
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <ReadOnlyField label="Relationship Type" value={caseNarratives.relationship_type} />
-                        <ReadOnlyField label="Duration" value={caseNarratives.relationship_duration} />
+                        <ReadOnlyField label={t('casePage.relationshipType')} value={caseNarratives.relationship_type} />
+                        <ReadOnlyField label={t('casePage.duration')} value={caseNarratives.relationship_duration} />
                       </div>
                       <div className="space-y-4">
-                        <ReadOnlyField label="How They Met" value={caseNarratives.first_interaction} tall />
-                        <ReadOnlyField label="Early Warning Signs" value={caseNarratives.early_warnings} tall />
+                        <ReadOnlyField label={t('casePage.howTheyMet')} value={caseNarratives.first_interaction} tall />
+                        <ReadOnlyField label={t('casePage.earlyWarningSigns')} value={caseNarratives.early_warnings} tall />
                       </div>
                     </section>
 
                     {/* Step 3 — Trust */}
                     <section id="testimony-step3">
                       <h3 className="text-xs uppercase tracking-widest text-[var(--accent-300)] font-bold mb-4 pb-2 border-b border-white/10">
-                        Step 3 — Basis of Trust
+                        {t('casePage.step3Title')}
                       </h3>
                       <div className="space-y-4">
-                        <ReadOnlyField label="What Was Promised / Agreement Terms" value={caseNarratives.agreement_terms} tall />
-                        <ReadOnlyField label="Reasonable Expectation" value={caseNarratives.reasonable_expectation} tall />
-                        <ReadOnlyField label="Evidence of Trust" value={caseNarratives.evidence_of_trust} tall />
-                        <ReadOnlyField label="Others Who Can Vouch" value={caseNarratives.others_vouch} tall />
+                        <ReadOnlyField label={t('casePage.whatWasPromised')} value={caseNarratives.agreement_terms} tall />
+                        <ReadOnlyField label={t('casePage.reasonableExpectation')} value={caseNarratives.reasonable_expectation} tall />
+                        <ReadOnlyField label={t('casePage.evidenceOfTrust')} value={caseNarratives.evidence_of_trust} tall />
+                        <ReadOnlyField label={t('casePage.othersWhoCanVouch')} value={caseNarratives.others_vouch} tall />
                       </div>
                     </section>
 
                     {/* Step 4 — Incident */}
                     <section id="testimony-step4">
                       <h3 className="text-xs uppercase tracking-widest text-[var(--accent-300)] font-bold mb-4 pb-2 border-b border-white/10">
-                        Step 4 — The Incident
+                        {t('casePage.step4Title')}
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <ReadOnlyField label="When Realized" value={caseNarratives.when_realized} />
-                        <ReadOnlyField label="Is Ongoing" value={caseNarratives.is_ongoing} />
+                        <ReadOnlyField label={t('casePage.whenRealized')} value={caseNarratives.when_realized} />
+                        <ReadOnlyField label={t('casePage.isOngoing')} value={caseNarratives.is_ongoing} />
                       </div>
                       <div className="space-y-4">
-                        <ReadOnlyField label="What Happened" value={caseNarratives.what_happened} tall />
-                        <ReadOnlyField label="The Turning Point" value={caseNarratives.primary_incident} tall />
+                        <ReadOnlyField label={t('casePage.whatHappened')} value={caseNarratives.what_happened} tall />
+                        <ReadOnlyField label={t('casePage.turningPoint')} value={caseNarratives.primary_incident} tall />
                       </div>
                     </section>
 
                     {/* Step 5 — Summary (moved from Step 6, timeline now has dedicated section with H/V toggle) */}
                     <section id="testimony-step6">
                       <h3 className="text-xs uppercase tracking-widest text-[var(--accent-300)] font-bold mb-4 pb-2 border-b border-white/10">
-                        Step 6 — Case Summary
+                        {t('casePage.step6Title')}
                       </h3>
                       <div className="space-y-4">
-                        <ReadOnlyField label="One-Line Summary" value={caseNarratives.one_line_summary} />
-                        <ReadOnlyField label="Full Case Summary" value={caseNarratives.case_summary} tall />
+                        <ReadOnlyField label={t('casePage.oneLineSummary')} value={caseNarratives.one_line_summary} />
+                        <ReadOnlyField label={t('casePage.fullCaseSummary')} value={caseNarratives.case_summary} tall />
                       </div>
                     </section>
 
                     {/* Step 7 — Impact */}
                     <section id="testimony-step7">
                       <h3 className="text-xs uppercase tracking-widest text-[var(--accent-300)] font-bold mb-4 pb-2 border-b border-white/10">
-                        Step 7 — Damages & Impact
+                        {t('casePage.step7Title')}
                       </h3>
                       <div className="space-y-4">
-                        <ReadOnlyField label="Emotional Impact" value={caseNarratives.emotional_impact} tall />
-                        <ReadOnlyField label="Physical Impact" value={caseNarratives.physical_impact} tall />
-                        <ReadOnlyField label="What They Want Understood" value={caseNarratives.wish_understood} tall />
+                        <ReadOnlyField label={t('casePage.emotionalImpact')} value={caseNarratives.emotional_impact} tall />
+                        <ReadOnlyField label={t('casePage.physicalImpact')} value={caseNarratives.physical_impact} tall />
+                        <ReadOnlyField label={t('casePage.whatTheyWantUnderstood')} value={caseNarratives.wish_understood} tall />
                       </div>
                     </section>
 
                     {/* Step 8 — Evidence */}
                     <section id="testimony-step8">
                       <h3 className="text-xs uppercase tracking-widest text-[var(--accent-300)] font-bold mb-4 pb-2 border-b border-white/10">
-                        Step 8 — Evidence Inventory
+                        {t('casePage.step8Title')}
                       </h3>
                       {evidenceInventory.length === 0 ? (
-                        <p className="text-white/30 text-sm italic">No evidence inventory recorded.</p>
+                        <p className="text-white/30 text-sm italic">{t('casePage.noEvidenceRecorded')}</p>
                       ) : (
                         <div className="space-y-3">
                           {evidenceInventory.map((item, i) => (
@@ -409,16 +411,16 @@ export function CaseSummaryModule({ notebookSummary, briefingDocContent, testimo
                     {/* Step 10 — Legal */}
                     <section id="testimony-step10">
                       <h3 className="text-xs uppercase tracking-widest text-[var(--accent-300)] font-bold mb-4 pb-2 border-b border-white/10">
-                        Step 10 — Legal Actions
+                        {t('casePage.step10Title')}
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <ReadOnlyField label="Police Report Filed" value={caseNarratives.police_report_filed} />
-                        <ReadOnlyField label="Lawyer Consulted" value={caseNarratives.lawyer_consulted} />
-                        <ReadOnlyField label="Court Case Filed" value={caseNarratives.court_case_filed} />
-                        <ReadOnlyField label="Other Victims" value={caseNarratives.other_victims} />
+                        <ReadOnlyField label={t('casePage.policeReportFiled')} value={caseNarratives.police_report_filed} />
+                        <ReadOnlyField label={t('casePage.lawyerConsulted')} value={caseNarratives.lawyer_consulted} />
+                        <ReadOnlyField label={t('casePage.courtCaseFiled')} value={caseNarratives.court_case_filed} />
+                        <ReadOnlyField label={t('casePage.otherVictims')} value={caseNarratives.other_victims} />
                       </div>
                       <div className="space-y-4">
-                        <ReadOnlyField label="Why Filing" value={caseNarratives.why_filing} tall />
+                        <ReadOnlyField label={t('casePage.whyFiling')} value={caseNarratives.why_filing} tall />
                       </div>
                     </section>
 

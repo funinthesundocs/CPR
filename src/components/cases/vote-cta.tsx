@@ -4,6 +4,7 @@ import { useTranslation } from '@/i18n'
 import { PermissionGate } from '@/components/auth/PermissionGate'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { ScaleIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 
 interface VoteCTAProps {
@@ -17,7 +18,7 @@ export function VoteCTA({ caseId }: VoteCTAProps) {
         <PermissionGate permission="vote">
             <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
                 <CardContent className="p-6 flex flex-col sm:flex-row items-center gap-4">
-                    <div className="text-4xl">⚖️</div>
+                    <ScaleIcon className="h-10 w-10 text-primary flex-shrink-0" />
                     <div className="flex-1 text-center sm:text-left">
                         <h3 className="text-lg font-bold">{t('voting.castYourVote')}</h3>
                         <p className="text-sm text-muted-foreground">
@@ -25,8 +26,9 @@ export function VoteCTA({ caseId }: VoteCTAProps) {
                         </p>
                     </div>
                     <Link href={`/vote?case=${caseId}`}>
-                        <Button size="lg" className="font-semibold">
-                            🗳️ {t('voting.voteNow')}
+                        <Button size="lg" className="font-semibold gap-2">
+                            <ScaleIcon className="h-4 w-4" />
+                            {t('voting.voteNow')}
                         </Button>
                     </Link>
                 </CardContent>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState, useEffect } from 'react'
+import { useTranslation } from '@/i18n'
 import { motion, useAnimate } from 'framer-motion'
 import { MapPinIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import { Bars3Icon, ListBulletIcon } from '@heroicons/react/24/outline'
@@ -140,7 +141,7 @@ const fallbackTitle = (description: string): string =>
 
 // ─── FlipCard ──────────────────────────────────────────────────────────────────
 
-function FlipCard({ event, showPlaintiff }: { event: EnrichedTimelineEvent; showPlaintiff?: boolean }) {
+function FlipCard({ event, showPlaintiff, t }: { event: EnrichedTimelineEvent; showPlaintiff?: boolean; t: (key: string) => string }) {
   const [flipped, setFlipped] = useState(false)
   const [animating, setAnimating] = useState(false)
   const [scope, animateFlip] = useAnimate()
@@ -195,7 +196,7 @@ function FlipCard({ event, showPlaintiff }: { event: EnrichedTimelineEvent; show
             onClick={() => flip(true)}
             className="mt-1 w-full px-6 py-2 text-[12px] font-semibold rounded-md bg-[var(--accent-500)]/20 hover:bg-[var(--accent-500)]/50 border border-[var(--accent-500)]/40 hover:border-[var(--accent-500)]/80 text-[var(--accent-300)] hover:text-white transition-all tracking-widest uppercase"
           >
-            Flip Card
+            {t('casePage.flipCard')}
           </button>
         </div>
 
@@ -227,7 +228,7 @@ function FlipCard({ event, showPlaintiff }: { event: EnrichedTimelineEvent; show
             onClick={() => flip(false)}
             className="mt-3 px-3 py-1 text-[11px] font-semibold rounded-md bg-[var(--accent-500)]/20 hover:bg-[var(--accent-500)]/50 border border-[var(--accent-500)]/40 hover:border-[var(--accent-500)]/80 text-[var(--accent-300)] hover:text-white transition-all tracking-wide"
           >
-            ← Back
+            {t('casePage.back')}
           </button>
         </div>
       </div>
@@ -237,10 +238,11 @@ function FlipCard({ event, showPlaintiff }: { event: EnrichedTimelineEvent; show
 
 // ─── Vertical row (own expand state) ──────────────────────────────────────────
 
-function VerticalRow({ event, index, showPlaintiff }: {
+function VerticalRow({ event, index, showPlaintiff, t }: {
   event: EnrichedTimelineEvent
   index: number
   showPlaintiff: boolean
+  t: (key: string) => string
 }) {
   const [expanded, setExpanded] = useState(false)
   const countryCode = getCountryCode(event.city)
@@ -260,7 +262,7 @@ function VerticalRow({ event, index, showPlaintiff }: {
           <FlagIcon countryCode={countryCode} className="w-full h-full object-cover flex-1" />
         ) : (
           <div className="w-full h-full bg-white/20 flex items-center justify-center text-white/40 text-sm flex-1">
-            Unknown
+            {t('casePage.unknown')}
           </div>
         )}
       </div>
@@ -310,6 +312,7 @@ function VerticalRow({ event, index, showPlaintiff }: {
 // ─── Main component ────────────────────────────────────────────────────────────
 
 export function CaseTimeline({ events, filterOptions, selectedCaseId, onSelectCase }: CaseTimelineProps) {
+  const { t } = useTranslation()
   const scrollRef = useRef<HTMLDivElement>(null)
   const [viewMode, setViewMode] = useState<'horizontal' | 'vertical'>('horizontal')
   const [isDragging, setIsDragging] = useState(false)
@@ -352,7 +355,7 @@ export function CaseTimeline({ events, filterOptions, selectedCaseId, onSelectCa
     >
       {/* Header */}
       <div className="flex items-center gap-4 px-6 mb-8 max-w-[1340px] mx-auto">
-        <h2 className="text-[38px] font-semibold text-white mr-auto">Case Timeline</h2>
+        <h2 className="text-[38px] font-semibold text-white mr-auto">{t('casePage.caseTimeline')}</h2>
 
         {/* Case filter dropdown — defendant page only */}
         {filterOptions && (
@@ -389,7 +392,7 @@ export function CaseTimeline({ events, filterOptions, selectedCaseId, onSelectCa
             }`}
           >
             <Bars3Icon className="h-4 w-4" />
-            Horizontal
+            {t('casePage.horizontal')}
           </button>
           <button
             onClick={() => setViewMode('vertical')}
@@ -400,7 +403,7 @@ export function CaseTimeline({ events, filterOptions, selectedCaseId, onSelectCa
             }`}
           >
             <ListBulletIcon className="h-4 w-4" />
-            Vertical
+            {t('casePage.vertical')}
           </button>
         </div>
       </div>
@@ -440,7 +443,7 @@ export function CaseTimeline({ events, filterOptions, selectedCaseId, onSelectCa
                       style={{ transform: 'translateX(-50%)' }}
                     />
                     <div className={`absolute ${isAbove ? 'bottom-[calc(50%+90px)]' : 'top-[calc(50%+90px)]'}`}>
-                      <FlipCard event={event} showPlaintiff={showPlaintiff} />
+                      <FlipCard event={event} showPlaintiff={showPlaintiff} t={t} />
                     </div>
                   </div>
                 )
@@ -452,7 +455,7 @@ export function CaseTimeline({ events, filterOptions, selectedCaseId, onSelectCa
         /* VERTICAL — expandable rows */
         <div className="w-full max-w-[1340px] mx-auto px-6 space-y-6 mb-12">
           {sortedEvents.map((event, i) => (
-            <VerticalRow key={event.id} event={event} index={i} showPlaintiff={showPlaintiff} />
+            <VerticalRow key={event.id} event={event} index={i} showPlaintiff={showPlaintiff} t={t} />
           ))}
         </div>
       )}

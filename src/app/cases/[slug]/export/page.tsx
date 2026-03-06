@@ -183,7 +183,7 @@ export default async function CaseExportPage({ params }: PageProps) {
                             <p className="text-xs text-muted-foreground">Total Votes</p>
                         </div>
                         <div className="p-4 rounded-lg border">
-                            <p className="text-2xl font-bold">${(verdict.total_restitution || 0).toLocaleString()}</p>
+                            <p className="text-2xl font-bold">${(verdict.total_restitution_awarded || 0).toLocaleString()}</p>
                             <p className="text-xs text-muted-foreground">Total Restitution</p>
                         </div>
                     </div>

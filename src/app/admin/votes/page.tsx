@@ -48,6 +48,9 @@ export default function AdminVotesPage() {
     const [flaggedOnly, setFlaggedOnly] = useState(false)
     const [selectedVote, setSelectedVote] = useState<Vote | null>(null)
     const [actionLoading, setActionLoading] = useState<string | null>(null)
+    const [sealVerdictCaseId, setSealVerdictCaseId] = useState('')
+    const [sealVerdictLoading, setSealVerdictLoading] = useState(false)
+    const [sealVerdictResult, setSealVerdictResult] = useState<{ verdict: string; average_guilt_score: number; total_votes: number; total_restitution_awarded: number } | null>(null)
 
     const fetchVotes = useCallback(async () => {
         setLoading(true)
@@ -117,6 +120,36 @@ export default function AdminVotesPage() {
         }
     }
 
+    const handleSealVerdict = async () => {
+        if (!sealVerdictCaseId.trim()) return
+        setSealVerdictLoading(true)
+        setSealVerdictResult(null)
+        try {
+            const res = await fetch('/api/admin/cases/seal-verdict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ case_id: sealVerdictCaseId }),
+            })
+            const data = await res.json()
+            if (res.ok) {
+                setSealVerdictResult({
+                    verdict: data.verdict,
+                    average_guilt_score: data.average_guilt_score,
+                    total_votes: data.total_votes,
+                    total_restitution_awarded: data.total_restitution_awarded,
+                })
+                setSealVerdictCaseId('')
+            } else {
+                alert(`Error: ${data.error || 'Failed to seal verdict'}`)
+            }
+        } catch (err) {
+            console.error('Failed to seal verdict:', err)
+            alert('An error occurred while sealing the verdict')
+        } finally {
+            setSealVerdictLoading(false)
+        }
+    }
+
     const guiltColor = (score: number) => {
         if (score <= 2) return 'text-green-500'
         if (score <= 4) return 'text-emerald-500'
@@ -181,6 +214,38 @@ export default function AdminVotesPage() {
                         )}
                     </Button>
                 </div>
+            </div>
+
+            {/* Seal Verdict Section */}
+            <div className="rounded-lg border bg-card p-4 space-y-3">
+                <h3 className="font-semibold text-sm">Seal Verdict</h3>
+                <div className="flex items-end gap-2">
+                    <div className="flex-1">
+                        <label className="text-xs text-muted-foreground block mb-1.5">Case ID</label>
+                        <input
+                            type="text"
+                            placeholder="Enter case UUID"
+                            value={sealVerdictCaseId}
+                            onChange={(e) => setSealVerdictCaseId(e.target.value)}
+                            className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm"
+                        />
+                    </div>
+                    <Button
+                        onClick={handleSealVerdict}
+                        disabled={!sealVerdictCaseId.trim() || sealVerdictLoading}
+                        size="sm"
+                    >
+                        {sealVerdictLoading ? 'Sealing...' : 'Seal Verdict'}
+                    </Button>
+                </div>
+                {sealVerdictResult && (
+                    <div className="mt-3 p-3 rounded-md border border-primary/20 bg-primary/5 space-y-1.5 text-sm">
+                        <p><span className="font-semibold">Verdict:</span> <span className={sealVerdictResult.verdict === 'guilty' ? 'text-red-600 font-bold' : 'text-green-600 font-bold'}>{sealVerdictResult.verdict.toUpperCase()}</span></p>
+                        <p><span className="font-semibold">Avg Guilt Score:</span> {sealVerdictResult.average_guilt_score?.toFixed(1)}/10</p>
+                        <p><span className="font-semibold">Total Votes:</span> {sealVerdictResult.total_votes}</p>
+                        <p><span className="font-semibold">Restitution Awarded:</span> ${sealVerdictResult.total_restitution_awarded.toLocaleString('en-US', { maximumFractionDigits: 2 })}</p>
+                    </div>
+                )}
             </div>
 
             {/* Stats */}

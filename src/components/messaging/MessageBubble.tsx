@@ -1,6 +1,7 @@
 'use client'
 
 import { CheckIcon } from '@heroicons/react/24/outline'
+import { useTranslation } from '@/i18n'
 
 interface MessageBubbleProps {
   content: string
@@ -25,6 +26,7 @@ export function MessageBubble({
   sendError,
   onRetry,
 }: MessageBubbleProps) {
+  const { t } = useTranslation()
   const date = new Date(timestamp)
   const now = new Date()
   const isToday = date.toDateString() === now.toDateString()
@@ -44,7 +46,7 @@ export function MessageBubble({
           </div>
           <div className="flex items-center gap-2 px-4 text-xs text-muted-foreground">
             {isSending ? (
-              <span>sending...</span>
+              <span>{t('messages.sending')}</span>
             ) : (
               <>
                 <span>{timeStr}</span>
@@ -53,7 +55,7 @@ export function MessageBubble({
             )}
             {sendError && (
               <button onClick={onRetry} className="text-destructive hover:text-destructive font-medium ml-1">
-                retry
+                {t('messages.retry')}
               </button>
             )}
           </div>

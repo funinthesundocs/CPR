@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslation } from '@/i18n'
 import { motion } from 'framer-motion'
 
 const sectionVariants = {
@@ -8,6 +9,7 @@ const sectionVariants = {
 }
 
 export function ComingSoonPlaceholder({ section }: { section: string }) {
+  const { t } = useTranslation()
   return (
     <motion.section
       variants={sectionVariants}
@@ -22,7 +24,7 @@ export function ComingSoonPlaceholder({ section }: { section: string }) {
         </div>
         <h3 className="text-lg font-semibold mb-2 text-white">{section}</h3>
         <p className="text-sm text-white/50">
-          This section will populate once the {section.toLowerCase()} is generated.
+          {t('casePage.comingSoon').replace('{section}', section.toLowerCase())}
         </p>
       </div>
     </motion.section>

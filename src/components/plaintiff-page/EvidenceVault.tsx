@@ -8,6 +8,7 @@ import {
   XMarkIcon,
   ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/24/outline'
+import { useTranslation } from '@/i18n'
 
 const sectionVariants = {
   hidden: { opacity: 0, y: 24 },
@@ -36,19 +37,21 @@ interface EvidenceVaultProps {
   evidenceInventory: DeclaredItem[]
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  document: 'Document',
-  photo: 'Photograph',
-  video: 'Video',
-  audio: 'Audio',
-  communication: 'Communications',
-  financial: 'Financial',
-  evidFinancial: 'Financial Records',
-  evidTexts: 'Communications',
-  evidPhotos: 'Photographs',
-  evidVideo: 'Video',
-  evidAudio: 'Audio',
-  other: 'Other',
+function getCategoryLabels(t: (key: string) => string): Record<string, string> {
+  return {
+    document: t('casePage.categoryDocument'),
+    photo: t('casePage.categoryPhoto'),
+    video: t('casePage.categoryVideo'),
+    audio: t('casePage.categoryAudio'),
+    communication: t('casePage.categoryCommunications'),
+    financial: t('casePage.categoryFinancial'),
+    evidFinancial: t('casePage.categoryFinancialRecords'),
+    evidTexts: t('casePage.categoryCommunications'),
+    evidPhotos: t('casePage.categoryPhoto'),
+    evidVideo: t('casePage.categoryVideo'),
+    evidAudio: t('casePage.categoryAudio'),
+    other: t('casePage.categoryOther'),
+  }
 }
 
 type VaultItem = {
@@ -108,6 +111,8 @@ function buildVaultItems(evidence: EvidenceRecord[], inventory: DeclaredItem[]):
 }
 
 export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProps) {
+  const { t } = useTranslation()
+  const CATEGORY_LABELS = getCategoryLabels(t)
   const items = buildVaultItems(evidence || [], evidenceInventory || [])
   const [selectedItem, setSelectedItem] = useState<VaultItem | null>(null)
   const [opening, setOpening] = useState(false)
@@ -158,7 +163,7 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
             </span>
             {item.fileUrl && (
               <span className="px-2 py-0.5 rounded-full bg-green-500/20 text-green-400" style={{ fontSize: '12px' }}>
-                Uploaded
+                {t('casePage.uploaded')}
               </span>
             )}
           </div>
@@ -191,12 +196,12 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
       <div className="absolute inset-0 z-0 bg-black/70" />
 
       <div className="relative z-10 max-w-[1340px] mx-auto">
-        <h2 className="text-[38px] font-semibold text-white mb-2 text-center">Evidence Vault</h2>
+        <h2 className="text-[38px] font-semibold text-white mb-2 text-center">{t('casePage.evidenceVault')}</h2>
 
         {hasItems && (
           <div>
             <h3 className="font-bold uppercase tracking-widest text-[var(--accent-300)] mb-8 text-center" style={{ fontSize: '18px' }}>
-              {items.filter(i => i.fileUrl).length} filed &middot; {items.filter(i => !i.fileUrl).length} declared
+              {items.filter(i => i.fileUrl).length} {t('casePage.filed_')} &middot; {items.filter(i => !i.fileUrl).length} {t('casePage.declared')}
             </h3>
             <div className="flex gap-8">
               {/* Left column */}
@@ -219,7 +224,7 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
           <div className="border border-white/10 rounded-xl p-12 text-center bg-white/5">
             <ShieldExclamationIcon className="h-12 w-12 text-white/20 mx-auto mb-4" />
             <p className="text-sm text-white/40">
-              No evidence has been filed for this case yet.
+              {t('casePage.noEvidence')}
             </p>
           </div>
         )}
@@ -268,12 +273,12 @@ export function EvidenceVault({ evidence, evidenceInventory }: EvidenceVaultProp
                   className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-[var(--accent-500)] text-white rounded-lg font-medium hover:bg-[var(--accent-600)] transition-colors disabled:opacity-50"
                 >
                   <ArrowTopRightOnSquareIcon className="h-5 w-5" />
-                  {opening ? 'Opening...' : 'Open Evidence'}
+                  {opening ? t('casePage.opening') : t('casePage.openEvidence')}
                 </button>
               ) : (
                 <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center">
                   <p className="text-white/40 text-sm">
-                    This evidence has been declared but not yet uploaded.
+                    {t('casePage.declaredNotUploaded')}
                   </p>
                 </div>
               )}

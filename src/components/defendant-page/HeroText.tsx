@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslation } from '@/i18n'
 import { motion } from 'framer-motion'
 
 interface HeroTextProps {
@@ -12,6 +13,7 @@ interface HeroTextProps {
 }
 
 export function HeroText({ plaintiffName, plaintiffPhoto, defendantName, tagline, caseNumber, filedAt }: HeroTextProps) {
+  const { t } = useTranslation()
   return (
     <motion.div
       className="py-12 md:py-16 px-6 bg-black"
@@ -33,19 +35,19 @@ export function HeroText({ plaintiffName, plaintiffPhoto, defendantName, tagline
             )}
           </div>
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-[var(--accent-300)]">Plaintiff</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-[var(--accent-300)]">{t('casePage.plaintiff')}</p>
             <p className="text-lg font-bold text-white">{plaintiffName}</p>
           </div>
         </div>
 
         <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-white mb-4 text-center">
-          {plaintiffName} <span className="text-[var(--accent-500)]">vs.</span> {defendantName}
+          {plaintiffName} <span className="text-[var(--accent-500)]">{t('casePage.vsLower')}</span> {defendantName}
         </h1>
         <p className="text-lg md:text-xl font-normal text-white/60 italic capitalize text-center mb-6">
           {tagline}
         </p>
         <p className="text-sm text-white/40 text-center">
-          Case {caseNumber} &middot; Filed {new Date(filedAt).toLocaleDateString('en-AU', { year: 'numeric', month: 'long' })}
+          {t('casePage.caseLabel')} {caseNumber} &middot; {t('casePage.filed')} {new Date(filedAt).toLocaleDateString('en-AU', { year: 'numeric', month: 'long' })}
         </p>
       </div>
     </motion.div>

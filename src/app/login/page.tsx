@@ -77,13 +77,13 @@ function LoginForm() {
         setSuccess(null)
 
         if (password !== confirmPassword) {
-            setError('Passwords do not match')
+            setError(t('auth.passwordMismatch'))
             setLoading(false)
             return
         }
 
         if (password.length < 6) {
-            setError('Password must be at least 6 characters')
+            setError(t('auth.passwordTooShort'))
             setLoading(false)
             return
         }
@@ -103,7 +103,7 @@ function LoginForm() {
             return
         }
 
-        setSuccess('Check your email for a confirmation link! Once confirmed, you\'ll set up your profile.')
+        setSuccess(t('auth.checkEmail'))
         setLoading(false)
     }
 
@@ -234,7 +234,7 @@ function LoginForm() {
                         {loading ? (
                             <span className="flex items-center gap-2">
                                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                                {mode === 'login' ? 'Signing in...' : 'Creating account...'}
+                                {mode === 'login' ? t('auth.signingIn') : t('auth.creatingAccount')}
                             </span>
                         ) : (
                             mode === 'login' ? t('common.login') : t('common.signup')
@@ -244,8 +244,8 @@ function LoginForm() {
 
                 <p className="text-xs text-center text-muted-foreground">
                     {mode === 'login'
-                        ? 'By signing in, you agree to the Court\'s terms of service.'
-                        : 'You\'ll set up your profile after confirming your email.'}
+                        ? t('auth.termsAgreement')
+                        : t('auth.profileSetupNote')}
                 </p>
             </div>
         </div>

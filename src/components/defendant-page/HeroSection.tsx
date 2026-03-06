@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslation } from '@/i18n'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { StatusBadge } from './StatusBadge'
 import { UserIcon } from '@heroicons/react/24/outline'
@@ -22,6 +23,7 @@ function AvatarPlaceholder({ label, className }: { label: string; className?: st
 }
 
 export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defendantPhoto, status, tagline }: HeroSectionProps) {
+  const { t } = useTranslation()
   const { scrollY } = useScroll()
   const bgY = useTransform(scrollY, [0, 400], [0, 120])
 
@@ -202,7 +204,7 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
           )}
         </div>
         <span className="mt-[22px] text-[20px] font-bold tracking-[0] uppercase text-orange-400">
-          Defendant
+          {t('casePage.defendant')}
         </span>
         <span className="mt-1 text-[33px] md:text-[39px] font-black text-white text-center leading-tight px-4">
           {defendantName}

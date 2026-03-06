@@ -1,5 +1,7 @@
 'use client'
 
+import { useTranslation } from '@/i18n'
+
 interface ConversationCardProps {
   id: string
   otherUserName: string
@@ -21,6 +23,8 @@ export function ConversationCard({
   isSelected,
   onClick,
 }: ConversationCardProps) {
+  const { t } = useTranslation()
+
   const formatTime = (dateStr: string | null) => {
     if (!dateStr) return ''
     const date = new Date(dateStr)
@@ -30,11 +34,11 @@ export function ConversationCard({
     const diffHours = Math.floor(diffMs / 3600000)
     const diffDays = Math.floor(diffMs / 86400000)
 
-    if (diffMins < 1) return 'now'
-    if (diffMins < 60) return `${diffMins}m ago`
-    if (diffHours < 24) return `${diffHours}h ago`
-    if (diffDays < 7) return `${diffDays}d ago`
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    if (diffMins < 1) return t('comments.justNow')
+    if (diffMins < 60) return `${diffMins}${t('comments.minutesAgo')}`
+    if (diffHours < 24) return `${diffHours}${t('comments.hoursAgo')}`
+    if (diffDays < 7) return `${diffDays}${t('comments.daysAgo')}`
+    return date.toLocaleDateString()
   }
 
   return (
@@ -78,10 +82,10 @@ export function ConversationCard({
         <p className="text-sm text-muted-foreground truncate line-clamp-1">
           {lastMessagePreview ? (
             <>
-              <span className="text-xs">Enter your message description here...</span>
+              <span className="text-xs">{lastMessagePreview}</span>
             </>
           ) : (
-            '(No messages yet)'
+            t('messages.noMessagesYet')
           )}
         </p>
       </div>

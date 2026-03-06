@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { MessageBubble } from './MessageBubble'
 import { MessageInput } from './MessageInput'
 import { ChevronLeftIcon, EllipsisVerticalIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/outline'
+import { useTranslation } from '@/i18n'
 
 interface Message {
   id: string
@@ -34,6 +35,7 @@ export function ConversationDetail({
   onBack,
 }: ConversationDetailProps) {
   const supabase = createClient()
+  const { t } = useTranslation()
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -155,7 +157,7 @@ export function ConversationDetail({
         id: `temp-${Date.now()}`,
         content,
         sender_id: currentUserId,
-        sender_display_name: 'You',
+        sender_display_name: t('messages.you'),
         sender_avatar_url: null,
         created_at: new Date().toISOString(),
         is_read: true,
@@ -218,7 +220,7 @@ export function ConversationDetail({
             )}
             <div className="min-w-0">
               <h2 className="font-semibold text-foreground truncate">{otherUserName}</h2>
-              <p className="text-xs text-muted-foreground">Last seen 7h ago</p>
+              <p className="text-xs text-muted-foreground">{t('messages.online')}</p>
             </div>
           </div>
         </div>
@@ -248,7 +250,7 @@ export function ConversationDetail({
                 className="w-full px-4 py-2 text-left text-sm hover:bg-secondary transition-colors first:rounded-t-lg"
                 role="menuitem"
               >
-                Mute conversation
+                {t('messages.muteConversation')}
               </button>
               <button
                 onClick={() => {
@@ -258,7 +260,7 @@ export function ConversationDetail({
                 className="w-full px-4 py-2 text-left text-sm hover:bg-secondary transition-colors"
                 role="menuitem"
               >
-                Block user
+                {t('messages.blockUser')}
               </button>
               <button
                 onClick={() => {
@@ -268,7 +270,7 @@ export function ConversationDetail({
                 className="w-full px-4 py-2 text-left text-sm text-destructive hover:bg-destructive/10 transition-colors last:rounded-b-lg"
                 role="menuitem"
               >
-                Report user
+                {t('messages.reportUser')}
               </button>
             </div>
           )}
@@ -302,16 +304,16 @@ export function ConversationDetail({
             onClick={() => setOffset((prev) => prev + 50)}
             className="py-3 px-4 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-secondary/50 mx-auto mb-4"
           >
-            ↑ Load earlier messages
+            {t('messages.loadEarlier')}
           </button>
         )}
 
         {messages.length === 0 && !loading && (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <ChatBubbleLeftIcon className="h-12 w-12 text-muted-foreground/40 mb-3" />
-            <h3 className="font-semibold text-foreground mb-1">Say hello!</h3>
+            <h3 className="font-semibold text-foreground mb-1">{t('messages.sayHello')}</h3>
             <p className="text-xs text-muted-foreground">
-              This is the beginning of your conversation with {otherUserName}
+              {t('messages.conversationStart')} {otherUserName}
             </p>
           </div>
         )}
@@ -329,12 +331,12 @@ export function ConversationDetail({
                   <div className="flex-1 h-px bg-border/30" />
                   <span className="text-xs font-medium text-muted-foreground px-2">
                     {currDate === new Date().toDateString()
-                      ? 'Today'
+                      ? t('messages.today')
                       : (() => {
                           const yesterday = new Date()
                           yesterday.setDate(yesterday.getDate() - 1)
                           return currDate === yesterday.toDateString()
-                            ? 'Yesterday'
+                            ? t('messages.yesterday')
                             : new Date(msg.created_at).toLocaleDateString('en-US', {
                                 month: 'short',
                                 day: 'numeric',

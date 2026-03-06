@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from '@/i18n'
 import { motion } from 'framer-motion'
 import { MapPinIcon } from '@heroicons/react/24/outline'
 
@@ -91,7 +92,7 @@ interface LocationMapProps {
   locations: Location[]
 }
 
-function MapCanvas({ resolvedPoints }: { resolvedPoints: ResolvedPoint[] }) {
+function MapCanvas({ resolvedPoints, t }: { resolvedPoints: ResolvedPoint[]; t: (key: string) => string }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef       = useRef<any>(null)
   const [loaded, setLoaded] = useState(false)
@@ -276,7 +277,7 @@ function MapCanvas({ resolvedPoints }: { resolvedPoints: ResolvedPoint[] }) {
         <div className="absolute inset-0 bg-white/5 flex items-center justify-center">
           <div className="flex flex-col items-center gap-3">
             <div className="w-8 h-8 border-2 border-indigo-400/40 border-t-indigo-400 rounded-full animate-spin" />
-            <span className="text-white/40 text-sm">Loading map…</span>
+            <span className="text-white/40 text-sm">{t('casePage.loadingMap')}</span>
           </div>
         </div>
       )}
@@ -285,6 +286,7 @@ function MapCanvas({ resolvedPoints }: { resolvedPoints: ResolvedPoint[] }) {
 }
 
 export function LocationMap({ locations }: LocationMapProps) {
+  const { t } = useTranslation()
   const [mapVisible, setMapVisible] = useState(false)
   const sectionRef = useRef<HTMLElement>(null)
 
@@ -331,13 +333,13 @@ export function LocationMap({ locations }: LocationMapProps) {
       className="px-6 pt-[8px] pb-[120px]"
     >
       <div className="max-w-[1340px] mx-auto">
-        <h2 className="text-[38px] font-semibold mb-2 text-white">Fraud Trail</h2>
+        <h2 className="text-[38px] font-semibold mb-2 text-white">{t('casePage.fraudTrail')}</h2>
         <p className="text-sm text-white/40 mb-8">
-          Tracking the path of deception across {resolvedPoints.length} location{resolvedPoints.length !== 1 ? 's' : ''}
+          {t('casePage.trackingPath').replace('{count}', String(resolvedPoints.length))}
         </p>
 
         {/* Interactive map */}
-        {mapVisible && <MapCanvas resolvedPoints={resolvedPoints} />}
+        {mapVisible && <MapCanvas resolvedPoints={resolvedPoints} t={t} />}
       </div>
     </motion.section>
   )

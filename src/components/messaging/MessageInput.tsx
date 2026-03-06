@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { PaperAirplaneIcon } from '@heroicons/react/24/outline'
+import { useTranslation } from '@/i18n'
 
 interface MessageInputProps {
   onSend: (content: string) => Promise<void>
@@ -14,8 +15,10 @@ const MAX_LENGTH = 2000
 export function MessageInput({
   onSend,
   disabled = false,
-  placeholder = 'Type a message...',
+  placeholder,
 }: MessageInputProps) {
+  const { t } = useTranslation()
+  const resolvedPlaceholder = placeholder || t('messages.typeMessage')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [content, setContent] = useState('')
   const [isSending, setIsSending] = useState(false)
@@ -68,7 +71,7 @@ export function MessageInput({
               setContent(e.target.value)
               setError(null)
             }}
-            placeholder={placeholder}
+            placeholder={resolvedPlaceholder}
             disabled={disabled || isSending}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && e.ctrlKey && !disabled && !isSending && content.trim()) {

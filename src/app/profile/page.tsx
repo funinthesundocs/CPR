@@ -92,16 +92,16 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 const EDITABLE_STATUSES = ['draft', 'pending', 'pending_convergence', 'admin_review', 'investigation']
-const VOTING_STATUSES = ['judgment', 'investigation']
+const VOTING_STATUSES = ['judgment', 'investigation', 'pending_convergence']
 
-const ROLE_DESCRIPTIONS: Record<string, string> = {
-    plaintiff:         'You filed this case',
-    jury_member:       'Review evidence and cast your verdict',
-    witness:           'Your testimony is on record',
-    investigator:      'Document findings for this case',
-    expert_witness:    'Provide professional expertise',
-    attorney:          'Legal counsel for a party',
-    law_enforcement:   'Submit official records or actions',
+const ROLE_DESCRIPTION_KEYS: Record<string, string> = {
+    plaintiff:         'userProfile.roleDescPlaintiff',
+    jury_member:       'userProfile.roleDescJuryMember',
+    witness:           'userProfile.roleDescWitness',
+    investigator:      'userProfile.roleDescInvestigator',
+    expert_witness:    'userProfile.roleDescExpertWitness',
+    attorney:          'userProfile.roleDescAttorney',
+    law_enforcement:   'userProfile.roleDescLawEnforcement',
 }
 
 const ROLE_ICONS: Record<string, { icon: React.ReactNode; color: string }> = {
@@ -114,30 +114,30 @@ const ROLE_ICONS: Record<string, { icon: React.ReactNode; color: string }> = {
     law_enforcement:   { icon: <ExclamationTriangleIcon className="h-5 w-5" />, color: 'text-orange-500' },
 }
 
-function getProgressInfo(score: number) {
+function getProgressInfo(score: number, t: (key: string) => string) {
     if (score >= 80) return {
-        label: 'Fully engaged',
+        label: t('userProfile.fullyEngaged'),
         color: 'text-green-600 dark:text-green-400',
         barColor: 'bg-green-500',
         border: 'border-green-500/20',
         bg: 'bg-green-500/5',
     }
     if (score >= 50) return {
-        label: 'Active participant',
+        label: t('userProfile.activeParticipant'),
         color: 'text-yellow-600 dark:text-yellow-400',
         barColor: 'bg-yellow-500',
         border: 'border-yellow-500/20',
         bg: 'bg-yellow-500/5',
     }
     if (score >= 20) return {
-        label: 'Getting started',
+        label: t('userProfile.gettingStarted'),
         color: 'text-orange-600 dark:text-orange-400',
         barColor: 'bg-orange-500',
         border: 'border-orange-500/20',
         bg: 'bg-orange-500/5',
     }
     return {
-        label: 'Profile incomplete',
+        label: t('userProfile.profileIncomplete'),
         color: 'text-red-600 dark:text-red-400',
         barColor: 'bg-red-500',
         border: 'border-border',
@@ -304,10 +304,10 @@ export default function ProfilePage() {
             setEditing(false)
             setAvatarFile(null)
             setAvatarPreview(null)
-            setSuccess('Profile updated successfully.')
+            setSuccess(t('userProfile.profileUpdated'))
             await loadProfile()
         } catch (err: any) {
-            setError(err.message || 'Failed to save')
+            setError(err.message || t('userProfile.failedToSave'))
         } finally {
             setSaving(false)
         }
@@ -329,7 +329,7 @@ export default function ProfilePage() {
         )
     }
 
-    const progress = getProgressInfo(profile.profile_progress)
+    const progress = getProgressInfo(profile.profile_progress, t)
     const uniqueRoles = [...new Set(memberships.map(m => m.role))]
 
     return (
@@ -438,7 +438,7 @@ export default function ProfilePage() {
                             <p className="text-xs text-muted-foreground">{editBio.length}/500</p>
                         </div>
                         <div className="space-y-2">
-                            <Label>Avatar</Label>
+                            <Label>{t('userProfile.avatar')}</Label>
                             <input
                                 ref={fileInputRef}
                                 type="file"
@@ -457,7 +457,7 @@ export default function ProfilePage() {
                                 variant="outline"
                                 onClick={() => fileInputRef.current?.click()}
                             >
-                                Choose Image
+                                {t('userProfile.chooseImage')}
                             </Button>
                             {avatarFile && <p className="text-xs text-muted-foreground">{avatarFile.name}</p>}
                         </div>
@@ -469,7 +469,7 @@ export default function ProfilePage() {
                             onClick={() => { setEditing(false); setAvatarFile(null); setAvatarPreview(null) }}
                             className="px-4 py-2 rounded-md text-sm font-medium bg-muted/50 text-foreground/80 hover:bg-primary hover:text-primary-foreground transition-colors"
                         >
-                            Cancel
+                            {t('common.cancel')}
                         </button>
                         <button
                             onClick={handleSave}
@@ -592,7 +592,7 @@ export default function ProfilePage() {
                                                     </Badge>
                                                 </div>
                                                 <p className="text-base font-semibold truncate">
-                                                    {profile.display_name} vs. {c.defendants?.full_name || 'Unknown defendant'}
+                                                    {profile.display_name} vs. {c.defendants?.full_name || t('userProfile.unknownDefendant')}
                                                 </p>
                                                 {c.case_types && c.case_types.length > 0 && (
                                                     <div className="flex flex-wrap gap-1 overflow-hidden" style={{ maxHeight: '1.75rem' }}>
@@ -609,11 +609,11 @@ export default function ProfilePage() {
                                                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                                     {(c.nominal_damages_claimed || 0) > 0 && (
                                                         <>
-                                                            <span>Damages <span className="font-semibold text-foreground">${c.nominal_damages_claimed!.toLocaleString()}</span></span>
+                                                            <span>{t('userProfile.damages')} <span className="font-semibold text-foreground">${c.nominal_damages_claimed!.toLocaleString()}</span></span>
                                                             <span className="text-muted-foreground/40">|</span>
                                                         </>
                                                     )}
-                                                    <span>Filed <span className="font-semibold text-foreground">{filedDate}</span></span>
+                                                    <span>{t('userProfile.filed')} <span className="font-semibold text-foreground">{filedDate}</span></span>
                                                 </div>
                                             </div>
 
@@ -630,7 +630,7 @@ export default function ProfilePage() {
                                             <div className="rounded-xl border bg-card p-4 flex flex-col items-center justify-center min-w-[130px] ml-[15px] mr-[15px]">
                                                 <ShieldCheckIcon className="h-7 w-7 text-muted-foreground mb-2" />
                                                 <p className="text-2xl font-bold">{members}</p>
-                                                <p className="text-xs text-muted-foreground text-center">{members === 1 ? 'Member' : 'Members'}</p>
+                                                <p className="text-xs text-muted-foreground text-center">{members === 1 ? t('userProfile.member') : t('userProfile.members')}</p>
                                             </div>
 
                                             {/* Col 5 — Evidence stat box */}
@@ -638,35 +638,50 @@ export default function ProfilePage() {
                                                 <div className="rounded-xl border bg-card p-4 flex flex-col items-center justify-center min-w-[130px]">
                                                     <ScaleIcon className="h-7 w-7 text-muted-foreground mb-2" />
                                                     <p className="text-2xl font-bold">{evidence}</p>
-                                                    <p className="text-xs text-muted-foreground text-center">Evidence</p>
+                                                    <p className="text-xs text-muted-foreground text-center">{t('userProfile.evidence')}</p>
                                                 </div>
                                             )}
 
                                             {/* Col 6 — Spacer */}
                                             <div />
 
-                                            {/* Col 7 — Edit button */}
-                                            {EDITABLE_STATUSES.includes(c.status) && (
-                                                <Button
-                                                    variant="outline"
-                                                    className="justify-self-end px-10 py-2 hover:border-primary hover:ring-2 hover:ring-primary/60 hover:ring-offset-0 transition-all duration-200"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        router.push(`/cases/${c.case_number}/edit`)
-                                                    }}
-                                                >
-                                                    <PencilSquareIcon className="h-4 w-4 mr-2" />
-                                                    Edit
-                                                </Button>
-                                            )}
+                                            {/* Col 7 — Actions */}
+                                            <div className="flex flex-col gap-2 justify-self-end">
+                                                {EDITABLE_STATUSES.includes(c.status) && (
+                                                    <Button
+                                                        variant="outline"
+                                                        className="px-10 py-2 hover:border-primary hover:ring-2 hover:ring-primary/60 hover:ring-offset-0 transition-all duration-200"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            router.push(`/cases/${c.case_number}/edit`)
+                                                        }}
+                                                    >
+                                                        <PencilSquareIcon className="h-4 w-4 mr-2" />
+                                                        {t('userProfile.edit')}
+                                                    </Button>
+                                                )}
+                                                {VOTING_STATUSES.includes(c.status) && (
+                                                    <Button
+                                                        variant="outline"
+                                                        className="px-10 py-2 hover:border-primary hover:ring-2 hover:ring-primary/60 hover:ring-offset-0 transition-all duration-200"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            router.push(`/vote?case=${c.id}`)
+                                                        }}
+                                                    >
+                                                        <ScaleIcon className="h-4 w-4 mr-2" />
+                                                        {t('userProfile.voting')}
+                                                    </Button>
+                                                )}
+                                            </div>
                                         </div>
 
                                         {/* Vote bar — own compartment, separated by divider */}
                                         {isVoting && (
                                             <div className="border-t px-4 py-3 space-y-1.5">
                                                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                                    <span className="font-medium text-foreground">{votes} / 400 votes</span>
-                                                    <span>{Math.round((votes / 400) * 100)}% participation</span>
+                                                    <span className="font-medium text-foreground">{votes} / 400 {t('userProfile.votes')}</span>
+                                                    <span>{Math.round((votes / 400) * 100)}% {t('userProfile.participation')}</span>
                                                 </div>
                                                 <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
                                                     <div
@@ -686,7 +701,7 @@ export default function ProfilePage() {
                 {/* My Roles (case memberships) */}
                 <TabsContent value="roles" className="space-y-5">
                     {memberships.length === 0 ? (
-                        <EmptyCard message="No roles yet" cta="Browse Cases" href="/cases" />
+                        <EmptyCard message={t('userProfile.noRolesYet')} cta={t('userProfile.browseCases')} href="/cases" />
                     ) : (
                         memberships.map((m: Membership) => {
                             const joinedDate = m.created_at ? new Date(m.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'
@@ -708,10 +723,10 @@ export default function ProfilePage() {
                                                 </div>
                                                 <div className="min-w-0">
                                                     <p className="text-sm font-bold">
-                                                        {m.cases?.case_number} · {(m.cases?.defendants as any)?.full_name || 'Unknown defendant'}
+                                                        {m.cases?.case_number} · {(m.cases?.defendants as any)?.full_name || t('userProfile.unknownDefendant')}
                                                     </p>
                                                     <p className="text-xs text-muted-foreground capitalize">
-                                                        {m.role.replace(/_/g, ' ')} · Joined {joinedDate}
+                                                        {m.role.replace(/_/g, ' ')} · {t('userProfile.filed')} {joinedDate}
                                                     </p>
                                                 </div>
                                             </div>
@@ -723,11 +738,11 @@ export default function ProfilePage() {
                                             <div className="pl-3">
                                                 {!isActive ? (
                                                     <Badge variant="outline" className="text-xs bg-yellow-500/10 text-yellow-600 border-yellow-500/20">
-                                                        Pending
+                                                        {t('wizard.pending')}
                                                     </Badge>
                                                 ) : (
                                                     <Badge variant="outline" className="text-xs bg-green-500/10 text-green-600 border-green-500/20">
-                                                        Active
+                                                        {t('defendants.statusActive')}
                                                     </Badge>
                                                 )}
                                             </div>
@@ -742,10 +757,10 @@ export default function ProfilePage() {
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <p className="text-sm font-bold">
-                                                            {m.cases?.case_number} · {(m.cases?.defendants as any)?.full_name || 'Unknown defendant'}
+                                                            {m.cases?.case_number} · {(m.cases?.defendants as any)?.full_name || t('userProfile.unknownDefendant')}
                                                         </p>
                                                         <p className="text-xs text-muted-foreground capitalize">
-                                                            {m.role.replace(/_/g, ' ')} · Joined {joinedDate}
+                                                            {m.role.replace(/_/g, ' ')} · {t('userProfile.filed')} {joinedDate}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -782,7 +797,7 @@ export default function ProfilePage() {
                     <p className="text-sm font-bold text-center overflow-hidden text-ellipsis whitespace-nowrap max-w-full" title={user.email}>
                         {user.email}
                     </p>
-                    <p className="text-xs text-muted-foreground">Account</p>
+                    <p className="text-xs text-muted-foreground">{t('userProfile.account')}</p>
                 </div>
 
                 {/* Language box */}
@@ -791,7 +806,7 @@ export default function ProfilePage() {
                     <p className="text-sm font-bold text-center">
                         {LANGUAGE_LABELS[profile.language || 'en'] || profile.language?.toUpperCase() || 'English'}
                     </p>
-                    <p className="text-xs text-muted-foreground">Language</p>
+                    <p className="text-xs text-muted-foreground">{t('userProfile.language')}</p>
                 </div>
 
                 {/* Last Active box — uses live auth data, not stale profile column */}
@@ -800,7 +815,7 @@ export default function ProfilePage() {
                     <p className="text-sm font-bold text-center">
                         {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—'}
                     </p>
-                    <p className="text-xs text-muted-foreground">Last Active</p>
+                    <p className="text-xs text-muted-foreground">{t('userProfile.lastActive')}</p>
                 </div>
 
                 {/* Joined box */}
@@ -809,7 +824,7 @@ export default function ProfilePage() {
                     <p className="text-sm font-bold text-center">
                         {new Date(profile.joined_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </p>
-                    <p className="text-xs text-muted-foreground">Member Since</p>
+                    <p className="text-xs text-muted-foreground">{t('userProfile.memberSince')}</p>
                 </div>
             </div>
 

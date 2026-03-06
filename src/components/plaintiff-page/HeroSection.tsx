@@ -4,6 +4,7 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 import Link from 'next/link'
 import { StatusBadge } from './StatusBadge'
 import { UserIcon } from '@heroicons/react/24/outline'
+import { useTranslation } from '@/i18n'
 
 interface HeroSectionProps {
   plaintiffName: string
@@ -24,6 +25,7 @@ function AvatarPlaceholder({ label, className }: { label: string; className?: st
 }
 
 export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defendantPhoto, status, defendantSlug, plaintiffId }: HeroSectionProps) {
+  const { t } = useTranslation()
   const { scrollY } = useScroll()
   const bgY = useTransform(scrollY, [0, 400], [0, 120])
 
@@ -175,7 +177,7 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
               )}
             </motion.div>
             <span className="mt-3 text-[20px] font-bold tracking-[0.05em] uppercase text-[var(--accent-300)] opacity-70 group-hover:opacity-100 transition-opacity">
-              Plaintiff
+              {t('casePage.plaintiff')}
             </span>
             <span className="mt-1 text-[28px] font-bold text-white/70 group-hover:text-white transition-colors">
               {plaintiffName}
@@ -223,7 +225,7 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
               )}
             </motion.div>
             <span className="mt-3 text-[20px] font-bold tracking-[0.05em] uppercase text-[var(--accent-300)] opacity-70 group-hover:opacity-100 transition-opacity">
-              Defendant
+              {t('casePage.defendant')}
             </span>
             <span className="mt-1 text-[28px] font-bold text-white/70 group-hover:text-white transition-colors">
               {defendantName}
@@ -255,7 +257,7 @@ export function HeroSection({ plaintiffName, defendantName, plaintiffPhoto, defe
           y: { delay: 0.7, duration: 0.5 },
         }}
       >
-        VS
+        {t('casePage.vs')}
       </motion.div>
 
       {/* Status badge — emerges from explosion upward */}

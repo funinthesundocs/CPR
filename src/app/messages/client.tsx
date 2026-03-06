@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useTranslation } from '@/i18n'
 import { ConversationCard } from '@/components/messaging/ConversationCard'
 import { ConversationDetail } from '@/components/messaging/ConversationDetail'
 
@@ -20,6 +21,7 @@ export function MessagesPageClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = createClient()
+  const { t } = useTranslation()
 
   const [currentUser, setCurrentUser] = useState<{ id: string } | null>(null)
   const [authLoading, setAuthLoading] = useState(true)
@@ -46,7 +48,7 @@ export function MessagesPageClient() {
         setCurrentUser({ id: user.id })
         setAuthLoading(false)
       } catch (err) {
-        setAuthError('Failed to verify authentication')
+        setAuthError(t('messages.authFailed'))
         setAuthLoading(false)
       }
     }
@@ -60,6 +62,13 @@ export function MessagesPageClient() {
 
     if (!currentUser || !targetUserId) {
       console.log('Skipping: targetUserId or currentUser missing')
+      return
+    }
+
+    // Prevent self-messaging
+    if (currentUser.id === targetUserId) {
+      console.log('Self-messaging prevented')
+      setConversationError(t('messages.cannotMessageSelf'))
       return
     }
 
@@ -155,7 +164,7 @@ export function MessagesPageClient() {
   if (authError) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-        <h1 className="text-2xl font-bold mb-2">Session Error</h1>
+        <h1 className="text-2xl font-bold mb-2">{t('messages.sessionError')}</h1>
         <p className="text-muted-foreground">{authError}</p>
       </div>
     )
@@ -177,13 +186,13 @@ export function MessagesPageClient() {
             <div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
               💬
             </div>
-            <h1 className="text-2xl font-bold">My Chats</h1>
+            <h1 className="text-2xl font-bold">{t('messages.myChats')}</h1>
           </div>
           <button
             onClick={() => router.push('/profile')}
             className="px-3 py-1.5 rounded-md text-xs font-medium bg-muted/50 text-foreground/80 hover:bg-primary hover:text-primary-foreground transition-colors flex-shrink-0"
           >
-            Back to Profile
+            {t('messages.backToProfile')}
           </button>
         </div>
 
@@ -198,21 +207,21 @@ export function MessagesPageClient() {
 
         {/* Tabs */}
         <div className="flex gap-1 border-b border-border/50">
-          <button className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Past</button>
-          <button className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Archived</button>
+          <button className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t('messages.past')}</button>
+          <button className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t('messages.archived')}</button>
           <button className="px-4 py-2 text-sm font-medium text-foreground border-b-2 border-primary transition-colors">
-            Current <span className="ml-1 inline-block h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold">12</span>
+            {t('messages.current')} <span className="ml-1 inline-block h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold">12</span>
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto space-y-3">
           {conversationsLoading ? (
             <div className="text-center text-muted-foreground text-sm py-8">
-              Loading conversations...
+              {t('messages.loadingConversations')}
             </div>
           ) : conversations.length === 0 ? (
             <div className="text-center text-muted-foreground text-sm py-8">
-              No conversations yet. Start a new message!
+              {t('messages.noConversations')}
             </div>
           ) : (
             conversations.map((conv) => (
@@ -244,9 +253,20 @@ export function MessagesPageClient() {
       >
         {conversationError && (
           <div className="flex items-center justify-center min-h-full flex-1 text-center">
-            <div className="text-destructive">
-              <p className="mb-2 font-bold">Error creating conversation</p>
-              <p className="text-sm">{conversationError}</p>
+            <div className="text-destructive space-y-4">
+              <div>
+                <p className="mb-2 font-bold">{t('messages.errorCreating')}</p>
+                <p className="text-sm">{conversationError}</p>
+              </div>
+              <button
+                onClick={() => {
+                  setConversationError(null)
+                  router.push('/messages')
+                }}
+                className="px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-sm"
+              >
+                {t('messages.backToMessages')}
+              </button>
             </div>
           </div>
         )}
@@ -263,8 +283,8 @@ export function MessagesPageClient() {
         ) : !conversationError ? (
           <div className="flex items-center justify-center min-h-full flex-1 text-center">
             <div className="text-muted-foreground">
-              <p className="mb-2">Select a conversation to start messaging</p>
-              <p className="text-sm">or click Message on a user profile</p>
+              <p className="mb-2">{t('messages.selectConversation')}</p>
+              <p className="text-sm">{t('messages.orClickMessage')}</p>
             </div>
           </div>
         ) : null}
