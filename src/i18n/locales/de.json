@@ -572,7 +572,8 @@
         "participation": "Teilnahme",
         "account": "Konto",
         "language": "Sprache",
-        "lastActive": "Zuletzt Aktiv"
+        "lastActive": "Zuletzt Aktiv",
+        "joined": "Beigetreten"
     },
     "messages": {
         "myChats": "Meine Chats",

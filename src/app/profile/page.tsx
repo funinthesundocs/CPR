@@ -21,12 +21,7 @@ import {
     CalendarDaysIcon,
     UserGroupIcon,
     ScaleIcon,
-    DocumentTextIcon,
-    SparklesIcon,
-    UserIcon,
     ShieldCheckIcon,
-    ExclamationTriangleIcon,
-    ChatBubbleLeftIcon,
 } from '@heroicons/react/24/outline'
 
 type Profile = {
@@ -66,8 +61,12 @@ type Membership = {
     cases: {
         case_number: string
         status: string
-        defendants: { full_name: string } | null
+        case_types: string[] | null
+        nominal_damages_claimed: number | null
+        plaintiff_id: string
+        defendants: { full_name: string; photo_url: string | null; slug: string } | null
     } | null
+    plaintiff: { display_name: string; avatar_url: string | null } | null
 }
 
 const LANGUAGE_LABELS: Record<string, string> = {
@@ -94,25 +93,6 @@ const STATUS_COLORS: Record<string, string> = {
 const EDITABLE_STATUSES = ['draft', 'pending', 'pending_convergence', 'admin_review', 'investigation']
 const VOTING_STATUSES = ['judgment', 'investigation', 'pending_convergence']
 
-const ROLE_DESCRIPTION_KEYS: Record<string, string> = {
-    plaintiff:         'userProfile.roleDescPlaintiff',
-    jury_member:       'userProfile.roleDescJuryMember',
-    witness:           'userProfile.roleDescWitness',
-    investigator:      'userProfile.roleDescInvestigator',
-    expert_witness:    'userProfile.roleDescExpertWitness',
-    attorney:          'userProfile.roleDescAttorney',
-    law_enforcement:   'userProfile.roleDescLawEnforcement',
-}
-
-const ROLE_ICONS: Record<string, { icon: React.ReactNode; color: string }> = {
-    plaintiff:         { icon: <ScaleIcon className="h-5 w-5" />, color: 'text-red-500' },
-    jury_member:       { icon: <ScaleIcon className="h-5 w-5" />, color: 'text-blue-500' },
-    witness:           { icon: <UserIcon className="h-5 w-5" />, color: 'text-purple-500' },
-    investigator:      { icon: <SparklesIcon className="h-5 w-5" />, color: 'text-green-500' },
-    expert_witness:    { icon: <ShieldCheckIcon className="h-5 w-5" />, color: 'text-cyan-500' },
-    attorney:          { icon: <ShieldCheckIcon className="h-5 w-5" />, color: 'text-indigo-500' },
-    law_enforcement:   { icon: <ExclamationTriangleIcon className="h-5 w-5" />, color: 'text-orange-500' },
-}
 
 function getProgressInfo(score: number, t: (key: string) => string) {
     if (score >= 80) return {
@@ -208,27 +188,36 @@ export default function ProfilePage() {
         // Load case memberships (joined as jury, witness, etc.)
         const { data: membershipData } = await supabase
             .from('case_roles')
-            .select('case_id, role, status, created_at, cases(case_number, status, defendants(full_name))')
+            .select('case_id, role, status, created_at, cases(case_number, status, case_types, nominal_damages_claimed, plaintiff_id, defendants(full_name, photo_url, slug))')
             .eq('user_id', user.id)
             .order('case_id', { ascending: false })
 
-        // Synthesize plaintiff entries from filed cases and merge
-        const plaintiffEntries: Membership[] = typedCases.map(c => ({
-            case_id: c.id,
-            role: 'plaintiff',
-            status: 'approved',
-            created_at: c.created_at,
-            cases: {
-                case_number: c.case_number,
-                status: c.status,
-                defendants: c.defendants ? { full_name: c.defendants.full_name } : null,
-            }
-        }))
-        setMemberships([...plaintiffEntries, ...((membershipData || []) as unknown as Membership[])])
+        // Fetch plaintiff profiles for role cards
+        const plaintiffIds = [...new Set(
+            (membershipData || []).map(m => (m.cases as any)?.plaintiff_id).filter(Boolean)
+        )]
+        const plaintiffMap: Record<string, { display_name: string; avatar_url: string | null }> = {}
+        if (plaintiffIds.length > 0) {
+            const { data: plaintiffProfiles } = await supabase
+                .from('user_profiles')
+                .select('id, display_name, avatar_url')
+                .in('id', plaintiffIds)
+            plaintiffProfiles?.forEach(p => { plaintiffMap[p.id] = { display_name: p.display_name, avatar_url: p.avatar_url } })
+        }
 
-        // Load activity counts per case (non-fatal — show 0 on failure)
-        if (typedCases.length > 0) {
-            const caseIds = typedCases.map(c => c.id)
+        const enrichedMemberships = (membershipData || []).map(m => ({
+            ...m,
+            plaintiff: plaintiffMap[(m.cases as any)?.plaintiff_id || ''] || null
+        }))
+        setMemberships(enrichedMemberships as unknown as Membership[])
+
+        // Load activity counts for all cases (plaintiff-filed + role memberships)
+        const allCaseIds = [
+            ...typedCases.map(c => c.id),
+            ...(membershipData || []).map(m => m.case_id)
+        ].filter((id, i, arr) => arr.indexOf(id) === i)
+
+        if (allCaseIds.length > 0) {
             const toCountMap = (rows: { case_id: string }[] | null) => {
                 const map: Record<string, number> = {}
                 rows?.forEach(r => { map[r.case_id] = (map[r.case_id] || 0) + 1 })
@@ -236,16 +225,16 @@ export default function ProfilePage() {
             }
             try {
                 const [votesRes, evidenceRes, membersRes] = await Promise.all([
-                    supabase.from('votes').select('case_id').in('case_id', caseIds),
-                    supabase.from('evidence').select('case_id').in('case_id', caseIds),
-                    supabase.from('case_roles').select('case_id').in('case_id', caseIds),
+                    supabase.from('votes').select('case_id').in('case_id', allCaseIds),
+                    supabase.from('evidence').select('case_id').in('case_id', allCaseIds),
+                    supabase.from('case_roles').select('case_id').in('case_id', allCaseIds),
                 ])
                 setVoteCounts(toCountMap(votesRes.data))
                 setEvidenceCounts(toCountMap(evidenceRes.data))
                 // +1 per case for the original plaintiff
                 const rawMembers = toCountMap(membersRes.data)
                 const withPlaintiff: Record<string, number> = {}
-                caseIds.forEach(id => { withPlaintiff[id] = (rawMembers[id] || 0) + 1 })
+                allCaseIds.forEach(id => { withPlaintiff[id] = (rawMembers[id] || 0) + 1 })
                 setMemberCounts(withPlaintiff)
             } catch {
                 // non-fatal — counts remain 0
@@ -330,7 +319,10 @@ export default function ProfilePage() {
     }
 
     const progress = getProgressInfo(profile.profile_progress, t)
-    const uniqueRoles = [...new Set(memberships.map(m => m.role))]
+    const uniqueRoles = [...new Set([
+        ...(cases.length > 0 ? ['plaintiff'] : []),
+        ...memberships.map(m => m.role)
+    ])]
 
     return (
         <div className="px-[10%] space-y-5">
@@ -533,7 +525,7 @@ export default function ProfilePage() {
 
             {/* ── Cases & Roles & Chats Tabs ── */}
             <div className="space-y-4">
-                <Tabs defaultValue="cases" className="w-full" onValueChange={(value) => {
+                <Tabs defaultValue="roles" className="w-full" onValueChange={(value) => {
                   if (value === 'chats') {
                     try {
                       console.log('[Profile] Navigating to messages...')
@@ -548,8 +540,8 @@ export default function ProfilePage() {
                   }
                 }}>
                         <TabsList className="grid w-full grid-cols-3 min-h-[52px]">
-                            <TabsTrigger value="cases">{t('profile.myCases')} ({cases.length})</TabsTrigger>
                             <TabsTrigger value="roles">{t('profile.myRoles')} ({memberships.length})</TabsTrigger>
+                            <TabsTrigger value="cases">{t('profile.myCases')} ({cases.length})</TabsTrigger>
                             <TabsTrigger value="chats">{t('profile.myChats')}</TabsTrigger>
                         </TabsList>
 
@@ -699,84 +691,154 @@ export default function ProfilePage() {
                 </TabsContent>
 
                 {/* My Roles (case memberships) */}
-                <TabsContent value="roles" className="space-y-5">
+                <TabsContent value="roles" className="space-y-5 pt-[10px]">
                     {memberships.length === 0 ? (
                         <EmptyCard message={t('userProfile.noRolesYet')} cta={t('userProfile.browseCases')} href="/cases" />
                     ) : (
                         memberships.map((m: Membership) => {
+                            const caseStatus = m.cases?.status || ''
+                            const isVotingActive = VOTING_STATUSES.includes(caseStatus)
+                            const isJury = m.role === 'jury_member'
+                            const members = memberCounts[m.case_id] || 1
+                            const evidence = evidenceCounts[m.case_id] || 0
+                            const votes = voteCounts[m.case_id] || 0
                             const joinedDate = m.created_at ? new Date(m.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'
-                            const isActive = m.status !== 'pending'
-                            const roleConfig = ROLE_ICONS[m.role] || { icon: <UserIcon className="h-5 w-5" />, color: 'text-muted-foreground' }
+                            const plaintiffName = m.plaintiff?.display_name || t('userProfile.unknownDefendant')
+                            const plaintiffAvatar = m.plaintiff?.avatar_url || null
+                            const defendantName = m.cases?.defendants?.full_name || t('userProfile.unknownDefendant')
+                            const defendantPhoto = m.cases?.defendants?.photo_url || null
                             return (
                                 <Card
                                     key={`${m.case_id}-${m.role}`}
-                                    className="hover:shadow-md hover:border-primary/30 transition-all cursor-pointer"
+                                    className="hover:shadow-md transition-all hover:border-primary/30 cursor-pointer py-0"
                                     onClick={() => m.cases?.case_number && router.push(`/cases/${m.cases.case_number}`)}
                                 >
-                                    <CardContent className="p-4">
-                                        {/* Desktop layout: grid, mobile: flex stack */}
-                                        <div className="hidden sm:grid items-center" style={{ gridTemplateColumns: 'auto 1fr auto auto' }}>
-                                            {/* Col 1 — Role icon + case header */}
-                                            <div className="flex items-center gap-3 min-w-0">
-                                                <div className={`flex-shrink-0 ${roleConfig.color}`}>
-                                                    {roleConfig.icon}
+                                    <CardContent className="p-0 pr-4">
+                                        {/* 7-col grid: plaintiff(fixed) | case-info(fixed) | defendant(fixed) | members-box(auto) | evidence-box(auto) | spacer(fills) | actions(auto) */}
+                                        <div className="grid items-center" style={{ gridTemplateColumns: '9.6rem 22rem 9.6rem auto auto 1fr auto' }}>
+
+                                            {/* Col 1 — Plaintiff avatar */}
+                                            {plaintiffAvatar ? (
+                                                <img src={plaintiffAvatar} alt="" className="h-[9.6rem] w-[9.6rem] rounded-tl-lg object-cover ring-2 ring-border" />
+                                            ) : (
+                                                <div className="h-[9.6rem] w-[9.6rem] rounded-tl-lg bg-muted flex items-center justify-center text-4xl font-bold text-muted-foreground">
+                                                    {plaintiffName.charAt(0).toUpperCase()}
                                                 </div>
-                                                <div className="min-w-0">
-                                                    <p className="text-sm font-bold">
-                                                        {m.cases?.case_number} · {(m.cases?.defendants as any)?.full_name || t('userProfile.unknownDefendant')}
-                                                    </p>
-                                                    <p className="text-xs text-muted-foreground capitalize">
-                                                        {m.role.replace(/_/g, ' ')} · {t('userProfile.filed')} {joinedDate}
-                                                    </p>
+                                            )}
+
+                                            {/* Col 2 — Case info */}
+                                            <div className="space-y-1 overflow-hidden px-4 leading-loose">
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    <span className="font-mono text-sm font-bold">{m.cases?.case_number}</span>
+                                                    <Badge variant="outline" className={`text-xs capitalize ${STATUS_COLORS[caseStatus] || ''}`}>
+                                                        {STATUS_LABELS[caseStatus] || caseStatus.replace(/_/g, ' ')}
+                                                    </Badge>
+                                                    {/* Role badge */}
+                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary capitalize`}>
+                                                        {m.role.replace(/_/g, ' ')}
+                                                    </span>
+                                                </div>
+                                                <p className="text-base font-semibold truncate">
+                                                    {plaintiffName} vs. {defendantName}
+                                                </p>
+                                                {m.cases?.case_types && m.cases.case_types.length > 0 && (
+                                                    <div className="flex flex-wrap gap-1 overflow-hidden" style={{ maxHeight: '1.75rem' }}>
+                                                        {m.cases.case_types.slice(0, 3).map((type: string) => (
+                                                            <Badge key={type} variant="secondary" className="text-xs capitalize">
+                                                                {type.replace(/_/g, ' ')}
+                                                            </Badge>
+                                                        ))}
+                                                        {m.cases.case_types.length > 3 && (
+                                                            <Badge variant="secondary" className="text-xs">+{m.cases.case_types.length - 3}</Badge>
+                                                        )}
+                                                    </div>
+                                                )}
+                                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                    {(m.cases?.nominal_damages_claimed || 0) > 0 && (
+                                                        <>
+                                                            <span>{t('userProfile.damages')} <span className="font-semibold text-foreground">${m.cases!.nominal_damages_claimed!.toLocaleString()}</span></span>
+                                                            <span className="text-muted-foreground/40">|</span>
+                                                        </>
+                                                    )}
+                                                    <span>{t('userProfile.joined')} <span className="font-semibold text-foreground">{joinedDate}</span></span>
                                                 </div>
                                             </div>
 
-                                            {/* Col 2 — Spacer */}
+                                            {/* Col 3 — Defendant avatar */}
+                                            {defendantPhoto ? (
+                                                <img src={defendantPhoto} alt="" className="h-[9.6rem] w-[9.6rem] rounded-none object-cover ring-2 ring-border -translate-x-[10px]" />
+                                            ) : (
+                                                <div className="h-[9.6rem] w-[9.6rem] rounded-none bg-muted flex items-center justify-center text-4xl font-bold text-muted-foreground -translate-x-[10px]">
+                                                    {defendantName.charAt(0).toUpperCase()}
+                                                </div>
+                                            )}
+
+                                            {/* Col 4 — Members stat box */}
+                                            <div className="rounded-xl border bg-card p-4 flex flex-col items-center justify-center min-w-[130px] ml-[15px] mr-[15px]">
+                                                <ShieldCheckIcon className="h-7 w-7 text-muted-foreground mb-2" />
+                                                <p className="text-2xl font-bold">{members}</p>
+                                                <p className="text-xs text-muted-foreground text-center">{members === 1 ? t('userProfile.member') : t('userProfile.members')}</p>
+                                            </div>
+
+                                            {/* Col 5 — Evidence stat box */}
+                                            {evidence > 0 && (
+                                                <div className="rounded-xl border bg-card p-4 flex flex-col items-center justify-center min-w-[130px]">
+                                                    <ScaleIcon className="h-7 w-7 text-muted-foreground mb-2" />
+                                                    <p className="text-2xl font-bold">{evidence}</p>
+                                                    <p className="text-xs text-muted-foreground text-center">{t('userProfile.evidence')}</p>
+                                                </div>
+                                            )}
+
+                                            {/* Col 6 — Spacer */}
                                             <div />
 
-                                            {/* Col 3 — Status indicator */}
-                                            <div className="pl-3">
-                                                {!isActive ? (
-                                                    <Badge variant="outline" className="text-xs bg-yellow-500/10 text-yellow-600 border-yellow-500/20">
-                                                        {t('wizard.pending')}
-                                                    </Badge>
-                                                ) : (
-                                                    <Badge variant="outline" className="text-xs bg-green-500/10 text-green-600 border-green-500/20">
-                                                        {t('defendants.statusActive')}
-                                                    </Badge>
+                                            {/* Col 7 — Actions */}
+                                            <div className="flex flex-col gap-2 justify-self-end">
+                                                {/* Edit: all roles except jury_member */}
+                                                {!isJury && (
+                                                    <Button
+                                                        variant="outline"
+                                                        className="px-10 py-2 hover:border-primary hover:ring-2 hover:ring-primary/60 hover:ring-offset-0 transition-all duration-200"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            router.push(`/cases/${m.cases?.case_number}`)
+                                                        }}
+                                                    >
+                                                        <PencilSquareIcon className="h-4 w-4 mr-2" />
+                                                        {t('userProfile.edit')}
+                                                    </Button>
                                                 )}
+                                                {/* Vote: always shown, disabled outside of active voting window */}
+                                                <Button
+                                                    variant="outline"
+                                                    disabled={!isVotingActive}
+                                                    className="px-10 py-2 hover:border-primary hover:ring-2 hover:ring-primary/60 hover:ring-offset-0 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        if (isVotingActive) router.push(`/vote?case=${m.case_id}`)
+                                                    }}
+                                                >
+                                                    <ScaleIcon className="h-4 w-4 mr-2" />
+                                                    {t('userProfile.voting')}
+                                                </Button>
                                             </div>
                                         </div>
 
-                                        {/* Mobile layout */}
-                                        <div className="sm:hidden space-y-2">
-                                            <div className="flex items-start justify-between gap-2">
-                                                <div className="flex items-start gap-2 flex-1 min-w-0">
-                                                    <div className={`flex-shrink-0 mt-0.5 ${roleConfig.color}`}>
-                                                        {roleConfig.icon}
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="text-sm font-bold">
-                                                            {m.cases?.case_number} · {(m.cases?.defendants as any)?.full_name || t('userProfile.unknownDefendant')}
-                                                        </p>
-                                                        <p className="text-xs text-muted-foreground capitalize">
-                                                            {m.role.replace(/_/g, ' ')} · {t('userProfile.filed')} {joinedDate}
-                                                        </p>
-                                                    </div>
+                                        {/* Vote progress bar — only when voting is active */}
+                                        {isVotingActive && (
+                                            <div className="border-t px-4 py-3 space-y-1.5">
+                                                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                                    <span className="font-medium text-foreground">{votes} / 400 {t('userProfile.votes')}</span>
+                                                    <span>{Math.round((votes / 400) * 100)}% {t('userProfile.participation')}</span>
                                                 </div>
-                                                <div className="flex-shrink-0">
-                                                    {!isActive ? (
-                                                        <Badge variant="outline" className="text-xs bg-yellow-500/10 text-yellow-600 border-yellow-500/20">
-                                                            Pending
-                                                        </Badge>
-                                                    ) : (
-                                                        <Badge variant="outline" className="text-xs bg-green-500/10 text-green-600 border-green-500/20">
-                                                            Active
-                                                        </Badge>
-                                                    )}
+                                                <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
+                                                    <div
+                                                        className="h-full rounded-full bg-primary transition-all"
+                                                        style={{ width: `${Math.min((votes / 400) * 100, 100)}%` }}
+                                                    />
                                                 </div>
                                             </div>
-                                        </div>
+                                        )}
                                     </CardContent>
                                 </Card>
                             )

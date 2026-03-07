@@ -572,7 +572,8 @@
         "participation": "参加率",
         "account": "アカウント",
         "language": "言語",
-        "lastActive": "最終アクティブ"
+        "lastActive": "最終アクティブ",
+        "joined": "参加日"
     },
     "messages": {
         "myChats": "マイチャット",

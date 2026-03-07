@@ -572,7 +572,8 @@
         "participation": "مشاركة",
         "account": "الحساب",
         "language": "اللغة",
-        "lastActive": "آخر نشاط"
+        "lastActive": "آخر نشاط",
+        "joined": "انضم"
     },
     "messages": {
         "myChats": "محادثاتي",
