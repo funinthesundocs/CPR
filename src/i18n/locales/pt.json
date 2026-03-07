@@ -74,12 +74,12 @@
         "step4Title": "Julgamento pelo Público",
         "step4Subtitle": "Evidências Apresentadas para Revisão Pública",
         "step4Desc": "As evidências compiladas são apresentadas para revisão pública pela comunidade.",
-        "step5Title": "Registro Verificado",
-        "step5Subtitle": "Padrões Documentados em um Arquivo Formal",
-        "step5Desc": "Padrões de comportamento confirmados são documentados em um Arquivo de Caso formal.",
-        "step6Title": "Arquivado na História",
-        "step6Subtitle": "Preservado Permanentemente",
-        "step6Desc": "O registro completo é preservado permanentemente para acesso futuro."
+        "step5Title": "Restituição e Redenção",
+        "step5Subtitle": "O Caminho do Réu Rumo à Responsabilidade",
+        "step5Desc": "Após o veredicto ser proferido, o réu tem a oportunidade de assumir sua responsabilidade. Ao fazer pagamentos de restituição diretamente às vítimas verificadas, o réu pode demonstrar responsabilidade genuína e trabalhar para selar o caso. Todos os pagamentos são rastreados de forma transparente no registro do caso.",
+        "step6Title": "Política de Arquivamento",
+        "step6Subtitle": "Registro Público ou Selado — A Escolha é do Réu",
+        "step6Desc": "Se nenhuma restituição for feita, o caso e todos os registros associados entram no domínio público permanentemente — acessíveis a empregadores, parceiros, investidores, autoridades e o público em geral. Se a restituição completa for paga a todas as vítimas verificadas, o caso é selado: o registro público é removido e toda a publicidade associada é retirada. A redenção é real, mas precisa ser conquistada."
     },
     "cases": {
         "browseTitle": "Arquivos de Caso",

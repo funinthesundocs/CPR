@@ -73,12 +73,12 @@
         "step4Title": "Judgment by the Public",
         "step4Subtitle": "Evidence Presented for Public Review",
         "step4Desc": "The compiled evidence is presented for public review. Community members can examine the timeline, read testimonies, and view supporting documents. The community can vote on the validity of specific claims, creating a transparent consensus.",
-        "step5Title": "Verified Record",
-        "step5Subtitle": "Patterns Documented into a Formal Case File",
-        "step5Desc": "Confirmed patterns of behavior are documented into a formal Case File. This includes the defendant profile, verified timeline, victim testimonies, and supporting evidence. The record becomes a comprehensive reference for anyone researching the individual.",
-        "step6Title": "Archived in History",
-        "step6Subtitle": "Permanently Preserved",
-        "step6Desc": "The completed record is permanently preserved, ensuring the truth is accessible to future partners, employers, investors, or authorities. The Court of Public Record exists so that no one has to discover the truth the hard way — alone."
+        "step5Title": "Restitution & Redemption",
+        "step5Subtitle": "The Defendant's Path to Accountability",
+        "step5Desc": "Once a verdict is delivered, the defendant has an opportunity to take responsibility. By making restitution payments directly to verified victims, the defendant can demonstrate genuine accountability and work toward having the case sealed. All payments are tracked transparently on the case record, showing progress toward full restitution.",
+        "step6Title": "Archiving Policy",
+        "step6Subtitle": "Public Record or Sealed — The Choice Is the Defendant's",
+        "step6Desc": "If no restitution is made, the case and all associated records enter the public domain permanently — accessible to employers, partners, investors, authorities, and the general public. If full restitution is paid to all verified victims, the case is sealed: the public record is removed and all associated advertising is taken down. Redemption is real, but it must be earned."
     },
     "cases": {
         "browseTitle": "Case Files",

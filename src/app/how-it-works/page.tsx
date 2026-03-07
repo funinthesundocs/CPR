@@ -1,6 +1,6 @@
 'use client'
 
-import { ScaleIcon, MagnifyingGlassIcon, ClockIcon, CheckBadgeIcon, DocumentCheckIcon, ArchiveBoxIcon } from '@heroicons/react/24/outline'
+import { ScaleIcon, MagnifyingGlassIcon, ClockIcon, CheckBadgeIcon, BanknotesIcon, LockClosedIcon } from '@heroicons/react/24/outline'
 import { useTranslation } from '@/i18n'
 import type { ComponentType } from 'react'
 
@@ -12,8 +12,8 @@ export default function HowItWorksPage() {
         { number: 2, title: t('howItWorks.step2Title'), subtitle: t('howItWorks.step2Subtitle'), description: t('howItWorks.step2Desc'), icon: MagnifyingGlassIcon },
         { number: 3, title: t('howItWorks.step3Title'), subtitle: t('howItWorks.step3Subtitle'), description: t('howItWorks.step3Desc'), icon: ClockIcon },
         { number: 4, title: t('howItWorks.step4Title'), subtitle: t('howItWorks.step4Subtitle'), description: t('howItWorks.step4Desc'), icon: CheckBadgeIcon },
-        { number: 5, title: t('howItWorks.step5Title'), subtitle: t('howItWorks.step5Subtitle'), description: t('howItWorks.step5Desc'), icon: DocumentCheckIcon },
-        { number: 6, title: t('howItWorks.step6Title'), subtitle: t('howItWorks.step6Subtitle'), description: t('howItWorks.step6Desc'), icon: ArchiveBoxIcon },
+        { number: 5, title: t('howItWorks.step5Title'), subtitle: t('howItWorks.step5Subtitle'), description: t('howItWorks.step5Desc'), icon: BanknotesIcon },
+        { number: 6, title: t('howItWorks.step6Title'), subtitle: t('howItWorks.step6Subtitle'), description: t('howItWorks.step6Desc'), icon: LockClosedIcon },
     ]
 
     return (

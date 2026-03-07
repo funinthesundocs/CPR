@@ -74,12 +74,12 @@
         "step4Title": "Urteil der Öffentlichkeit",
         "step4Subtitle": "Beweise zur Prüfung Vorgelegt",
         "step4Desc": "Beweise werden der Gemeinschaft zur öffentlichen Prüfung vorgelegt.",
-        "step5Title": "Verifiziertes Protokoll",
-        "step5Subtitle": "Muster in Formeller Akte Dokumentiert",
-        "step5Desc": "Bestätigte Verhaltensmuster werden in einer Fallakte dokumentiert.",
-        "step6Title": "In der Geschichte Archiviert",
-        "step6Subtitle": "Dauerhaft Bewahrt",
-        "step6Desc": "Das Protokoll wird dauerhaft für zukünftigen Zugriff bewahrt."
+        "step5Title": "Wiedergutmachung und Erlösung",
+        "step5Subtitle": "Der Weg des Beklagten zur Verantwortung",
+        "step5Desc": "Nach der Urteilsverkündung hat der Beklagte die Möglichkeit, Verantwortung zu übernehmen. Durch direkte Wiedergutmachungszahlungen an verifizierte Opfer kann der Beklagte echte Verantwortlichkeit demonstrieren und auf die Versiegelung des Falls hinarbeiten. Alle Zahlungen werden transparent im Fallprotokoll verfolgt.",
+        "step6Title": "Archivierungsrichtlinie",
+        "step6Subtitle": "Öffentliches Register oder Versiegelt — Die Wahl liegt beim Beklagten",
+        "step6Desc": "Wird keine Wiedergutmachung geleistet, gehen der Fall und alle zugehörigen Aufzeichnungen dauerhaft in die öffentliche Domäne über — zugänglich für Arbeitgeber, Partner, Investoren, Behörden und die Öffentlichkeit. Wird die vollständige Wiedergutmachung an alle verifizierten Opfer gezahlt, wird der Fall versiegelt: der öffentliche Eintrag wird entfernt und alle zugehörige Werbung wird eingestellt. Erlösung ist möglich, aber sie muss verdient werden."
     },
     "cases": {
         "browseTitle": "Fallakten",

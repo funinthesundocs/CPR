@@ -74,12 +74,12 @@
         "step4Title": "Juicio del Público",
         "step4Subtitle": "Evidencia Presentada para Revisión Pública",
         "step4Desc": "La evidencia compilada se presenta para revisión pública. Los miembros de la comunidad pueden examinar la cronología, leer testimonios y ver documentos de respaldo.",
-        "step5Title": "Registro Verificado",
-        "step5Subtitle": "Patrones Documentados en un Expediente Formal",
-        "step5Desc": "Los patrones de comportamiento confirmados se documentan en un Expediente formal. Esto incluye el perfil del acusado, cronología verificada, testimonios de víctimas y evidencia de respaldo.",
-        "step6Title": "Archivado en la Historia",
-        "step6Subtitle": "Preservado Permanentemente",
-        "step6Desc": "El registro completo se preserva permanentemente, asegurando que la verdad sea accesible para futuros socios, empleadores, inversores o autoridades."
+        "step5Title": "Restitución y Redención",
+        "step5Subtitle": "El Camino del Acusado hacia la Responsabilidad",
+        "step5Desc": "Una vez emitido el veredicto, el acusado tiene la oportunidad de asumir su responsabilidad. Mediante pagos de restitución directamente a las víctimas verificadas, el acusado puede demostrar una responsabilidad genuina y trabajar hacia el sellado del caso. Todos los pagos se rastrean de forma transparente en el expediente del caso.",
+        "step6Title": "Política de Archivo",
+        "step6Subtitle": "Registro Público o Sellado — La Decisión es del Acusado",
+        "step6Desc": "Si no se realiza ninguna restitución, el caso y todos los registros asociados pasan al dominio público de forma permanente — accesibles a empleadores, socios, inversores, autoridades y el público en general. Si se paga la restitución completa a todas las víctimas verificadas, el caso se sella: el registro público se elimina y toda la publicidad asociada se retira. La redención es real, pero debe ganarse."
     },
     "cases": {
         "browseTitle": "Expedientes",

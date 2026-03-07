@@ -74,12 +74,12 @@
         "step4Title": "Jugement du Public",
         "step4Subtitle": "Preuves Présentées pour Examen Public",
         "step4Desc": "Les preuves compilées sont présentées pour examen public par la communauté.",
-        "step5Title": "Dossier Vérifié",
-        "step5Subtitle": "Schémas Documentés dans un Dossier Formel",
-        "step5Desc": "Les schémas de comportement confirmés sont documentés dans un Dossier formel.",
-        "step6Title": "Archivé dans l'Histoire",
-        "step6Subtitle": "Préservé Permanemment",
-        "step6Desc": "Le dossier complet est préservé de manière permanente pour un accès futur."
+        "step5Title": "Restitution et Rédemption",
+        "step5Subtitle": "Le Chemin du Défendeur vers la Responsabilité",
+        "step5Desc": "Une fois le verdict rendu, le défendeur a l'opportunité d'assumer sa responsabilité. En effectuant des paiements de restitution directement aux victimes vérifiées, il peut démontrer une responsabilité sincère et travailler à la clôture du dossier. Tous les paiements sont suivis de manière transparente dans le dossier de l'affaire.",
+        "step6Title": "Politique d'Archivage",
+        "step6Subtitle": "Dossier Public ou Scellé — Le Choix Appartient au Défendeur",
+        "step6Desc": "Si aucune restitution n'est effectuée, le dossier et tous les enregistrements associés tombent définitivement dans le domaine public — accessibles aux employeurs, partenaires, investisseurs, autorités et au grand public. Si la restitution complète est versée à toutes les victimes vérifiées, le dossier est scellé : le registre public est supprimé et toute publicité associée est retirée. La rédemption est possible, mais elle doit être méritée."
     },
     "cases": {
         "browseTitle": "Dossiers",
