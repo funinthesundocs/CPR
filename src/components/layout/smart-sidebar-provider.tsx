@@ -8,6 +8,8 @@ const SIDEBAR_WIDTH_PX = 256  // 16rem — matches shadcn --sidebar-width defaul
 const PROXIMITY_PX     = 100  // hover zone: distance from left edge that triggers open
 const CLOSE_DELAY_MS   = 200  // debounce before auto-closing on mouse exit
 
+const FIXED_OPEN_ROUTES = new Set(['/', '/how-it-works'])
+
 function isDetailRoute(pathname: string): boolean {
   return (
     /^\/cases\/[^/]+$/.test(pathname) && pathname !== '/cases/new'
@@ -23,6 +25,7 @@ export function SmartSidebarProvider({
 }) {
   const pathname = usePathname()
   const isDetail = isDetailRoute(pathname)
+  const isFixed = FIXED_OPEN_ROUTES.has(pathname)
 
   const [open, setOpen] = useState(() => !isDetail)
   const openRef  = useRef(open)
@@ -67,7 +70,7 @@ export function SmartSidebarProvider({
   }, [isDetail])
 
   return (
-    <SidebarProvider open={open} onOpenChange={setOpen} suppressHydrationWarning>
+    <SidebarProvider open={isFixed ? true : open} onOpenChange={isFixed ? undefined : setOpen} suppressHydrationWarning>
       {sidebar}
       {children}
     </SidebarProvider>

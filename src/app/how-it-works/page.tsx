@@ -44,10 +44,10 @@ export default function HowItWorksPage() {
                     <p className="text-sm font-semibold uppercase tracking-[0.2em]" style={{ color: 'hsl(var(--primary))' }}>
                         {t('howItWorks.title')}
                     </p>
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
+                    <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
                         {t('howItWorks.heroHeadline')}
                     </h1>
-                    <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                    <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
                         {t('howItWorks.subtitle')}
                     </p>
                 </div>
@@ -61,7 +61,7 @@ export default function HowItWorksPage() {
                     {/* Vertical connector — desktop only */}
                     <div className="absolute left-1/2 -translate-x-px top-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-primary/20 to-transparent hidden md:block" />
 
-                    <div className="space-y-12 md:space-y-20">
+                    <div className="space-y-12 md:space-y-0">
                         {trialSteps.map((step, i) => (
                             <TimelineStep key={step.number} step={step} index={i} t={t} />
                         ))}
@@ -85,7 +85,7 @@ export default function HowItWorksPage() {
                             <p className="text-base italic font-medium" style={{ color: 'hsl(var(--primary))' }}>
                                 {t('howItWorks.step5Subtitle')}
                             </p>
-                            <p className="text-muted-foreground leading-relaxed">{t('howItWorks.step5Desc')}</p>
+                            <p className="text-muted-foreground leading-relaxed text-justify">{t('howItWorks.step5Desc')}</p>
                         </div>
                     </div>
                 </div>
@@ -109,7 +109,7 @@ export default function HowItWorksPage() {
                                 <ExclamationTriangleIcon className="h-8 w-8 text-destructive shrink-0" />
                                 <h4 className="text-lg font-bold text-destructive">{t('howItWorks.step6NoRestitution')}</h4>
                             </div>
-                            <p className="text-muted-foreground leading-relaxed">{t('howItWorks.step6NoRestitutionDesc')}</p>
+                            <p className="text-muted-foreground leading-relaxed text-justify">{t('howItWorks.step6NoRestitutionDesc')}</p>
                         </div>
 
                         {/* Full restitution — sealed */}
@@ -118,19 +118,19 @@ export default function HowItWorksPage() {
                                 <ShieldCheckIcon className="h-8 w-8 text-green-600 shrink-0" />
                                 <h4 className="text-lg font-bold text-green-600">{t('howItWorks.step6Restitution')}</h4>
                             </div>
-                            <p className="text-muted-foreground leading-relaxed">{t('howItWorks.step6RestitutionDesc')}</p>
+                            <p className="text-muted-foreground leading-relaxed text-justify">{t('howItWorks.step6RestitutionDesc')}</p>
                         </div>
                     </div>
                 </div>
             </section>
 
             {/* ── CTA ── */}
-            <section className="relative rounded-2xl py-16 text-center space-y-6">
+            <section className="relative rounded-2xl pb-16 text-center space-y-6">
                 <div className="absolute inset-0 -z-10 bg-gradient-to-t from-primary/5 to-transparent rounded-2xl" />
-                <h2 className="text-2xl md:text-3xl font-bold max-w-xl mx-auto leading-tight">
+                <h2 className="text-2xl md:text-3xl font-bold max-w-xl mx-auto leading-tight capitalize">
                     {t('howItWorks.ctaTitle')}
                 </h2>
-                <p className="text-xl md:text-2xl font-bold" style={{ color: 'hsl(var(--primary))' }}>
+                <p className="text-xl md:text-2xl font-bold capitalize" style={{ color: 'hsl(var(--primary))' }}>
                     {t('howItWorks.ctaSubtitle')}
                 </p>
                 <div className="flex flex-wrap justify-center gap-4 pt-4">
@@ -192,16 +192,16 @@ function TimelineStep({ step, index, t }: { step: Step; index: number; t: (key: 
         4: 'border-primary/40 shadow-md',
     }[step.intensity]
 
-    const card = (align: 'left' | 'right') => (
-        <div className={`rounded-2xl border-2 ${intensityBorder} bg-card p-8 hover:shadow-lg transition-shadow ${align === 'right' ? 'text-right' : ''}`}>
-            <div className={`flex items-center gap-3 mb-4 ${align === 'right' ? 'flex-row-reverse' : ''}`}>
+    const card = () => (
+        <div className={`rounded-2xl border-2 ${intensityBorder} bg-card p-8 hover:shadow-lg transition-shadow relative`}>
+            <div className="absolute top-5 left-5">
                 <IconBox icon={StepIcon} />
-                <div>
-                    <h3 className="text-xl font-bold">{t(step.titleKey)}</h3>
-                    <p className="text-sm italic font-medium" style={{ color: 'hsl(var(--primary))' }}>{t(step.subtitleKey)}</p>
-                </div>
             </div>
-            <p className="text-muted-foreground leading-relaxed">{t(step.descKey)}</p>
+            <div className="text-center mb-4 pt-1">
+                <h3 className="text-2xl font-bold">{t(step.titleKey)}</h3>
+                <p className="text-base italic font-medium" style={{ color: 'hsl(var(--primary))' }}>{t(step.subtitleKey)}</p>
+            </div>
+            <p className="text-lg text-muted-foreground leading-relaxed text-justify" style={{ letterSpacing: '-1px' }}>{t(step.descKey)}</p>
         </div>
     )
 
@@ -209,13 +209,13 @@ function TimelineStep({ step, index, t }: { step: Step; index: number; t: (key: 
         <div>
             {/* Desktop: zig-zag */}
             <div className="hidden md:grid md:grid-cols-[1fr_4rem_1fr] gap-8 items-center">
-                {isLeft ? <div /> : card('right')}
+                {isLeft ? <div /> : card()}
                 <div className="flex flex-col items-center relative z-10">
                     <div className="h-3 w-3 rounded-full mb-2" style={{ background: 'hsl(var(--primary) / 0.3)' }} />
                     <StepCircle number={step.number} />
                     <div className="h-3 w-3 rounded-full mt-2" style={{ background: 'hsl(var(--primary) / 0.3)' }} />
                 </div>
-                {isLeft ? card('left') : <div />}
+                {isLeft ? card() : <div />}
             </div>
 
             {/* Mobile: stacked */}
@@ -223,12 +223,12 @@ function TimelineStep({ step, index, t }: { step: Step; index: number; t: (key: 
                 <div className="flex items-center gap-4">
                     <StepCircle number={step.number} />
                     <div>
-                        <h3 className="text-lg font-bold">{t(step.titleKey)}</h3>
-                        <p className="text-sm italic font-medium" style={{ color: 'hsl(var(--primary))' }}>{t(step.subtitleKey)}</p>
+                        <h3 className="text-xl font-bold">{t(step.titleKey)}</h3>
+                        <p className="text-base italic font-medium" style={{ color: 'hsl(var(--primary))' }}>{t(step.subtitleKey)}</p>
                     </div>
                 </div>
                 <div className="rounded-2xl border bg-card p-6 shadow-sm ml-14 border-l-4" style={{ borderLeftColor: 'hsl(var(--primary))' }}>
-                    <p className="text-muted-foreground leading-relaxed text-sm">{t(step.descKey)}</p>
+                    <p className="text-muted-foreground leading-relaxed text-base">{t(step.descKey)}</p>
                 </div>
             </div>
         </div>

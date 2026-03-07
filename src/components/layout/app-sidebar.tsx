@@ -112,7 +112,7 @@ export function AppSidebar() {
                 <SidebarHeader className="p-4">
                     <div className="flex items-center justify-between">
                         <Link href="/" className="flex items-center gap-2 font-bold text-lg">
-                            <ScaleIcon className="h-6 w-6" style={{ color: 'hsl(var(--primary))' }} />
+                            <ScaleIcon className="h-6 w-6" style={{ color: 'var(--primary)' }} />
                             <span className="leading-tight">CPR</span>
                         </Link>
                         <NotificationBell />
