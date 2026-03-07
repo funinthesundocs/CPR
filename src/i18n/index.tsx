@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react'
 import en from './locales/en.json'
 
-export const SUPPORTED_LOCALES = ['en', 'es', 'pt', 'fr', 'de', 'ja', 'ar'] as const
+export const SUPPORTED_LOCALES = ['en', 'es', 'pt', 'fr', 'de', 'ja', 'ar', 'vi', 'th'] as const
 export type Locale = typeof SUPPORTED_LOCALES[number]
 
 export const LOCALE_NAMES: Record<Locale, string> = {
@@ -14,6 +14,8 @@ export const LOCALE_NAMES: Record<Locale, string> = {
     de: 'Deutsch',
     ja: '日本語',
     ar: 'العربية',
+    vi: 'Tiếng Việt',
+    th: 'ไทย',
 }
 
 export const RTL_LOCALES: Locale[] = ['ar']
@@ -58,6 +60,8 @@ const localeLoaders: Record<Locale, () => Promise<Record<string, any>>> = {
     de: () => import('./locales/de.json').then(m => m.default),
     ja: () => import('./locales/ja.json').then(m => m.default),
     ar: () => import('./locales/ar.json').then(m => m.default),
+    vi: () => import('./locales/vi.json').then(m => m.default),
+    th: () => import('./locales/th.json').then(m => m.default),
 }
 
 const loadedLocales: Record<string, Record<string, string>> = { en: flatEN }
